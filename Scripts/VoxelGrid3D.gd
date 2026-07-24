@@ -25,6 +25,12 @@ func GenerateGrid() -> void:
                 var boxMesh = BoxMesh.new()
                 meshInstance.mesh = boxMesh
 
+                # Check for corrupted state
+                if GameManager.Instance != null and (GameManager.Instance.health < 50 or GameManager.Instance.endurance < 50):
+                    var material = StandardMaterial3D.new()
+                    material.albedo_color = Color.RED
+                    boxMesh.material = material
+
                 # Spread out the grid based on size
                 meshInstance.position = Vector3(x - GridSizeX / 2.0, y - GridSizeY / 2.0, z - GridSizeZ / 2.0)
 
@@ -50,10 +56,43 @@ func ChiselVoxel(x: int, y: int, z: int) -> void:
                 if TelemetryService.Instance != null:
                     TelemetryService.Instance.LogMisclick("Picross3D_Puzzle1")
 
+func AddVoxel(x: int, y: int, z: int) -> void:
+    if GameManager.Instance.CurrentMode != GameManager.GameMode.Picross3D:
+        return
+
+    if x >= 0 and x < GridSizeX and y >= 0 and y < GridSizeY and z >= 0 and z < GridSizeZ:
+        if _voxelGrid[x][y][z] == null:
+            var meshInstance = MeshInstance3D.new()
+            var boxMesh = BoxMesh.new()
+            meshInstance.mesh = boxMesh
+            meshInstance.position = Vector3(x - GridSizeX / 2.0, y - GridSizeY / 2.0, z - GridSizeZ / 2.0)
+            add_child(meshInstance)
+            _voxelGrid[x][y][z] = meshInstance
+            CheckPuzzleCompletion()
+
+func ApplyAlchemyColor(x: int, y: int, z: int, color: Color) -> void:
+    if GameManager.Instance.CurrentMode != GameManager.GameMode.Picross3D:
+        return
+
+    if GameManager.Instance.alchemy_discipline > 1:
+        if x >= 0 and x < GridSizeX and y >= 0 and y < GridSizeY and z >= 0 and z < GridSizeZ:
+            var voxel = _voxelGrid[x][y][z]
+            if voxel != null and voxel.is_inside_tree() and voxel is MeshInstance3D:
+                var material = StandardMaterial3D.new()
+                material.albedo_color = color
+                voxel.set_surface_override_material(0, material)
+
 func CheckPuzzleCompletion() -> void:
     # Placeholder completion check
     var isComplete: bool = false
     if isComplete:
         print("3D Puzzle Solved!")
+
+        # Simulate passing template to 2D canvas
+        var canvas = get_node_or_null("/root/PaintingCanvas2D")
+        if canvas != null and canvas.has_method("RegisterVoxelTemplate"):
+            var new_anchors: Array[Vector2] = [Vector2(50, 50), Vector2(150, 150)]
+            canvas.RegisterVoxelTemplate(new_anchors)
+
         if TelemetryService.Instance != null:
             TelemetryService.Instance.LogPuzzleCompletion("Picross3D_Puzzle1", 45.2, 2)
