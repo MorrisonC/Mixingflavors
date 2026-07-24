@@ -75,6 +75,7 @@ func RegisterVoxelTemplate(new_anchors: Array[Vector2]) -> void:
 func ValidateConnection(start: Vector2, end: Vector2) -> void:
     # Simple validation: check if the drawn line connects two hidden anchors within a tolerance.
     var tolerance: float = 20.0
+    var tolerance_squared: float = tolerance * tolerance
     var startMatched: bool = false
     var endMatched: bool = false
 
@@ -91,7 +92,7 @@ func ValidateConnection(start: Vector2, end: Vector2) -> void:
     for anchor in all_anchors:
         if start.distance_to(anchor) < tolerance:
             startMatched = true
-        if end.distance_to(anchor) < tolerance:
+        if end.distance_squared_to(anchor) < tolerance_squared:
             endMatched = true
 
     if startMatched and endMatched:
