@@ -1,0 +1,59 @@
+class_name VoxelGrid3D
+extends Node3D
+
+@export var GridSizeX: int = 5
+@export var GridSizeY: int = 5
+@export var GridSizeZ: int = 5
+
+var _voxelGrid: Array = []
+
+func _ready() -> void:
+    # Load a generic MeshInstance3D as a fallback if no prefab is assigned,
+    # but ideally you'd load the Kenney Voxel Kit scenes here.
+    GenerateGrid()
+
+func GenerateGrid() -> void:
+    _voxelGrid.resize(GridSizeX)
+    for x in range(GridSizeX):
+        _voxelGrid[x] = []
+        _voxelGrid[x].resize(GridSizeY)
+        for y in range(GridSizeY):
+            _voxelGrid[x][y] = []
+            _voxelGrid[x][y].resize(GridSizeZ)
+            for z in range(GridSizeZ):
+                var meshInstance = MeshInstance3D.new()
+                var boxMesh = BoxMesh.new()
+                meshInstance.mesh = boxMesh
+
+                # Spread out the grid based on size
+                meshInstance.position = Vector3(x - GridSizeX / 2.0, y - GridSizeY / 2.0, z - GridSizeZ / 2.0)
+
+                add_child(meshInstance)
+                _voxelGrid[x][y][z] = meshInstance
+
+func ChiselVoxel(x: int, y: int, z: int) -> void:
+    if GameManager.Instance.CurrentMode != GameManager.GameMode.Picross3D:
+        return
+
+    if x >= 0 and x < GridSizeX and y >= 0 and y < GridSizeY and z >= 0 and z < GridSizeZ:
+        var voxel = _voxelGrid[x][y][z]
+        if voxel != null and voxel.is_inside_tree():
+            # Logic to check if chiseling this block is a valid move based on clues.
+            var isCorrectMove: bool = true # Placeholder for actual deduction logic
+
+            if isCorrectMove:
+                voxel.queue_free()
+                _voxelGrid[x][y][z] = null
+                CheckPuzzleCompletion()
+            else:
+                print("Incorrect chisel!")
+                if TelemetryService.Instance != null:
+                    TelemetryService.Instance.LogMisclick("Picross3D_Puzzle1")
+
+func CheckPuzzleCompletion() -> void:
+    # Placeholder completion check
+    var isComplete: bool = false
+    if isComplete:
+        print("3D Puzzle Solved!")
+        if TelemetryService.Instance != null:
+            TelemetryService.Instance.LogPuzzleCompletion("Picross3D_Puzzle1", 45.2, 2)
