@@ -26,3 +26,6 @@ obj/
 Thumbs.db
 .vscode/
 .idea/
+godot
+Godot_v4.3-stable_linux.x86_64.zip
+*.log

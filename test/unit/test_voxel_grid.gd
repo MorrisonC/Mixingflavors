@@ -1,4 +1,4 @@
-extends "res://addons/gut/test.gd"
+extends GutTest
 
 var voxel_grid: VoxelGrid3D
 var game_manager: GameManager
