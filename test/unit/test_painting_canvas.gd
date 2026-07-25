@@ -1,4 +1,4 @@
-extends "res://addons/gut/test.gd"
+extends GutTest
 
 var painting_canvas: PaintingCanvas2D
 var game_manager: GameManager
