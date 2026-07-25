@@ -48,8 +48,13 @@ func ChiselVoxel(x: int, y: int, z: int) -> void:
             var isCorrectMove: bool = true # Placeholder for actual deduction logic
 
             if isCorrectMove:
-                voxel.queue_free()
                 _voxelGrid[x][y][z] = null
+
+                # Add juice: animate scale down before freeing
+                var tween = create_tween()
+                tween.tween_property(voxel, "scale", Vector3.ZERO, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+                tween.tween_callback(voxel.queue_free)
+
                 CheckPuzzleCompletion()
             else:
                 print("Incorrect chisel!")
