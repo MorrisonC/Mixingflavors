@@ -13,7 +13,7 @@ var VersionConversion = load("res://addons/gut/version_conversion.gd")
 @warning_ignore("unsafe_method_access")
 @warning_ignore("inferred_declaration")
 func _init() -> void:
-	if(VersionConversion.error_if_not_all_classes_imported()):
+	if(false):
 		quit(0)
 		return
 
