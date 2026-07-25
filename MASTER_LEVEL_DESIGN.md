@@ -1,166 +1,82 @@
 # Master Level Design & Architecture Document
 
-This document serves as our single source of truth for level maps, puzzle logic, item interaction dependencies, and navigation flow. It allows us to expand levels over time while keeping everything interconnected.
+This document serves as our single source of truth for level maps, puzzle logic, gameplay archetypes (GameModes), and navigation flow. It details the hybrid mechanics that drive progression.
 
 ---
 
 ## 1. World & Navigation Flow Architecture
 
 ### Global Progression Graph
-*Visualizes how Level 1 -> Level 2 -> Hub -> Sub-levels flow.*
+*Visualizes how the distinct GameModes connect and flow into one another.*
 
 ```mermaid
 graph TD
-    Start[Tutorial / Drop Zone] --> L1[Level 1: The Sunken Vault]
-    L1 --> Hub[Central Hub: The Oasis]
+    Start[LoneWolfNarrative: Introduction] --> L1[DetectiveCrimeScene: The Investigation]
+    L1 --> Hub[Central Hub: Narrative Crossroad]
 
-    Hub --> L2[Level 2: Overgrown Ruins]
-    Hub --> L3[Level 3: Shattered Archives]
+    Hub --> L2[MasqueradePainting: The Canvas]
+    Hub --> L3[Picross3D: Voxel Puzzle]
 
-    L2 -.->|Water Drained| Sub1[Sub-Level: The Aqueduct]
-    L3 -.->|Power Restored| Sub2[Sub-Level: Ancient Forge]
+    L2 -.->|Canvas Solved| Sub1[EscapeGauntlet: The Chase]
+    L3 -.->|Structure Restored| Sub2[TimeShiftPalimpsest: The Overlay]
 
-    Sub1 --> Boss1[Boss: Leviathan]
-    Sub2 --> Boss2[Boss: Automaton]
+    Sub1 --> Boss1[Climax: Integration Challenge]
+    Sub2 --> Boss2[Climax: Temporal Paradox]
 ```
 
-### Gating & Lock-and-Key Mechanics
-*Standardized key for soft gates vs. hard gates.*
+### RPG Stats as Cross-Mechanic Modifiers
+*How the core RPG stats defined in GameManager.gd interact with different game modes.*
 
-| Gate Type | Designation | Description | Example |
-| :--- | :--- | :--- | :--- |
-| **Soft Gate** | `[SG-Ability]` | Requires a specific movement or interaction ability to bypass, but player might sequence break. | Double Jump, Grapple Hook, Heavy Lifting |
-| **Soft Gate** | `[SG-Item]` | Requires a consumable or specific item to unlock/reveal a path. | Explosive Barrel, Torch |
-| **Hard Gate** | `[HG-Story]` | Path blocked until a specific narrative milestone or NPC dialogue is completed. | Guard refuses entry until you have the Royal Sigil |
-| **Hard Gate** | `[HG-Boss]` | Arena locks or path is impassable until a specific boss or mini-boss is defeated. | Boss arena doors lock upon entry |
-| **Hard Gate** | `[HG-Key]` | Requires a unique, non-consumable key item that is mandatory for progression. | Vault Keycard, Boss Room Key |
-
-### Pacing & Tension Profile
-*Framework to mark pacing beats for every level, ensuring a balanced emotional curve.*
-
-| Pacing Beat | Description | Target Tension Level (1-10) |
+| Stat Name | Relevant Mode(s) | Effect / Modifier |
 | :--- | :--- | :--- |
-| **[P-Explore]** | Low threat, focus on atmosphere, lore, and navigation. | 2-3 |
-| **[P-Puzzle]** | Mental engagement, moderate tension, safe environment. | 4-5 |
-| **[P-Combat]** | High threat, adrenaline spike, requires mechanical skill. | 7-8 |
-| **[P-Climax]** | Boss fight or major set-piece, maximum tension. | 9-10 |
-| **[P-Rest]** | Safe zone, save point, upgrading, reward collection. | 1 |
+| **Perception** | `MasqueradePainting` | If `perception_level > 1`, hidden anchors are revealed on the 2D canvas, making connections easier. |
+| **Health & Endurance** | `Picross3D` | If `health < 50` or `endurance < 50`, the 3D voxel states become corrupted (turning red), increasing puzzle difficulty. |
+| **Alchemy Discipline** | `Picross3D` | If `alchemy_discipline > 1`, the player can apply custom colors/materials to voxels, solving advanced puzzle constraints. |
+| **Lore Discipline** | `LoneWolfNarrative`, `DetectiveCrimeScene` | Unlocks additional dialogue options and contextual clues. |
 
 ---
 
-## 2. Level Design Master Template (Modular Structure)
+## 2. Gameplay Archetypes (GameModes)
 
-*The following is the standard modular template applied to an example level.*
+### Mode Overview
+The application currently integrates multiple distinct structural archetypes, driven by `GameManager.gd`:
 
-### `LEVEL_01_THE_SUNKEN_VAULT`
+1. **`LoneWolfNarrative` (Gamebook Narrative)**: Text/Node-based narrative progression.
+2. **`MasqueradePainting` (2D Painting)**: Driven by `PaintingCanvas2D.gd`. Players draw lines connecting hidden anchors. Success relies on deduction or high Perception.
+3. **`Picross3D` (3D Voxel Puzzles)**: Driven by `VoxelGrid3D.gd`. Players chisel away incorrect voxels and use Alchemy to color them. Solving this passes templates to the 2D canvas.
+4. **`DetectiveCrimeScene`**: Non-linear 3D/2D exploration for uncovering clues.
+5. **`EscapeGauntlet`**: Time-pressured Voxel puzzles under extreme tension.
+6. **`TimeShiftPalimpsest`**: 2D past/present overlays requiring temporal deduction.
 
-#### Level Metadata
-- **Level ID:** `LVL-001`
-- **Name:** The Sunken Vault
-- **Target Duration:** 15-20 minutes
-- **Pacing Tag:** `[P-Explore]` -> `[P-Puzzle]` -> `[P-Combat]` -> `[P-Climax]`
-- **Core Theme:** Forgotten wealth swallowed by the tides; water, stone, and decay.
-- **Primary Mechanic:** Water Level Manipulation (Drain/Fill).
+---
 
-#### Level Topology & Map Layout
+## 3. Core Gameplay Loops & Integration
 
-**Map Layout (Critical Path vs. Optional)**
-```mermaid
-graph TD
-    Entry[Entrance / Drop In] --> Z1[Zone 1: Flooded Antechamber]
+### The Cross-Mechanic Puzzle Matrix
 
-    Z1 -->|Critical Path| Z2[Zone 2: Pump Control Room]
-    Z1 -.->|Optional [SG-Item: Torch]| S1[Secret 1: Hidden Stash]
-
-    Z2 -->|Drain Water| Z3[Zone 3: Lower Courtyard]
-    Z3 -.->|Optional [SG-Ability: Grapple]| S2[Secret 2: High Balcony]
-
-    Z3 --> Z4[Zone 4: Vault Doors]
-    Z4 --> Boss[Boss Arena: Vault Guardian]
-    Boss --> Exit[Exit to Hub]
-
-    %% Shortcuts
-    Z3 -->|Unlock Door (One-way)| Z1
-```
-
-**Room/Zone Breakdown Table**
-| Zone ID | Name | Purpose | Sightlines / Framing | Chokepoints |
+| Interaction | Source Mode | Target Mode | Required Stat/Condition | Result / Reward |
 | :--- | :--- | :--- | :--- | :--- |
-| **Z1** | Flooded Antechamber | Introduce water theme, establish barrier (sunken door). | Framing the massive locked vault door below the water surface. | N/A |
-| **Z2** | Pump Control Room | Puzzle room (Water manipulation). | Control console overlooks Z1 through a glass window. | Narrow hallway leading in. |
-| **Z3** | Lower Courtyard | Combat arena, previously flooded. | Wide open space, rubble provides cover. | Entry stairs are a bottleneck. |
-| **Z4** | Vault Doors | Climax anticipation, final prep. | Dominant, imposing vault door with glowing locks. | Heavy blast doors seal behind player. |
+| **Solve Voxel Template** | `Picross3D` | `MasqueradePainting` | `alchemy_discipline > 1` | Correctly chiseling and coloring a 3D structure registers new hidden anchors on the 2D painting canvas. |
+| **Reveal Canvas Anchors** | `LoneWolfNarrative` | `MasqueradePainting` | `perception_level > 1` | Making the right narrative choices boosts Perception, revealing hidden dynamic anchors (e.g., pendulums) on the canvas. |
+| **Survive Corruption** | `EscapeGauntlet` | `Picross3D` | `health > 50`, `endurance > 50` | Maintaining high health/endurance prevents voxels from corrupting during time-pressured chiseling sequences. |
 
-#### Navigation & Flow
-- **Entry/Exit Vectors:** Player drops in from a collapsed ceiling (one-way entry). Exit is an elevator up to the Hub.
-- **Shortcuts:** A reinforced door in Z3 can be unbolted from the inside to lead back to Z1, creating a loop.
-- **Breadcrumbs & Signposting:**
-  - *Lighting:* Blue bioluminescent moss highlights critical ledges.
-  - *Landmarks:* A giant, shattered statue in Z1 serves as a cardinal reference point.
-  - *Audio Queues:* The rushing sound of the pump mechanism guides the player to Z2.
+### Kishōtenketsu Design Sequence (Example: 3D to 2D Pipeline)
+- **Ki (Introduction):** Player starts in `LoneWolfNarrative`, learning about a hidden sigil.
+- **Shō (Development):** The game shifts to `Picross3D`. The player chisels a 3D voxel block based on clues.
+- **Ten (Twist/Complication):** The player's health drops, corrupting the voxels. They must use their `Alchemy` stat to recolor specific blocks to stabilize the structure.
+- **Ketsu (Conclusion):** The stabilized 3D voxel structure is passed to the `MasqueradePainting` mode as a set of hidden 2D anchors. The player connects these points to unlock the next narrative chapter.
 
 ---
 
-## 3. Puzzle & Mechanic Integration System
+## 4. Expansion Roadmap & Status
 
-### Puzzle Matrix
+*Tracking the implementation of the structural archetypes.*
 
-| Puzzle ID | Location | Core Puzzle Concept | Required Item/Ability | Reward / Gate Cleared |
-| :--- | :--- | :--- | :--- | :--- |
-| `PZL-01-A` | Z2 (Pump Room) | Restore power to the water pump by aligning gears. | Heavy Lifting (Default) | Lowers water level in Z1, unlocking Z3. |
-| `PZL-01-B` | Z4 (Vault Doors) | Reflect light beam into the dual lock receptacles. | Mirror Shield | Unlocks `[HG-Boss]` arena. |
-
-### Kishōtenketsu Design Sequence (Example: Water Manipulation)
-- **Ki (Introduction):** Player enters Z1 and sees the primary exit submerged underwater. They must swim to a side path (Z2).
-- **Shō (Development):** In Z2, player learns to interact with a crank to lower a small pool's water level, revealing a key.
-- **Ten (Twist/Complication):** The main pump in Z2 is broken. The player must find replacement gears and align them while fending off minor enemies.
-- **Ketsu (Conclusion):** The player uses the repaired pump to completely drain Z1. In the subsequent boss fight (Z4), the boss dynamically floods and drains the arena, forcing the player to use their understanding of the water levels to survive.
-
----
-
-## 4. Item & Environment Interaction Matrix
-
-### Item Dependency Map
-```mermaid
-graph LR
-    Item_Torch(Item: Torch) -->|Burns| Interact_Vines(Prop: Dry Vines)
-    Item_Torch -->|Ignites| Interact_Barrel(Prop: Explosive Barrel)
-
-    Item_Gear(Key Item: Rusted Gear) -->|Repairs| Interact_Pump(Prop: Water Pump)
-
-    Interact_Barrel -->|Destroys| Block_Rubble(Obstacle: Weak Wall)
-```
-
-### Inventory/Key Item Lifecycle
-
-| Item Name | Found In | Used In | State | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| **Rusted Gear** | Z1 (Bottom of pool) | Z2 (Pump Console) | Consumed | Required to fix the water pump. |
-| **Vault Keycard** | Boss Drop | Exit Elevator | Consumed | Unlocks the path to the Hub. |
-| **Mirror Shield** | Z3 (Chest) | Z4, Future Levels | Persists | Used to reflect light beams and block attacks. |
-
-### Systemic Interactions
-- **Water & Electricity:** If the player uses a Lightning spell in flooded areas, it creates an AoE shock hazard that damages both enemies and the player.
-- **Explosives & Structures:** Explosive Barrels can break cracked stone walls, but their blast radius is reduced significantly underwater.
-
----
-
-## 5. Cross-Level Dependency & Expansion Roadmap
-
-### Level Interconnection Matrix
-
-| Triggering Action | Source Level | Affected Target Level | Result / Consequence |
+| GameMode ID | Description | Status | Core Script Dependency |
 | :--- | :--- | :--- | :--- |
-| Drain the Water Pump | Level 1: Sunken Vault | Hub: The Oasis | A dry riverbed in the Hub fills with water, allowing a boat to be used. |
-| Restore the Core | Level 3: Shattered Archives | Level 2: Overgrown Ruins | Automated defenses in the Ruins reactivate, changing enemy spawns. |
-
-### Roadmap & Milestone Tracker
-
-*Status Tags:* `[Draft]`, `[Greybox]`, `[Blockout]`, `[Playtested]`, `[Final]`
-
-| Level ID | Level Name | Status | Assigned To | Notes |
-| :--- | :--- | :--- | :--- | :--- |
-| `LVL-000` | Tutorial | `[Final]` | @LevelDesignTeam | Needs minor lighting tweaks. |
-| `LVL-001` | The Sunken Vault | `[Playtested]` | @LevelDesignTeam | Adjust pacing in Z3 combat encounter. |
-| `LVL-002` | Overgrown Ruins | `[Blockout]` | @LevelDesignTeam | Geometry done, waiting on art assets. |
-| `LVL-003` | Shattered Archives| `[Draft]` | @LevelDesignTeam | Finalizing puzzle concepts. |
+| `LoneWolfNarrative` | Node-based text narrative | `[Playtested]` | `GameManager.gd` |
+| `MasqueradePainting`| 2D anchor connection canvas | `[Playtested]` | `PaintingCanvas2D.gd` |
+| `Picross3D` | 3D chiseling and coloring | `[Playtested]` | `VoxelGrid3D.gd` |
+| `DetectiveCrimeScene`| Non-linear exploration | `[Draft]` | TBD |
+| `EscapeGauntlet` | Timed pressure sequences | `[Blockout]` | TBD |
+| `TimeShiftPalimpsest`| Temporal 2D overlay puzzles | `[Draft]` | TBD |
