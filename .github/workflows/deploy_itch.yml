@@ -1,0 +1,123 @@
+name: Deploy to itch.io
+
+on:
+  push:
+    tags:
+    - v*
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Download Godot
+      run: |
+        # Downloading Godot 4 (Standard version)
+        # Assuming 4.3 as placeholder for the mentioned 4.7 which isn't released yet
+        wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+        unzip Godot_v4.3-stable_linux.x86_64.zip
+        mv Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+        chmod +x /usr/local/bin/godot
+
+    - name: Download Export Templates
+      run: |
+        wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
+        mkdir -p ~/.local/share/godot/export_templates/4.3.stable
+        unzip Godot_v4.3-stable_export_templates.tpz -d ~/.local/share/godot/export_templates/4.3.stable/
+        mv ~/.local/share/godot/export_templates/4.3.stable/templates/* ~/.local/share/godot/export_templates/4.3.stable/
+
+    - name: Create export_presets.cfg
+      run: |
+        cat << 'PRESET_EOF' > export_presets.cfg
+        [preset.0]
+        name="Web"
+        platform="Web"
+        runnable=true
+        dedicated_server=false
+        custom_features=""
+        export_filter="all_resources"
+        include_filter=""
+        exclude_filter=""
+        export_path="build/web/index.html"
+        encryption_include_filters=""
+        encryption_exclude_filters=""
+        encrypt_pck=false
+        encrypt_directory=false
+
+        [preset.0.options]
+        custom_template/debug=""
+        custom_template/release=""
+        variant/export_type=0
+        vram_texture_compression/for_desktop=true
+        vram_texture_compression/for_mobile=true
+        html/export_icon=true
+        html/custom_html_shell=""
+        html/head_include=""
+        html/canvas_resize_policy=2
+        html/focus_canvas_on_start=true
+        html/experimental_virtual_keyboard=false
+        progressive_web_app/enabled=false
+        progressive_web_app/offline_page=""
+        progressive_web_app/display=1
+        progressive_web_app/orientation=0
+        progressive_web_app/icon_144x144=""
+        progressive_web_app/icon_180x180=""
+        progressive_web_app/icon_512x512=""
+        progressive_web_app/background_color=Color(0, 0, 0, 1)
+
+        [preset.1]
+        name="Android"
+        platform="Android"
+        runnable=true
+        dedicated_server=false
+        custom_features=""
+        export_filter="all_resources"
+        include_filter=""
+        exclude_filter=""
+        export_path="build/android/HybridTacticalPuzzleRPG.apk"
+        encryption_include_filters=""
+        encryption_exclude_filters=""
+        encrypt_pck=false
+        encrypt_directory=false
+
+        [preset.1.options]
+        custom_template/debug=""
+        custom_template/release=""
+        architectures/armeabi-v7a=true
+        architectures/arm64-v8a=true
+        architectures/x86=false
+        architectures/x86_64=true
+        keystore/debug=""
+        keystore/debug_user=""
+        keystore/debug_password=""
+        keystore/release=""
+        keystore/release_user=""
+        keystore/release_password=""
+        PRESET_EOF
+
+    - name: Build Web Export
+      run: |
+        mkdir -p build/web
+        godot --headless --export-release "Web" build/web/index.html
+
+    - name: Inject COI Service Worker (for SharedArrayBuffer)
+      run: |
+        # Fetch the coi-serviceworker script
+        wget https://raw.githubusercontent.com/gzuidhof/coi-serviceworker/master/coi-serviceworker.js -O build/web/coi-serviceworker.js
+
+        # Inject the script into the exported HTML file
+        sed -i 's|</head>|<script src="coi-serviceworker.js"></script></head>|' build/web/index.html
+
+    - name: Setup Butler
+      uses: remarkablegames/setup-butler@v2
+    - name: Push Build to itch.io
+      run: butler push ./build/web pionee/pionee:html
+      env:
+        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
