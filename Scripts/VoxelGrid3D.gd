@@ -74,7 +74,14 @@ func AddVoxel(x: int, y: int, z: int) -> void:
             var boxMesh = BoxMesh.new()
             meshInstance.mesh = boxMesh
             meshInstance.position = Vector3(x - GridSizeX / 2.0, y - GridSizeY / 2.0, z - GridSizeZ / 2.0)
+
+            # Add visual juice: scale up from zero
+            meshInstance.scale = Vector3.ZERO
             add_child(meshInstance)
+
+            var tween = create_tween()
+            tween.tween_property(meshInstance, "scale", Vector3.ONE, 0.2).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+
             _voxelGrid[x][y][z] = meshInstance
             CheckPuzzleCompletion()
 
