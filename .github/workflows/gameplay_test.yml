@@ -45,7 +45,6 @@ jobs:
       - name: Create Pull Request with Patches
         uses: peter-evans/create-pull-request@v6
         with:
-          base: main
           title: "Automated Game Balance Patches"
           body: "This PR contains automatically generated balance patches based on headless telemetry runs."
           branch: "auto-balance-patches"
