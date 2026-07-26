@@ -1,0 +1,52 @@
+name: Gameplay Telemetry & Balance Test
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run nightly
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  telemetry-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Install Godot
+        run: |
+          wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip Godot_v4.3-stable_linux.x86_64.zip
+          sudo mv Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+
+      - name: Import Resources
+        run: |
+          # First run to import all assets properly
+          godot --headless --editor --quit
+
+      - name: Run Telemetry Bot Test
+        run: |
+          godot --headless --script res://tools/telemetry_runner.gd
+
+      - name: Analyze & Auto-Patch Balance
+        run: |
+          godot --headless --script res://tools/analyze_telemetry.gd
+
+      - name: Upload Telemetry Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: telemetry_output
+          path: ~/.local/share/godot/app_userdata/*/telemetry_output.json
+
+      - name: Create Pull Request with Patches
+        uses: peter-evans/create-pull-request@v6
+        with:
+          base: main
+          title: "Automated Game Balance Patches"
+          body: "This PR contains automatically generated balance patches based on headless telemetry runs."
+          branch: "auto-balance-patches"
+          commit-message: "Apply auto balance patches from telemetry analysis"
