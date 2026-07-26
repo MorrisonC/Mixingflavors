@@ -102,9 +102,9 @@ jobs:
           architectures/arm64-v8a=true
           architectures/x86=false
           architectures/x86_64=true
-          keystore/debug="debug.keystore"
-          keystore/debug_user="androiddebugkey"
-          keystore/debug_password="android"
+          keystore/debug=""
+          keystore/debug_user=""
+          keystore/debug_password=""
           keystore/release=""
           keystore/release_user=""
           keystore/release_password=""
@@ -116,14 +116,6 @@ jobs:
           godot --headless --editor --quit
           godot --headless --export-release "Web" build/web/index.html
 
-      - name: Generate Debug Keystore
-        run: |
-          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
-
-      - name: Build Android Export
-        run: |
-          mkdir -p build/android
-          godot --headless --export-release "Android" build/android/HybridTacticalPuzzleRPG.apk
 
       - name: Inject COI Service Worker (for SharedArrayBuffer)
         run: |
@@ -133,11 +125,6 @@ jobs:
           # Inject the script into the exported HTML file
           sed -i 's|</head>|<script src="coi-serviceworker.js"></script></head>|' build/web/index.html
 
-      - name: Upload Android APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Android-APK
-          path: build/android/HybridTacticalPuzzleRPG.apk
 
       - name: Upload Web Artifact
         uses: actions/upload-pages-artifact@v3
