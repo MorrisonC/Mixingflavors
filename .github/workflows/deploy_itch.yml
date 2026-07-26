@@ -56,7 +56,7 @@ jobs:
         custom_template/release=""
         variant/export_type=0
         vram_texture_compression/for_desktop=true
-        vram_texture_compression/for_mobile=true
+        vram_texture_compression/for_mobile=false
         html/export_icon=true
         html/custom_html_shell=""
         html/head_include=""
@@ -94,17 +94,22 @@ jobs:
         architectures/arm64-v8a=true
         architectures/x86=false
         architectures/x86_64=true
-        keystore/debug=""
-        keystore/debug_user=""
-        keystore/debug_password=""
+        keystore/debug="debug.keystore"
+        keystore/debug_user="androiddebugkey"
+        keystore/debug_password="android"
         keystore/release=""
         keystore/release_user=""
         keystore/release_password=""
         PRESET_EOF
 
+    - name: Generate Debug Keystore
+      run: |
+        keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
+
     - name: Build Web Export
       run: |
         mkdir -p build/web
+        godot --headless --editor --quit
         godot --headless --export-release "Web" build/web/index.html
 
     - name: Inject COI Service Worker (for SharedArrayBuffer)
