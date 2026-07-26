@@ -2,12 +2,24 @@ class_name VoxelGrid3D
 extends Node3D
 
 signal voxel_chiseled(x: int, y: int, z: int)
+signal combo_updated(new_combo: int)
+signal combo_broken()
 
 @export var GridSizeX: int = 5
 @export var GridSizeY: int = 5
 @export var GridSizeZ: int = 5
+@export var combo_timeout: float = 3.0
 
 var _voxelGrid: Array = []
+var current_combo: int = 0
+var combo_timer: float = 0.0
+
+func _process(delta: float) -> void:
+    if current_combo > 0:
+        combo_timer -= delta
+        if combo_timer <= 0.0:
+            current_combo = 0
+            combo_broken.emit()
 
 func _ready() -> void:
     # Load a generic MeshInstance3D as a fallback if no prefab is assigned,
@@ -39,7 +51,7 @@ func GenerateGrid() -> void:
                 add_child(meshInstance)
                 _voxelGrid[x][y][z] = meshInstance
 
-func ChiselVoxel(x: int, y: int, z: int) -> void:
+func ChiselVoxel(x: int, y: int, z: int, is_player_action: bool = true) -> void:
     if GameManager.Instance.CurrentMode != GameManager.GameMode.Picross3D:
         return
 
@@ -52,6 +64,14 @@ func ChiselVoxel(x: int, y: int, z: int) -> void:
             if isCorrectMove:
                 _voxelGrid[x][y][z] = null
 
+                if is_player_action:
+                    current_combo += 1
+                    combo_timer = combo_timeout
+                    combo_updated.emit(current_combo)
+
+                    if current_combo % 5 == 0 and GameManager.Instance != null:
+                        GameManager.Instance.health = min(GameManager.Instance.health + 5, 100)
+
                 # Add juice: animate scale down before freeing
                 var tween = create_tween()
                 tween.tween_property(voxel, "scale", Vector3.ZERO, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
@@ -60,6 +80,9 @@ func ChiselVoxel(x: int, y: int, z: int) -> void:
                 CheckPuzzleCompletion()
                 voxel_chiseled.emit(x, y, z)
             else:
+                if is_player_action:
+                    current_combo = 0
+                    combo_broken.emit()
                 print("Incorrect chisel!")
                 if TelemetryService.Instance != null:
                     TelemetryService.Instance.LogMisclick("Picross3D_Puzzle1")

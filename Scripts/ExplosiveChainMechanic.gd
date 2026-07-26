@@ -33,6 +33,11 @@ func _trigger_explosion(origin: Vector3i) -> void:
             GameManager.Instance.health -= 10
             print("Explosive chain mechanic triggered! Health reduced to ", GameManager.Instance.health)
 
+            # Since taking hazard damage should break any combo logic from the player's intentional chiseling:
+            if target_grid != null:
+                target_grid.current_combo = 0
+                target_grid.combo_broken.emit()
+
         # Remove it from explosive_positions so it doesn't trigger again
         if current_pos in explosive_positions:
             explosive_positions.erase(current_pos)
@@ -59,7 +64,8 @@ func _trigger_explosion(origin: Vector3i) -> void:
                             if neighbor_pos in explosive_positions and not neighbor_pos in _voxels_to_explode:
                                 _voxels_to_explode.append(neighbor_pos)
 
-                            # Perform the chisel
-                            target_grid.ChiselVoxel(nx, ny, nz)
+                            # Perform the chisel but flag it as NOT a player action
+                            # to avoid combo increments from explosions
+                            target_grid.ChiselVoxel(nx, ny, nz, false)
 
     _is_processing_explosion = false
