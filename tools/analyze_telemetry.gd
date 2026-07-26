@@ -98,6 +98,13 @@ func update_roadmap(findings: Array):
     content += "4. Use `git diff` to verify the automated parameter adjustments.\n"
     content += "5. Commit the changes and open a pull request for the design team to review.\n\n"
 
+    content += "### Scheduled Automated Telemetry Runs\n"
+    content += "This repository is equipped with a GitHub Actions workflow (`.github/workflows/scheduled_telemetry.yml`) that periodically runs the telemetry suite headlessly.\n"
+    content += "If you are an agent responding to an automated issue triggered by this job, you should:\n"
+    content += "- Review the new sections appended to this file under **Telemetry Run Analytics**.\n"
+    content += "- Verify that any patched scripts (e.g., `Scripts/GameManager.gd` or `Scripts/VoxelGrid3D.gd`) correctly reflect the findings and do not break core logic.\n"
+    content += "- Commit any modified files directly or submit them as a PR depending on your directives.\n\n"
+
     content += "## Telemetry Run Analytics: " + date_string + " " + time_string + "\n\n"
 
     var issues_found = false
