@@ -12,9 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Install Godot
         run: |
@@ -42,8 +43,9 @@ jobs:
           path: ~/.local/share/godot/app_userdata/*/telemetry_output.json
 
       - name: Create Pull Request with Patches
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
+          base: main
           title: "Automated Game Balance Patches"
           body: "This PR contains automatically generated balance patches based on headless telemetry runs."
           branch: "auto-balance-patches"
