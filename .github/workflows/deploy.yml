@@ -116,10 +116,6 @@ jobs:
           godot --headless --editor --quit
           godot --headless --export-release "Web" build/web/index.html
 
-      - name: Generate Debug Keystore
-        run: |
-          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
-
       - name: Build Android Export
         run: |
           mkdir -p build/android
