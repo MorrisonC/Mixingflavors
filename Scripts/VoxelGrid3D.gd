@@ -1,6 +1,8 @@
 class_name VoxelGrid3D
 extends Node3D
 
+signal voxel_chiseled(x: int, y: int, z: int)
+
 @export var GridSizeX: int = 5
 @export var GridSizeY: int = 5
 @export var GridSizeZ: int = 5
@@ -56,6 +58,7 @@ func ChiselVoxel(x: int, y: int, z: int) -> void:
                 tween.tween_callback(voxel.queue_free)
 
                 CheckPuzzleCompletion()
+                voxel_chiseled.emit(x, y, z)
             else:
                 print("Incorrect chisel!")
                 if TelemetryService.Instance != null:
