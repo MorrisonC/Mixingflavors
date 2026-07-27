@@ -19,3 +19,10 @@
 - **Creator**: OpenGameArt Community / Q009
 - **License**: CC0 1.0 Universal
 - **Use Case**: Voxel destruction and UI click audio feedback.
+
+## Custom Procedural Assets
+- **Asset Name**: Procedural Stylized Background & Cube Texture
+- **Source**: Dynamically generated via FastNoiseLite in Godot 4.
+- **Creator**: Jules (Agent)
+- **License**: CC0 1.0 Universal (Public Domain)
+- **Use Case**: Abstract earthy environment background and stylized vibrant cube textures.
