@@ -1,0 +1,10 @@
+--- .github/workflows/gameplay_test.yml
++++ .github/workflows/gameplay_test.yml
+@@ -47,6 +47,7 @@
+           path: ~/.local/share/godot/app_userdata/*/telemetry_output.json
+
+       - name: Create Pull Request with Patches
++        if: github.event_name != 'pull_request'
+         uses: peter-evans/create-pull-request@v7
+         with:
+           token: ${{ secrets.GITHUB_TOKEN }}

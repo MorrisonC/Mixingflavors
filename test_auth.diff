@@ -1,0 +1,9 @@
+--- .github/workflows/scheduled_telemetry.yml
++++ .github/workflows/scheduled_telemetry.yml
+@@ -35,6 +35,7 @@
+       - name: Commit and Push Changes
+         run: |
+           git config --global user.name "github-actions[bot]"
+           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+           git add BALANCE_ROADMAP.md Scripts/GameManager.gd Scripts/VoxelGrid3D.gd tools/analyze_telemetry.gd || true
+           # Use git status to check if there are changes to commit

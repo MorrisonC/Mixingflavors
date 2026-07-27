@@ -47,6 +47,7 @@ jobs:
           path: ~/.local/share/godot/app_userdata/*/telemetry_output.json
 
       - name: Create Pull Request with Patches
+        if: github.event_name != 'pull_request'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
