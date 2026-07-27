@@ -1,4 +1,5 @@
 extends Node3D
+const GameManagerClass = preload("res://scripts/GameManager.gd")
 
 var grid_size: Vector3i = Vector3i(3, 3, 3)
 var voxel_nodes: Dictionary = {}
@@ -7,7 +8,7 @@ func _ready() -> void:
 	_build_voxel_grid()
 
 func _build_voxel_grid() -> void:
-	var is_corrupted = GameManager.get_stat("health") < 50 or GameManager.get_stat("endurance") < 50
+	var is_corrupted = get_node("/root/GameManager").get_stat("health") < 50 or get_node("/root/GameManager").get_stat("endurance") < 50
 
 	for x in range(grid_size.x):
 		for y in range(grid_size.y):
@@ -30,7 +31,7 @@ func _build_voxel_grid() -> void:
 				voxel_nodes[Vector3i(x, y, z)] = mesh_instance
 
 func apply_alchemy_color(pos: Vector3i, color: Color) -> void:
-	if GameManager.get_stat("alchemy_discipline") > 1:
+	if get_node("/root/GameManager").get_stat("alchemy_discipline") > 1:
 		if voxel_nodes.has(pos):
 			var mat: StandardMaterial3D = voxel_nodes[pos].material_override
 			mat.albedo_color = color
@@ -42,4 +43,4 @@ func _on_solve_puzzle_pressed() -> void:
 		"voxel_template": [Vector2(100, 100), Vector2(200, 200)],
 		"anchors": [Vector2(150, 300)]
 	}
-	GameManager.switch_mode(GameManager.GameMode.MASQUERADE_PAINTING, payload)
+	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MASQUERADE_PAINTING, payload)

@@ -1,4 +1,5 @@
 extends Control
+const GameManagerClass = preload("res://scripts/GameManager.gd")
 
 var line_points: PackedVector2Array = []
 var base_anchors: Array = [Vector2(200, 200), Vector2(400, 200), Vector2(300, 400)]
@@ -7,7 +8,7 @@ var hidden_anchors: Array = [Vector2(250, 150), Vector2(350, 350)] # Revealed by
 @onready var info_label: Label = $InfoLabel
 
 func _ready() -> void:
-	var perception = GameManager.get_stat("perception")
+	var perception = get_node("/root/GameManager").get_stat("perception")
 	info_label.text = "Masquerade Painting Mode\nPerception Level: %d" % perception
 
 	if perception > 1:
@@ -19,7 +20,7 @@ func _draw() -> void:
 		draw_circle(pt, 10.0, Color.BLUE)
 
 	# Draw Hidden Anchors if Perception > 1
-	if GameManager.get_stat("perception") > 1:
+	if get_node("/root/GameManager").get_stat("perception") > 1:
 		for h_pt in hidden_anchors:
 			draw_circle(h_pt, 12.0, Color.GOLD)
 
@@ -33,4 +34,4 @@ func _gui_input(event: InputEvent) -> void:
 		queue_redraw()
 
 func _on_back_button_pressed() -> void:
-	GameManager.switch_mode(GameManager.GameMode.LONE_WOLF_NARRATIVE)
+	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.LONE_WOLF_NARRATIVE)

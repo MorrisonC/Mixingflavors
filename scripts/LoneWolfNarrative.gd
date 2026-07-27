@@ -1,4 +1,5 @@
 extends Control
+const GameManagerClass = preload("res://scripts/GameManager.gd")
 
 @onready var narrative_text: RichTextLabel = $VBoxContainer/NarrativeText
 @onready var stats_display: Label = $VBoxContainer/StatsLabel
@@ -10,10 +11,10 @@ func _ready() -> void:
 
 func _update_stats_ui() -> void:
 	stats_display.text = "Perception: %d | Lore: %d | Health: %d | Alchemy: %d" % [
-		GameManager.get_stat("perception"),
-		GameManager.get_stat("lore_discipline"),
-		GameManager.get_stat("health"),
-		GameManager.get_stat("alchemy_discipline")
+		get_node("/root/GameManager").get_stat("perception"),
+		get_node("/root/GameManager").get_stat("lore_discipline"),
+		get_node("/root/GameManager").get_stat("health"),
+		get_node("/root/GameManager").get_stat("alchemy_discipline")
 	]
 
 func _render_intro_story() -> void:
@@ -24,12 +25,12 @@ func _render_intro_story() -> void:
 	_clear_choices()
 
 	_add_choice("Investigate 3D Voxel Sigil (Enter Picross3D)", func():
-		GameManager.switch_mode(GameManager.GameMode.PICROSS_3D)
+		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PICROSS_3D)
 	)
 
-	if GameManager.get_stat("perception") > 1:
+	if get_node("/root/GameManager").get_stat("perception") > 1:
 		_add_choice("[Perception] Inspect Canvas Patterns (Enter Masquerade Painting)", func():
-			GameManager.switch_mode(GameManager.GameMode.MASQUERADE_PAINTING)
+			get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MASQUERADE_PAINTING)
 		)
 
 func _add_choice(button_text: String, callback: Callable) -> void:
