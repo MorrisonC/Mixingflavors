@@ -20,6 +20,10 @@ var voxel_data: Dictionary = {}
 var mistakes: int = 0
 var combo: int = 0
 
+@export var enable_explosive_voxels: bool = true
+@export var explosive_chance: float = 0.1
+@export var explosive_radius: int = 1
+
 signal puzzle_solved
 signal mistake_made(total_mistakes)
 signal combo_updated(current_combo)
@@ -45,9 +49,16 @@ func _generate_solution() -> void:
 			for z in range(grid_size.z):
 				var pos = Vector3i(x, y, z)
 				var is_filled = randf() > 0.4
+				var target_state = VoxelTargetState.FILLED if is_filled else VoxelTargetState.EMPTY
+				var is_explosive = false
+
+				if enable_explosive_voxels and target_state == VoxelTargetState.EMPTY:
+					is_explosive = randf() < explosive_chance
+
 				voxel_data[pos] = {
-					"target": VoxelTargetState.FILLED if is_filled else VoxelTargetState.EMPTY,
-					"player": VoxelPlayerState.HIDDEN
+					"target": target_state,
+					"player": VoxelPlayerState.HIDDEN,
+					"is_explosive": is_explosive
 				}
 
 func _build_voxel_grid() -> void:
@@ -75,7 +86,9 @@ func _build_voxel_grid() -> void:
 				static_body.add_child(mesh_instance)
 
 				var mat = StandardMaterial3D.new()
-				if is_corrupted:
+				if voxel_data[pos].get("is_explosive", false):
+					mat.albedo_color = Color.ORANGE
+				elif is_corrupted:
 					mat.albedo_color = Color.RED
 				else:
 					mat.albedo_color = Color.WHITE
@@ -182,6 +195,17 @@ func _chisel_voxel(pos: Vector3i, is_player_action: bool = true) -> void:
 		if is_player_action:
 			combo += 1
 			emit_signal("combo_updated", combo)
+
+		if data.get("is_explosive", false):
+			# Trigger explosion on adjacent voxels
+			for dx in range(-explosive_radius, explosive_radius + 1):
+				for dy in range(-explosive_radius, explosive_radius + 1):
+					for dz in range(-explosive_radius, explosive_radius + 1):
+						var adj_pos = pos + Vector3i(dx, dy, dz)
+						if adj_pos != pos and voxel_data.has(adj_pos):
+							var adj_data = voxel_data[adj_pos]
+							if adj_data["player"] == VoxelPlayerState.HIDDEN and adj_data["target"] == VoxelTargetState.EMPTY:
+								_chisel_voxel(adj_pos, false)
 
 		_update_visibility()
 		_check_win_condition()

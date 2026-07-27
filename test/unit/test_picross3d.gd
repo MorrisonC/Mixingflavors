@@ -33,6 +33,7 @@ func test_calculate_line_hint_split():
 	# Need a grid size of 3 for this
 	picross.grid_size = Vector3i(3,3,3)
 	picross._generate_solution() # regen for size
+	picross._build_voxel_grid()
 	picross.voxel_data[Vector3i(0,0,0)]["target"] = picross.VoxelTargetState.FILLED
 	picross.voxel_data[Vector3i(1,0,0)]["target"] = picross.VoxelTargetState.EMPTY
 	picross.voxel_data[Vector3i(2,0,0)]["target"] = picross.VoxelTargetState.FILLED
@@ -76,3 +77,42 @@ func test_combo_ignores_non_player_actions():
 	picross._chisel_voxel(Vector3i(0,0,0), false)
 	assert_eq(picross.combo, 0, "Combo should not increment if not a player action")
 	assert_signal_not_emitted(picross, "combo_updated")
+
+func test_explosive_voxel_chain():
+	# Setup a 3x3x3 grid for clear adjacent testing
+	picross.grid_size = Vector3i(3,3,3)
+	picross.enable_explosive_voxels = true
+	picross.explosive_radius = 1
+	picross._generate_solution() # Force regenerate to apply size
+	picross._build_voxel_grid()
+
+	# Manually setup a scenario:
+	# Center voxel is explosive and EMPTY
+	picross.voxel_data[Vector3i(1,1,1)]["target"] = picross.VoxelTargetState.EMPTY
+	picross.voxel_data[Vector3i(1,1,1)]["is_explosive"] = true
+	picross.voxel_data[Vector3i(1,1,1)]["player"] = picross.VoxelPlayerState.HIDDEN
+
+	# Adjacent voxel is normal and EMPTY
+	picross.voxel_data[Vector3i(1,1,2)]["target"] = picross.VoxelTargetState.EMPTY
+	picross.voxel_data[Vector3i(1,1,2)]["is_explosive"] = false
+	picross.voxel_data[Vector3i(1,1,2)]["player"] = picross.VoxelPlayerState.HIDDEN
+
+	# Adjacent voxel is normal and FILLED
+	picross.voxel_data[Vector3i(1,2,1)]["target"] = picross.VoxelTargetState.FILLED
+	picross.voxel_data[Vector3i(1,2,1)]["is_explosive"] = false
+	picross.voxel_data[Vector3i(1,2,1)]["player"] = picross.VoxelPlayerState.HIDDEN
+
+	watch_signals(picross)
+	picross._chisel_voxel(Vector3i(1,1,1), true)
+
+	# Center should be removed
+	assert_eq(picross.voxel_data[Vector3i(1,1,1)]["player"], picross.VoxelPlayerState.REMOVED, "Explosive voxel should be removed")
+
+	# Adjacent EMPTY should be removed automatically
+	assert_eq(picross.voxel_data[Vector3i(1,1,2)]["player"], picross.VoxelPlayerState.REMOVED, "Adjacent empty voxel should be removed by explosion")
+
+	# Adjacent FILLED should NOT be removed automatically (chain only hits empty targets)
+	assert_eq(picross.voxel_data[Vector3i(1,2,1)]["player"], picross.VoxelPlayerState.HIDDEN, "Adjacent filled voxel should NOT be removed by explosion")
+
+	# Combo should only increment by 1 (the initial player action)
+	assert_eq(picross.combo, 1, "Combo should only increment once for the player action, not for the automated chain")
