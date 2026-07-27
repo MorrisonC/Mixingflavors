@@ -199,7 +199,12 @@ func _chisel_voxel(pos: Vector3i, is_player_action: bool = true) -> void:
 		# Change material to error state visually
 		var mat = StandardMaterial3D.new()
 		mat.albedo_color = Color.BLACK
-		voxel_nodes[pos]["mesh"].material_override = mat
+		var mesh_instance = voxel_nodes[pos]["mesh"]
+		mesh_instance.material_override = mat
+
+		var tween = create_tween()
+		tween.tween_property(mesh_instance, "scale", Vector3(1.2, 0.8, 1.2), 0.1)
+		tween.tween_property(mesh_instance, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
 
 func _mark_voxel(pos: Vector3i) -> void:
 	var data = voxel_data[pos]
@@ -207,13 +212,23 @@ func _mark_voxel(pos: Vector3i) -> void:
 		data["player"] = VoxelPlayerState.MARKED
 		var mat = StandardMaterial3D.new()
 		mat.albedo_color = Color.BLUE
-		voxel_nodes[pos]["mesh"].material_override = mat
+		var mesh_instance = voxel_nodes[pos]["mesh"]
+		mesh_instance.material_override = mat
+
+		var tween = create_tween()
+		tween.tween_property(mesh_instance, "scale", Vector3(0.8, 1.2, 0.8), 0.1)
+		tween.tween_property(mesh_instance, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
 	elif data["player"] == VoxelPlayerState.MARKED:
 		data["player"] = VoxelPlayerState.HIDDEN
 		# Revert to exact previous material color
 		var mat = StandardMaterial3D.new()
 		mat.albedo_color = voxel_nodes[pos]["original_color"]
-		voxel_nodes[pos]["mesh"].material_override = mat
+		var mesh_instance = voxel_nodes[pos]["mesh"]
+		mesh_instance.material_override = mat
+
+		var tween = create_tween()
+		tween.tween_property(mesh_instance, "scale", Vector3(1.1, 0.9, 1.1), 0.1)
+		tween.tween_property(mesh_instance, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
 
 func _check_win_condition() -> void:
 	for pos in voxel_data.keys():
