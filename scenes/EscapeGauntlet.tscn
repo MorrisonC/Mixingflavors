@@ -1,6 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://escapegauntlet1"]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/EscapeGauntlet.gd" id="1_escape"]
+[ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="2_6dx2x"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_6skyl"]
+panorama = ExtResource("2_6dx2x")
+
+[sub_resource type="Sky" id="Sky_wtn17"]
+sky_material = SubResource("PanoramaSkyMaterial_6skyl")
+
+[sub_resource type="Environment" id="Environment_ikp3j"]
+background_mode = 2
+sky = SubResource("Sky_wtn17")
 
 [node name="EscapeGauntlet" type="Node3D"]
 script = ExtResource("1_escape")
@@ -43,3 +54,6 @@ offset_bottom = 50.0
 grow_horizontal = 2
 text = "Round: 1"
 horizontal_alignment = 1
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_ikp3j")
