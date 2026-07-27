@@ -9,7 +9,7 @@
 config_version=5
 
 [application]
-run/main_scene="res://main.tscn"
+run/main_scene="res://scenes/Main.tscn"
 
 config/name="HybridTacticalPuzzleRPG"
 config/features=PackedStringArray("4.3", "GL Compatibility")
@@ -19,3 +19,6 @@ config/icon="res://icon.svg"
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[autoload]
+GameManager="*res://scripts/GameManager.gd"
