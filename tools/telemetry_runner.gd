@@ -2,16 +2,17 @@ extends SceneTree
 
 var telemetry_tracker: TelemetryTracker
 var bot_agent: BotAgent
-var game_manager_node: GameManager
+var game_manager_node: Node
 
 var test_duration: float = 20.0
 var time_elapsed: float = 0.0
 
+const GameManagerClass = preload("res://scripts/GameManager.gd")
 var modes_to_test = [
-    GameManager.GameMode.LONE_WOLF_NARRATIVE,
-    GameManager.GameMode.MASQUERADE_PAINTING,
-    GameManager.GameMode.PICROSS_3D,
-    GameManager.GameMode.ESCAPE_GAUNTLET
+    GameManagerClass.GameMode.LONE_WOLF_NARRATIVE,
+    GameManagerClass.GameMode.MASQUERADE_PAINTING,
+    GameManagerClass.GameMode.PICROSS_3D,
+    GameManagerClass.GameMode.ESCAPE_GAUNTLET
 ]
 var current_mode_index: int = 0
 
@@ -22,7 +23,7 @@ func _init():
     var root = get_root()
 
     # Check if GameManager exists, if not create it
-    game_manager_node = GameManager.new()
+    game_manager_node = GameManagerClass.new()
     game_manager_node.name = "GameManager"
     root.add_child(game_manager_node)
 
@@ -38,6 +39,7 @@ func _init():
 
     # Connect them
     bot_agent.attach_telemetry(telemetry_tracker)
+    bot_agent.set_game_manager(game_manager_node)
 
     print("[TelemetryRunner] Setup complete. Starting first test phase.")
     start_next_mode_test()
@@ -48,7 +50,7 @@ func start_next_mode_test():
         return
 
     var mode = modes_to_test[current_mode_index]
-    var mode_name = GameManager.GameMode.keys()[mode]
+    var mode_name = GameManagerClass.GameMode.keys()[mode]
 
     print("[TelemetryRunner] Starting test for mode: ", mode_name)
     game_manager_node.switch_mode(mode)
