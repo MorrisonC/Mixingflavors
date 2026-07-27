@@ -47,8 +47,9 @@ jobs:
           path: ~/.local/share/godot/app_userdata/*/telemetry_output.json
 
       - name: Create Pull Request with Patches
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           base: main
           title: "Automated Game Balance Patches"
           body: "This PR contains automatically generated balance patches based on headless telemetry runs."
