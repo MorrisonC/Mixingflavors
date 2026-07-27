@@ -28,9 +28,20 @@ func _ready() -> void:
 	else:
 		_camera.position.z = clamp(_camera.position.z, min_zoom, max_zoom)
 
+func _process(_delta: float) -> void:
+	if not _camera:
+		return
+	var viewport = get_viewport()
+	if viewport:
+		var size = viewport.get_visible_rect().size
+		if size.x < size.y:
+			_camera.keep_aspect = Camera3D.KEEP_WIDTH
+		else:
+			_camera.keep_aspect = Camera3D.KEEP_HEIGHT
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_RIGHT or event.button_index == MOUSE_BUTTON_MIDDLE:
+		if event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT or event.button_index == MOUSE_BUTTON_MIDDLE:
 			if event.pressed:
 				if Input.is_key_pressed(KEY_SHIFT):
 					_is_dragging_pan = true

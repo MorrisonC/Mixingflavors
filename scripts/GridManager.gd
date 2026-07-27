@@ -38,9 +38,22 @@ func _ready() -> void:
 	_generate_solution()
 	_build_grid()
 	_update_slicing()
+
 	_update_clues()
 
+	# Dynamically set max_zoom based on grid size and adjust camera
+	if camera:
+		var max_dim = max(grid_size.x, max(grid_size.y, grid_size.z))
+		var target_zoom = float(max_dim) * 2.5
+		# We assume the parent is CameraPivot, which handles max_zoom
+		var pivot = camera.get_parent()
+		if pivot and "max_zoom" in pivot:
+			pivot.max_zoom = target_zoom * 2.0
+			pivot.min_zoom = target_zoom * 0.5
+		camera.position.z = target_zoom
+
 	# Connect UI
+
 	if slice_slider_x:
 		slice_slider_x.max_value = grid_size.x - 1
 		slice_slider_x.value = grid_size.x - 1
@@ -187,6 +200,7 @@ func _add_clue_label(grid_pos: Vector3, normal: Vector3, counts: Array) -> void:
 	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 	labels_container.add_child(label)
 
+
 var _touch_start_pos: Vector2 = Vector2.ZERO
 var _touch_dragged: bool = false
 const TOUCH_DRAG_THRESHOLD: float = 10.0
@@ -200,20 +214,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	var mouse_pos = Vector2.ZERO
 	var is_hover = false
 
-	if event is InputEventScreenTouch:
-		if event.pressed:
-			_touch_start_pos = event.position
-			_touch_dragged = false
-		else:
-			if not _touch_dragged and event.position.distance_to(_touch_start_pos) < TOUCH_DRAG_THRESHOLD:
-				is_click = true
-				mouse_pos = event.position
-
-	elif event is InputEventScreenDrag:
-		if event.position.distance_to(_touch_start_pos) >= TOUCH_DRAG_THRESHOLD:
-			_touch_dragged = true
-
-	elif event is InputEventMouseMotion:
+	# Since emulate_mouse_from_touch is true, we ONLY listen to MouseEvents to prevent double firing.
+	# InputEventScreenTouch will automatically generate InputEventMouseButton.
+	if event is InputEventMouseMotion:
 		is_hover = true
 		mouse_pos = event.position
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -224,6 +227,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			if not _touch_dragged and event.position.distance_to(_touch_start_pos) < TOUCH_DRAG_THRESHOLD:
 				is_click = true
 				mouse_pos = event.position
+			elif event.position.distance_to(_touch_start_pos) >= TOUCH_DRAG_THRESHOLD:
+				_touch_dragged = true
 
 	if is_hover or is_click:
 		if mouse_pos == Vector2.ZERO:
