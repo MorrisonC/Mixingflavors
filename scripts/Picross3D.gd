@@ -18,8 +18,11 @@ enum VoxelPlayerState {
 
 var voxel_data: Dictionary = {}
 var mistakes: int = 0
+var combo: int = 0
+
 signal puzzle_solved
 signal mistake_made(total_mistakes)
+signal combo_updated(current_combo)
 
 # Slicing bounds
 var slice_min: Vector3i = Vector3i(0, 0, 0)
@@ -167,7 +170,7 @@ func _on_voxel_input_event(camera: Node, event: InputEvent, event_position: Vect
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			_mark_voxel(pos)
 
-func _chisel_voxel(pos: Vector3i) -> void:
+func _chisel_voxel(pos: Vector3i, is_player_action: bool = true) -> void:
 	var data = voxel_data[pos]
 	if data["player"] != VoxelPlayerState.HIDDEN:
 		return
@@ -175,12 +178,22 @@ func _chisel_voxel(pos: Vector3i) -> void:
 	if data["target"] == VoxelTargetState.EMPTY:
 		# Correct!
 		data["player"] = VoxelPlayerState.REMOVED
+
+		if is_player_action:
+			combo += 1
+			emit_signal("combo_updated", combo)
+
 		_update_visibility()
 		_check_win_condition()
 	else:
 		# Incorrect! Mistake!
 		data["player"] = VoxelPlayerState.ERROR
 		mistakes += 1
+
+		if is_player_action:
+			combo = 0
+			emit_signal("combo_updated", combo)
+
 		emit_signal("mistake_made", mistakes)
 
 		# Change material to error state visually

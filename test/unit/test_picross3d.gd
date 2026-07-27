@@ -46,3 +46,33 @@ func test_slicing_hides_voxels():
 	# Slice so max is -1 (should hide everything, or hide block at 0,0,0)
 	picross.set_slice(Vector3i(1, 1, 1), Vector3i(1, 1, 1))
 	assert_false(picross.voxel_nodes[Vector3i(0,0,0)]["mesh"].visible, "Block should be hidden after slice")
+
+func test_combo_increments_on_correct_chisel():
+	picross.voxel_data[Vector3i(0,0,0)]["target"] = picross.VoxelTargetState.EMPTY
+	watch_signals(picross)
+	picross._chisel_voxel(Vector3i(0,0,0))
+	assert_eq(picross.combo, 1, "Combo should increment to 1 on correct chisel")
+	assert_signal_emitted_with_parameters(picross, "combo_updated", [1])
+
+	picross.voxel_data[Vector3i(1,0,0)]["target"] = picross.VoxelTargetState.EMPTY
+	picross._chisel_voxel(Vector3i(1,0,0))
+	assert_eq(picross.combo, 2, "Combo should increment to 2 on second correct chisel")
+	assert_signal_emitted_with_parameters(picross, "combo_updated", [2])
+
+func test_combo_resets_on_mistake():
+	picross.voxel_data[Vector3i(0,0,0)]["target"] = picross.VoxelTargetState.EMPTY
+	picross._chisel_voxel(Vector3i(0,0,0))
+	assert_eq(picross.combo, 1, "Combo should be 1")
+
+	watch_signals(picross)
+	picross.voxel_data[Vector3i(1,0,0)]["target"] = picross.VoxelTargetState.FILLED
+	picross._chisel_voxel(Vector3i(1,0,0))
+	assert_eq(picross.combo, 0, "Combo should reset to 0 on mistake")
+	assert_signal_emitted_with_parameters(picross, "combo_updated", [0])
+
+func test_combo_ignores_non_player_actions():
+	picross.voxel_data[Vector3i(0,0,0)]["target"] = picross.VoxelTargetState.EMPTY
+	watch_signals(picross)
+	picross._chisel_voxel(Vector3i(0,0,0), false)
+	assert_eq(picross.combo, 0, "Combo should not increment if not a player action")
+	assert_signal_not_emitted(picross, "combo_updated")
