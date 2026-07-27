@@ -8,8 +8,8 @@ var active_mode_instance: Node = null
 
 func _ready() -> void:
 	get_node("/root/GameManager").connect("mode_changed", Callable(self, "_on_mode_changed"))
-	# Boot into LoneWolfNarrative automatically on startup
-	_load_mode_scene(GameManagerClass.GameMode.LONE_WOLF_NARRATIVE)
+	# Boot into EscapeGauntlet automatically on startup
+	_load_mode_scene(GameManagerClass.GameMode.ESCAPE_GAUNTLET)
 
 func _on_mode_changed(new_mode: int) -> void:
 	_load_mode_scene(new_mode)

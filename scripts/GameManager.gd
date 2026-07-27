@@ -26,7 +26,7 @@ var stats: Dictionary = {
 # Cross-Mechanic Data Buffer (Passes state between modes)
 var active_voxel_template: Array = []
 var discovered_anchors: Array = []
-var current_mode: GameMode = GameMode.LONE_WOLF_NARRATIVE
+var current_mode: GameMode = GameMode.ESCAPE_GAUNTLET
 
 # Scene File Paths (Ensure case-sensitivity matches your project files)
 const MODE_SCENES: Dictionary = {
@@ -37,7 +37,7 @@ const MODE_SCENES: Dictionary = {
 }
 
 func _ready() -> void:
-	print("[GameManager] Initialized successfully. Current Mode: LoneWolfNarrative")
+	print("[GameManager] Initialized successfully. Current Mode: EscapeGauntlet")
 
 func set_stat(stat_name: String, value: int) -> void:
 	if stats.has(stat_name):
