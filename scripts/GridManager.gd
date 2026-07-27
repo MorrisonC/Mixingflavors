@@ -187,15 +187,49 @@ func _add_clue_label(grid_pos: Vector3, normal: Vector3, counts: Array) -> void:
 	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 	labels_container.add_child(label)
 
+var _touch_start_pos: Vector2 = Vector2.ZERO
+var _touch_dragged: bool = false
+const TOUCH_DRAG_THRESHOLD: float = 10.0
+
 func _unhandled_input(event: InputEvent) -> void:
 	# Raycast logic for hover and click
 	if not camera:
 		return
 
-	if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
-		var space_state = get_world_3d().direct_space_state
-		var mouse_pos = get_viewport().get_mouse_position()
+	var is_click = false
+	var mouse_pos = Vector2.ZERO
+	var is_hover = false
 
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_touch_start_pos = event.position
+			_touch_dragged = false
+		else:
+			if not _touch_dragged and event.position.distance_to(_touch_start_pos) < TOUCH_DRAG_THRESHOLD:
+				is_click = true
+				mouse_pos = event.position
+
+	elif event is InputEventScreenDrag:
+		if event.position.distance_to(_touch_start_pos) >= TOUCH_DRAG_THRESHOLD:
+			_touch_dragged = true
+
+	elif event is InputEventMouseMotion:
+		is_hover = true
+		mouse_pos = event.position
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_touch_start_pos = event.position
+			_touch_dragged = false
+		else:
+			if not _touch_dragged and event.position.distance_to(_touch_start_pos) < TOUCH_DRAG_THRESHOLD:
+				is_click = true
+				mouse_pos = event.position
+
+	if is_hover or is_click:
+		if mouse_pos == Vector2.ZERO:
+			mouse_pos = get_viewport().get_mouse_position()
+
+		var space_state = get_world_3d().direct_space_state
 		var ray_origin = camera.project_ray_origin(mouse_pos)
 		var ray_end = ray_origin + camera.project_ray_normal(mouse_pos) * 100.0
 
@@ -211,7 +245,7 @@ func _unhandled_input(event: InputEvent) -> void:
 					hovered_block = collider
 					hovered_block.set_highlight(true)
 
-				if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+				if is_click:
 					# Consume event
 					get_viewport().set_input_as_handled()
 
