@@ -1,42 +1,37 @@
 extends SceneTree
 
 var telemetry_tracker: TelemetryTracker
-var bot_agent: BotAgent
-var game_manager_node: GameManager
+var bot_agent: Node
+var game_manager_node: Node
 
 var test_duration: float = 20.0
 var time_elapsed: float = 0.0
 
 var modes_to_test = [
-    GameManager.GameMode.LONE_WOLF_NARRATIVE,
-    GameManager.GameMode.MASQUERADE_PAINTING,
-    GameManager.GameMode.PICROSS_3D,
-    GameManager.GameMode.ESCAPE_GAUNTLET
+    0, # LONE_WOLF_NARRATIVE
+    1, # MASQUERADE_PAINTING
+    2, # PICROSS_3D
+    4  # ESCAPE_GAUNTLET
 ]
 var current_mode_index: int = 0
 
 func _init():
     print("[TelemetryRunner] Initializing headless test run...")
 
-    # Initialize the main scene or core nodes
     var root = get_root()
 
-    # Check if GameManager exists, if not create it
-    game_manager_node = GameManager.new()
+    game_manager_node = load("res://scripts/GameManager.gd").new()
     game_manager_node.name = "GameManager"
     root.add_child(game_manager_node)
 
-    # Setup Telemetry Tracker
-    telemetry_tracker = TelemetryTracker.new()
+    telemetry_tracker = load("res://scripts/telemetry_tracker.gd").new()
     telemetry_tracker.name = "TelemetryTracker"
     root.add_child(telemetry_tracker)
 
-    # Setup Bot Agent
-    bot_agent = BotAgent.new()
+    bot_agent = load("res://tools/bot_agent.gd").new()
     bot_agent.name = "BotAgent"
     root.add_child(bot_agent)
 
-    # Connect them
     bot_agent.attach_telemetry(telemetry_tracker)
 
     print("[TelemetryRunner] Setup complete. Starting first test phase.")
@@ -48,7 +43,7 @@ func start_next_mode_test():
         return
 
     var mode = modes_to_test[current_mode_index]
-    var mode_name = GameManager.GameMode.keys()[mode]
+    var mode_name = "MODE_" + str(mode)
 
     print("[TelemetryRunner] Starting test for mode: ", mode_name)
     game_manager_node.switch_mode(mode)

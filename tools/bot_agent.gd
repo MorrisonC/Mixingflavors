@@ -1,8 +1,8 @@
-class_name BotAgent
 extends Node
 
-var current_mode: GameManager.GameMode
-var telemetry: TelemetryTracker
+var current_mode: int
+var telemetry
+
 var time_in_current_state: float = 0.0
 var time_since_last_action: float = 0.0
 
@@ -12,24 +12,26 @@ var last_position: Vector3 = Vector3.ZERO
 var current_system: String = "None"
 
 func _ready():
-    GameManager.mode_changed.connect(_on_game_mode_changed)
-    current_mode = GameManager.current_mode
+    var gm = get_node_or_null("/root/GameManager")
+    if gm:
+        gm.connect("mode_changed", _on_game_mode_changed)
+        current_mode = gm.current_mode
 
-func attach_telemetry(tracker: TelemetryTracker):
+func attach_telemetry(tracker):
     telemetry = tracker
 
-func _on_game_mode_changed(new_mode: GameManager.GameMode):
+func _on_game_mode_changed(new_mode: int):
     current_mode = new_mode
     time_in_current_state = 0.0
     time_since_last_action = 0.0
     is_stuck = false
 
     match current_mode:
-        GameManager.GameMode.LONE_WOLF_NARRATIVE:
+        0: # LONE_WOLF_NARRATIVE
             current_system = "Narrative"
-        GameManager.GameMode.MASQUERADE_PAINTING:
+        1: # MASQUERADE_PAINTING
             current_system = "Painting2D"
-        GameManager.GameMode.PICROSS_3D:
+        2: # PICROSS_3D
             current_system = "Voxel3D"
         _:
             current_system = "Unknown"
@@ -44,12 +46,12 @@ func _process(delta: float):
 func simulate_gameplay(delta: float):
     # Simulate a player trying to solve the puzzle/level based on current mode
     match current_mode:
-        GameManager.GameMode.LONE_WOLF_NARRATIVE:
+        0:
             # Simulate reading text and making a choice
             if time_since_last_action > 2.0:
                 perform_action("narrative_choice", {"choice": "option_1"})
 
-        GameManager.GameMode.MASQUERADE_PAINTING:
+        1:
             # Simulate drawing lines
             if time_since_last_action > 1.0:
                 var start = Vector2(randf_range(0, 800), randf_range(0, 600))
@@ -58,7 +60,7 @@ func simulate_gameplay(delta: float):
                 # Simulate cursor position for heatmap
                 log_position(Vector3(end.x, end.y, 0))
 
-        GameManager.GameMode.PICROSS_3D:
+        2:
             # Simulate chiseling voxels
             if time_since_last_action > 0.5:
                 # Assuming GridSizeX=5, etc.
@@ -74,7 +76,7 @@ func simulate_gameplay(delta: float):
                     perform_action("chisel_voxel", {"x": target_x, "y": target_y, "z": target_z})
                     log_position(Vector3(target_x, target_y, target_z))
 
-        GameManager.GameMode.ESCAPE_GAUNTLET:
+        4:
             # Time pressured, faster actions
             if time_since_last_action > 0.2:
                 perform_action("chisel_voxel_fast", {})
