@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://f9t5v1b5w0q9z"]
+
+[ext_resource type="Script" path="res://scripts/Picross3D.gd" id="1_picross"]
+
+[node name="Picross3D" type="Node3D"]
+script = ExtResource("1_picross")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 5, 0)
+shadow_enabled = true
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SolveButton" type="Button" parent="Control"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -60.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "Solve Puzzle"
+
+[connection signal="pressed" from="Control/SolveButton" to="." method="_on_solve_puzzle_pressed"]

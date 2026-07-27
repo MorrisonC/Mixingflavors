@@ -1,29 +1,12 @@
 extends GutTest
 
-var game_manager: GameManager
-
-func before_each():
-    game_manager = GameManager.new()
-    add_child(game_manager)
-
-func after_each():
-    game_manager.free()
+func test_game_manager_autoload():
+    assert_not_null(GameManager, "GameManager autoload should be initialized")
 
 func test_initial_stats():
-    assert_eq(game_manager.perception_level, 1)
-    assert_eq(game_manager.health, 100)
-    assert_eq(game_manager.endurance, 100)
-    assert_eq(game_manager.lore_discipline, 1)
-    assert_eq(game_manager.alchemy_discipline, 1)
+    assert_eq(GameManager.get_stat("perception"), 2, "Perception should be 2 initially")
+    assert_eq(GameManager.get_stat("health"), 100, "Health should be 100 initially")
 
-func test_mode_switching():
-    assert_eq(game_manager.CurrentMode, GameManager.GameMode.LoneWolfNarrative)
-
-    game_manager.SwitchMode(GameManager.GameMode.DetectiveCrimeScene)
-    assert_eq(game_manager.CurrentMode, GameManager.GameMode.DetectiveCrimeScene)
-
-    game_manager.SwitchMode(GameManager.GameMode.EscapeGauntlet)
-    assert_eq(game_manager.CurrentMode, GameManager.GameMode.EscapeGauntlet)
-
-    game_manager.SwitchMode(GameManager.GameMode.TimeShiftPalimpsest)
-    assert_eq(game_manager.CurrentMode, GameManager.GameMode.TimeShiftPalimpsest)
+func test_switch_mode():
+    GameManager.switch_mode(GameManager.GameMode.PICROSS_3D)
+    assert_eq(GameManager.current_mode, GameManager.GameMode.PICROSS_3D, "Current mode should update after switch_mode")

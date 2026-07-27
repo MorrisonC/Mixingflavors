@@ -145,7 +145,7 @@ func apply_patches(adjustments: Array):
     # We will dynamically adjust GameManager.gd default RPG stats or VoxelGrid3D sizes
     # For this example, we parse and modify GameManager.gd
 
-    var gm_path = "res://Scripts/GameManager.gd"
+    var gm_path = "res://scripts/GameManager.gd"
     var gm_file = FileAccess.open(gm_path, FileAccess.READ)
     if gm_file:
         var content = gm_file.get_as_text()
@@ -172,7 +172,7 @@ func apply_patches(adjustments: Array):
             write_file.close()
             print("[TelemetryAnalyzer] Patched ", gm_path, " to adjust difficulty parameters.")
 
-    var vg_path = "res://Scripts/VoxelGrid3D.gd"
+    var vg_path = "res://scripts/VoxelGrid3D.gd"
     var vg_file = FileAccess.open(vg_path, FileAccess.READ)
     if vg_file:
         var content = vg_file.get_as_text()

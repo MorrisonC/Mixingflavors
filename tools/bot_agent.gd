@@ -12,8 +12,8 @@ var last_position: Vector3 = Vector3.ZERO
 var current_system: String = "None"
 
 func _ready():
-    GameManager.Instance.GameModeChanged.connect(_on_game_mode_changed)
-    current_mode = GameManager.Instance.CurrentMode
+    GameManager.mode_changed.connect(_on_game_mode_changed)
+    current_mode = GameManager.current_mode
 
 func attach_telemetry(tracker: TelemetryTracker):
     telemetry = tracker
@@ -25,11 +25,11 @@ func _on_game_mode_changed(new_mode: GameManager.GameMode):
     is_stuck = false
 
     match current_mode:
-        GameManager.GameMode.LoneWolfNarrative:
+        GameManager.GameMode.LONE_WOLF_NARRATIVE:
             current_system = "Narrative"
-        GameManager.GameMode.MasqueradePainting:
+        GameManager.GameMode.MASQUERADE_PAINTING:
             current_system = "Painting2D"
-        GameManager.GameMode.Picross3D:
+        GameManager.GameMode.PICROSS_3D:
             current_system = "Voxel3D"
         _:
             current_system = "Unknown"
@@ -44,12 +44,12 @@ func _process(delta: float):
 func simulate_gameplay(delta: float):
     # Simulate a player trying to solve the puzzle/level based on current mode
     match current_mode:
-        GameManager.GameMode.LoneWolfNarrative:
+        GameManager.GameMode.LONE_WOLF_NARRATIVE:
             # Simulate reading text and making a choice
             if time_since_last_action > 2.0:
                 perform_action("narrative_choice", {"choice": "option_1"})
 
-        GameManager.GameMode.MasqueradePainting:
+        GameManager.GameMode.MASQUERADE_PAINTING:
             # Simulate drawing lines
             if time_since_last_action > 1.0:
                 var start = Vector2(randf_range(0, 800), randf_range(0, 600))
@@ -58,7 +58,7 @@ func simulate_gameplay(delta: float):
                 # Simulate cursor position for heatmap
                 log_position(Vector3(end.x, end.y, 0))
 
-        GameManager.GameMode.Picross3D:
+        GameManager.GameMode.PICROSS_3D:
             # Simulate chiseling voxels
             if time_since_last_action > 0.5:
                 # Assuming GridSizeX=5, etc.
@@ -74,7 +74,7 @@ func simulate_gameplay(delta: float):
                     perform_action("chisel_voxel", {"x": target_x, "y": target_y, "z": target_z})
                     log_position(Vector3(target_x, target_y, target_z))
 
-        GameManager.GameMode.EscapeGauntlet:
+        GameManager.GameMode.ESCAPE_GAUNTLET:
             # Time pressured, faster actions
             if time_since_last_action > 0.2:
                 perform_action("chisel_voxel_fast", {})

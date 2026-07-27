@@ -8,10 +8,10 @@ var test_duration: float = 20.0
 var time_elapsed: float = 0.0
 
 var modes_to_test = [
-    GameManager.GameMode.LoneWolfNarrative,
-    GameManager.GameMode.MasqueradePainting,
-    GameManager.GameMode.Picross3D,
-    GameManager.GameMode.EscapeGauntlet
+    GameManager.GameMode.LONE_WOLF_NARRATIVE,
+    GameManager.GameMode.MASQUERADE_PAINTING,
+    GameManager.GameMode.PICROSS_3D,
+    GameManager.GameMode.ESCAPE_GAUNTLET
 ]
 var current_mode_index: int = 0
 
@@ -51,7 +51,7 @@ func start_next_mode_test():
     var mode_name = GameManager.GameMode.keys()[mode]
 
     print("[TelemetryRunner] Starting test for mode: ", mode_name)
-    game_manager_node.SwitchMode(mode)
+    game_manager_node.switch_mode(mode)
     telemetry_tracker.start_level(mode_name)
 
     time_elapsed = 0.0
