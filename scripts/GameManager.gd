@@ -32,7 +32,8 @@ var current_mode: GameMode = GameMode.LONE_WOLF_NARRATIVE
 const MODE_SCENES: Dictionary = {
 	GameMode.LONE_WOLF_NARRATIVE: "res://scenes/LoneWolfNarrative.tscn",
 	GameMode.MASQUERADE_PAINTING: "res://scenes/MasqueradePainting.tscn",
-	GameMode.PICROSS_3D: "res://scenes/Picross3D.tscn"
+	GameMode.PICROSS_3D: "res://scenes/Picross3D.tscn",
+	GameMode.ESCAPE_GAUNTLET: "res://scenes/EscapeGauntlet.tscn"
 }
 
 func _ready() -> void:
