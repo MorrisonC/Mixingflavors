@@ -1,23 +1,74 @@
-[gd_scene load_steps=2 format=3 uid="uid://f9t5v1b5w0q9z"]
+[gd_scene load_steps=5 format=3 uid="uid://f9t5v1b5w0q9z"]
 
-[ext_resource type="Script" path="res://scripts/Picross3D.gd" id="1_picross"]
+[ext_resource type="Script" path="res://scripts/GridManager.gd" id="1_grid"]
+[ext_resource type="Script" path="res://scripts/CameraPivot.gd" id="2_camera"]
 
-[node name="Picross3D" type="Node3D"]
-script = ExtResource("1_picross")
+[node name="Picross3D" type="Node3D" node_paths=PackedStringArray("camera")]
+script = ExtResource("1_grid")
+camera = NodePath("CameraPivot/Camera3D")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 5, 0)
 shadow_enabled = true
 
-[node name="Control" type="Control" parent="."]
+[node name="CameraPivot" type="Node3D" parent="."]
+script = ExtResource("2_camera")
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
+
+[node name="LabelsContainer" type="Node3D" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="CanvasLayer"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
-[node name="SolveButton" type="Button" parent="Control"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -120.0
+offset_right = 220.0
+offset_bottom = -20.0
+grow_vertical = 0
+
+[node name="LabelX" type="Label" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+text = "Slice X"
+
+[node name="SliderX" type="HSlider" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+max_value = 5.0
+value = 5.0
+
+[node name="LabelY" type="Label" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+text = "Slice Y"
+
+[node name="SliderY" type="HSlider" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+max_value = 5.0
+value = 5.0
+
+[node name="LabelZ" type="Label" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+text = "Slice Z"
+
+[node name="SliderZ" type="HSlider" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+max_value = 5.0
+value = 5.0
+
+[node name="ModeToggle" type="CheckButton" parent="CanvasLayer/Control"]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -30,6 +81,4 @@ offset_right = -20.0
 offset_bottom = -20.0
 grow_horizontal = 0
 grow_vertical = 0
-text = "Solve Puzzle"
-
-[connection signal="pressed" from="Control/SolveButton" to="." method="_on_solve_puzzle_pressed"]
+text = "Mark Mode"
