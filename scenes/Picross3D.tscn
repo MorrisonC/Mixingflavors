@@ -15,6 +15,24 @@ sky_material = SubResource("PanoramaSkyMaterial_bcnql")
 [sub_resource type="Environment" id="Environment_6b0qt"]
 background_mode = 2
 sky = SubResource("Sky_m43ds")
+ambient_light_source = 3
+ambient_light_color = Color(0.121569, 0.121569, 0.2, 1)
+tonemap_mode = 2
+tonemap_exposure = 1.1
+glow_enabled = true
+glow_bloom = 0.1
+adjustment_enabled = true
+adjustment_contrast = 1.1
+adjustment_saturation = 1.1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pedestal"]
+top_radius = 6.0
+bottom_radius = 6.5
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pedestal"]
+albedo_color = Color(0.2, 0.2, 0.25, 1)
+roughness = 0.8
 
 [node name="Picross3D" type="Node3D" node_paths=PackedStringArray("camera")]
 script = ExtResource("1_grid")
@@ -38,6 +56,11 @@ touch_rotation_speed = 0.2
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
+
+[node name="StudioPedestal" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.5, 0)
+mesh = SubResource("CylinderMesh_pedestal")
+material_override = SubResource("StandardMaterial3D_pedestal")
 
 [node name="LabelsContainer" type="Node3D" parent="."]
 
@@ -68,51 +91,123 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
+[node name="TopInfoBar" type="PanelContainer" parent="CanvasLayer/Control/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer/TopInfoBar"]
+layout_mode = 2
+alignment = 1
+
+[node name="RoundLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+text = "Floor 1"
+horizontal_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+
+[node name="HPLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+text = "HP: 3/3"
+horizontal_alignment = 1
+
+[node name="VSeparator2" type="VSeparator" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+
+[node name="ComboLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+text = "Combo: x0"
+horizontal_alignment = 1
+
+[node name="VSeparator3" type="VSeparator" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+
+[node name="TimerLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+text = "Time: 00:00"
+horizontal_alignment = 1
+
+[node name="BossContainer" type="VBoxContainer" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BossNameLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer/BossContainer"]
+layout_mode = 2
+text = "Guardian"
+horizontal_alignment = 1
+
+[node name="BossHPBar" type="ProgressBar" parent="CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer/BossContainer"]
+layout_mode = 2
+value = 100.0
+
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 8
+mouse_filter = 2
 
-[node name="LabelX" type="Label" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+[node name="SliceControls" type="VBoxContainer" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+layout_mode = 2
+visible = false
+
+[node name="LabelX" type="Label" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
 layout_mode = 2
 text = "Slice X"
 
-[node name="SliderX" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+[node name="SliderX" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
 custom_minimum_size = Vector2(200, 32)
 layout_mode = 2
 max_value = 5.0
 value = 5.0
 
-[node name="LabelY" type="Label" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+[node name="LabelY" type="Label" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
 layout_mode = 2
 text = "Slice Y"
 
-[node name="SliderY" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+[node name="SliderY" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
 custom_minimum_size = Vector2(200, 32)
 layout_mode = 2
 max_value = 5.0
 value = 5.0
 
-[node name="LabelZ" type="Label" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+[node name="LabelZ" type="Label" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
 layout_mode = 2
 text = "Slice Z"
 
-[node name="SliderZ" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+[node name="SliderZ" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
 custom_minimum_size = Vector2(200, 32)
 layout_mode = 2
 max_value = 5.0
 value = 5.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 8
+size_flags_horizontal = 4
 size_flags_vertical = 8
 theme_override_constants/separation = 20
+mouse_filter = 2
 
-[node name="ModeToggle" type="CheckButton" parent="CanvasLayer/Control/MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(160, 64)
+[node name="ChiselButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "Mark Mode"
+text = "Chisel"
+
+[node name="MarkButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+text = "Mark"
+
+[node name="SliceToggleButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+text = "Slice"
+
+[node name="UndoButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+text = "Undo"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_6b0qt")

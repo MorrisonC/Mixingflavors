@@ -37,6 +37,9 @@ func _gui_input(event: InputEvent) -> void:
 			_touch_points.erase(event.index)
 			if not touch_dragged and _touch_points.size() == 0:
 				_handle_single_tap(event.position)
+				# Prevent default browser behavior on web when tap is consumed
+				if OS.has_feature("web"):
+					get_viewport().set_input_as_handled()
 
 		if _touch_points.size() == 2:
 			var points = _touch_points.values()
@@ -49,6 +52,8 @@ func _gui_input(event: InputEvent) -> void:
 			if touch_start_pos.distance_to(event.position) > DRAG_THRESHOLD:
 				touch_dragged = true
 				_handle_camera_orbit(event.relative)
+				if OS.has_feature("web"):
+					get_viewport().set_input_as_handled()
 		elif _touch_points.size() == 2:
 			touch_dragged = true
 			var points = _touch_points.values()
@@ -56,6 +61,8 @@ func _gui_input(event: InputEvent) -> void:
 			var diff = _initial_touch_distance - current_distance
 			_handle_camera_zoom(diff * 0.05)
 			_initial_touch_distance = current_distance
+			if OS.has_feature("web"):
+				get_viewport().set_input_as_handled()
 
 	# Handle mouse for desktop testing
 	elif event is InputEventMouseButton:
