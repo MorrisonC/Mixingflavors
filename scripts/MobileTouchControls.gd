@@ -73,6 +73,8 @@ func _gui_input(event: InputEvent) -> void:
 			else:
 				if not touch_dragged:
 					_handle_single_tap(event.position)
+					if OS.has_feature("web"):
+						get_viewport().set_input_as_handled()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_handle_camera_zoom(-1.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
@@ -83,6 +85,8 @@ func _gui_input(event: InputEvent) -> void:
 			if touch_start_pos.distance_to(event.position) > DRAG_THRESHOLD:
 				touch_dragged = true
 				_handle_camera_orbit(event.relative)
+				if OS.has_feature("web"):
+					get_viewport().set_input_as_handled()
 		else:
 			_handle_hover(event.position)
 
