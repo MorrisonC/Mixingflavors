@@ -41,6 +41,9 @@ func _gui_input(event: InputEvent) -> void:
 				if OS.has_feature("web"):
 					get_viewport().set_input_as_handled()
 
+			if camera_pivot and camera_pivot.has_method("end_orbit"):
+				camera_pivot.end_orbit()
+
 		if _touch_points.size() == 2:
 			var points = _touch_points.values()
 			_initial_touch_distance = points[0].distance_to(points[1])
@@ -75,6 +78,9 @@ func _gui_input(event: InputEvent) -> void:
 					_handle_single_tap(event.position)
 					if OS.has_feature("web"):
 						get_viewport().set_input_as_handled()
+
+				if camera_pivot and camera_pivot.has_method("end_orbit"):
+					camera_pivot.end_orbit()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_handle_camera_zoom(-1.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
@@ -92,7 +98,9 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _handle_camera_orbit(relative: Vector2) -> void:
-	if camera_pivot and camera_pivot.has_method("_orbit_camera"):
+	if camera_pivot and camera_pivot.has_method("add_orbit_input"):
+		camera_pivot.add_orbit_input(relative)
+	elif camera_pivot and camera_pivot.has_method("_orbit_camera"):
 		camera_pivot._orbit_camera(relative)
 	elif camera_pivot:
 		camera_pivot.rotation_degrees.y -= relative.x * 0.5
@@ -100,7 +108,9 @@ func _handle_camera_orbit(relative: Vector2) -> void:
 		camera_pivot.rotation_degrees.x = clamp(camera_pivot.rotation_degrees.x, -85.0, 85.0)
 
 func _handle_camera_zoom(amount: float) -> void:
-	if camera_pivot and camera_pivot.has_method("_zoom_camera"):
+	if camera_pivot and camera_pivot.has_method("add_zoom_input"):
+		camera_pivot.add_zoom_input(amount)
+	elif camera_pivot and camera_pivot.has_method("_zoom_camera"):
 		camera_pivot._zoom_camera(amount)
 
 func _handle_hover(hover_pos: Vector2) -> void:
