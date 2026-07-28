@@ -54,8 +54,12 @@ func set_highlight(is_highlighted: bool) -> void:
 	if current_state == BlockState.UNBROKEN:
 		if is_highlighted:
 			base_material.albedo_color = highlight_color
+			base_material.emission_enabled = true
+			base_material.emission = highlight_color
+			base_material.emission_energy_multiplier = 0.5
 		else:
 			base_material.albedo_color = Color(1.0, 1.0, 1.0)
+			base_material.emission_enabled = false
 
 # Optional: Adding decals or labels to the block directly if needed,
 # though it's often easier to manage them from GridManager.

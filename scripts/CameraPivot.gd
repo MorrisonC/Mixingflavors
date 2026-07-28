@@ -39,55 +39,6 @@ func _process(_delta: float) -> void:
 		else:
 			_camera.keep_aspect = Camera3D.KEEP_HEIGHT
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT or event.button_index == MOUSE_BUTTON_MIDDLE:
-			if event.pressed:
-				if Input.is_key_pressed(KEY_SHIFT):
-					_is_dragging_pan = true
-					_is_dragging_orbit = false
-				else:
-					_is_dragging_orbit = true
-					_is_dragging_pan = false
-			else:
-				_is_dragging_orbit = false
-				_is_dragging_pan = false
-
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-			_zoom_camera(-zoom_speed)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-			_zoom_camera(zoom_speed)
-
-	elif event is InputEventMouseMotion:
-		if _is_dragging_orbit:
-			_orbit_camera(event.relative)
-		elif _is_dragging_pan:
-			_pan_camera(event.relative)
-
-	elif event is InputEventScreenTouch:
-		if event.pressed:
-			_touch_points[event.index] = event.position
-		else:
-			_touch_points.erase(event.index)
-
-		if _touch_points.size() == 2:
-			var points = _touch_points.values()
-			_initial_touch_distance = points[0].distance_to(points[1])
-
-	elif event is InputEventScreenDrag:
-		_touch_points[event.index] = event.position
-
-		if _touch_points.size() == 1:
-			# Single touch drag to rotate
-			_orbit_camera(event.relative * touch_rotation_speed)
-		elif _touch_points.size() == 2:
-			# Pinch to zoom
-			var points = _touch_points.values()
-			var current_distance = points[0].distance_to(points[1])
-			var diff = _initial_touch_distance - current_distance
-			_zoom_camera(diff * touch_zoom_speed)
-			_initial_touch_distance = current_distance
-
 func _orbit_camera(relative: Vector2) -> void:
 	# Clamp small movements to avoid jitter in web/mobile
 	if relative.length_squared() < 0.5:
