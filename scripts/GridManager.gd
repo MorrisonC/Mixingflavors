@@ -390,14 +390,14 @@ func _add_clue_label(grid_pos: Vector3, normal: Vector3, counts: Array) -> void:
 
 
 # Signal handlers for MobileTouchControls
-func on_chisel_requested(grid_pos: Vector3i) -> void:
+func on_chisel_requested(grid_pos: Vector3i, is_player_action: bool = true) -> void:
 	if not blocks.has(grid_pos):
 		return
 	var block = blocks[grid_pos] as PicrossBlock
 
 	if block.current_state == block.BlockState.MARKED:
 		# Marked blocks are protected from chiseling
-		if OS.has_feature("mobile"):
+		if OS.has_feature("mobile") and is_player_action:
 			Input.vibrate_handheld(20) # Small bump indicating protection
 		return
 
@@ -406,14 +406,16 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 
 		# If it's a target block, it's a mistake
 		if target_solution.get(grid_pos, false):
-			_destroy_block(block) # We break it to reveal the mistake underneath
-			_handle_mistake()
+			_destroy_block(block, is_player_action) # We break it to reveal the mistake underneath
+			if is_player_action:
+				_handle_mistake()
 		else:
-			_destroy_block(block)
-			if OS.has_feature("mobile"):
+			_destroy_block(block, is_player_action)
+			if OS.has_feature("mobile") and is_player_action:
 				Input.vibrate_handheld(40) # Haptic feedback on valid move
 	elif block.current_state != block.BlockState.DESTROYED:
-		_handle_mistake()
+		if is_player_action:
+			_handle_mistake()
 
 func on_mark_requested(grid_pos: Vector3i) -> void:
 	if not blocks.has(grid_pos):
@@ -487,11 +489,33 @@ func _handle_mistake() -> void:
 		current_floor = 1
 		start_level()
 
-func _destroy_block(block: PicrossBlock) -> void:
+func _destroy_block(block: PicrossBlock, is_player_action: bool = true) -> void:
 	block.set_state(block.BlockState.DESTROYED)
-	combo += 1
+	if is_player_action:
+		combo += 1
+
+		# Check explosive chain
+		if combo > 0 and combo % 5 == 0:
+			_trigger_explosive_chain(block.grid_position)
+
 	_update_ui_state()
 	_check_win_condition()
+
+func _trigger_explosive_chain(center_pos: Vector3i) -> void:
+	var offsets = [
+		Vector3i(1, 0, 0), Vector3i(-1, 0, 0),
+		Vector3i(0, 1, 0), Vector3i(0, -1, 0),
+		Vector3i(0, 0, 1), Vector3i(0, 0, -1)
+	]
+
+	for offset in offsets:
+		var adj_pos = center_pos + offset
+		if blocks.has(adj_pos):
+			var adj_block = blocks[adj_pos] as PicrossBlock
+			if adj_block.current_state == adj_block.BlockState.UNBROKEN:
+				# Only destroy if it is NOT a target solution block to avoid triggering mistakes
+				if not target_solution.get(adj_pos, false):
+					on_chisel_requested(adj_pos, false)
 
 func _check_win_condition() -> void:
 	if not is_puzzle_active: return
