@@ -5,6 +5,7 @@
 [ext_resource type="Script" path="res://scripts/CameraPivot.gd" id="2_camera"]
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
 [ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="4_twcvd"]
+[ext_resource type="Script" path="res://scripts/ExplosiveChainMechanic.gd" id="5_explosive"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_bcnql"]
 panorama = ExtResource("4_twcvd")
@@ -208,6 +209,11 @@ text = "Slice"
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 text = "Undo"
+
+[node name="ExplosiveChainMechanic" type="Node" parent="."]
+script = ExtResource("5_explosive")
+blast_radius = 1
+is_active = false
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_6b0qt")
