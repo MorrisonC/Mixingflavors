@@ -143,12 +143,21 @@ func start_level() -> void:
 	if camera:
 		var max_dim = max(grid_size.x, max(grid_size.y, grid_size.z))
 		var target_zoom = float(max_dim) * 2.5
-		# We assume the parent is CameraPivot, which handles max_zoom
 		var pivot = camera.get_parent()
+		while pivot != null and not pivot is CameraPivotController and not "max_zoom" in pivot:
+			pivot = pivot.get_parent()
+
 		if pivot and "max_zoom" in pivot:
 			pivot.max_zoom = target_zoom * 2.0
 			pivot.min_zoom = target_zoom * 0.5
-		camera.position.z = target_zoom
+		elif pivot and "max_distance" in pivot:
+			pivot.max_distance = target_zoom * 2.0
+			pivot.min_distance = target_zoom * 0.5
+
+		if pivot and "target_distance" in pivot:
+			pivot.target_distance = target_zoom
+		else:
+			camera.position.z = target_zoom
 
 	# Find UI elements
 	slice_controls = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls")
@@ -209,12 +218,21 @@ func start_level() -> void:
 	if camera:
 		var max_dim = max(grid_size.x, max(grid_size.y, grid_size.z))
 		var target_zoom = float(max_dim) * 2.5
-		# We assume the parent is CameraPivot, which handles max_zoom
 		var pivot = camera.get_parent()
+		while pivot != null and not pivot is CameraPivotController and not "max_zoom" in pivot:
+			pivot = pivot.get_parent()
+
 		if pivot and "max_zoom" in pivot:
 			pivot.max_zoom = target_zoom * 2.0
 			pivot.min_zoom = target_zoom * 0.5
-		camera.position.z = target_zoom
+		elif pivot and "max_distance" in pivot:
+			pivot.max_distance = target_zoom * 2.0
+			pivot.min_distance = target_zoom * 0.5
+
+		if pivot and "target_distance" in pivot:
+			pivot.target_distance = target_zoom
+		else:
+			camera.position.z = target_zoom
 
 func _process(delta: float) -> void:
 	if is_puzzle_active:
@@ -475,8 +493,12 @@ func _handle_mistake() -> void:
 
 	if OS.has_feature("mobile"):
 		Input.vibrate_handheld(120)
-	if camera and camera.get_parent() and camera.get_parent().has_method("shake"):
-		camera.get_parent().shake(0.3, 0.2)
+	if camera:
+		var pivot = camera.get_parent()
+		while pivot != null and not pivot.has_method("shake"):
+			pivot = pivot.get_parent()
+		if pivot and pivot.has_method("shake"):
+			pivot.shake(0.3, 0.2)
 
 	if player_hp <= 0:
 		is_puzzle_active = false

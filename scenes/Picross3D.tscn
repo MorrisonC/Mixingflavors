@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/GridManager.gd" id="1_grid"]
 [ext_resource type="PackedScene" path="res://scenes/Block.tscn" id="2_1kbjf"]
-[ext_resource type="Script" path="res://scripts/CameraPivot.gd" id="2_camera"]
+[ext_resource type="Script" path="res://scripts/CameraPivotController.gd" id="2_camera"]
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
 [ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="4_twcvd"]
 
@@ -38,24 +38,22 @@ roughness = 0.8
 script = ExtResource("1_grid")
 grid_size = Vector3i(5, 5, 5)
 block_scene = ExtResource("2_1kbjf")
-camera = NodePath("CameraPivot/Camera3D")
+camera = NodePath("CameraPivotYaw/PitchNode/SpringArm3D/Camera3D")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 5, 0)
 shadow_enabled = true
 
-[node name="CameraPivot" type="Node3D" parent="."]
+[node name="CameraPivotYaw" type="Node3D" parent="."]
 script = ExtResource("2_camera")
-rotation_speed = 0.5
-pan_speed = 0.05
-zoom_speed = 1.0
-min_zoom = 5.0
-max_zoom = 30.0
-touch_zoom_speed = 0.05
-touch_rotation_speed = 0.2
 
-[node name="Camera3D" type="Camera3D" parent="CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
+[node name="PitchNode" type="Node3D" parent="CameraPivotYaw"]
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivotYaw/PitchNode"]
+spring_length = 10.0
+margin = 0.5
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivotYaw/PitchNode/SpringArm3D"]
 
 [node name="StudioPedestal" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.5, 0)
@@ -75,8 +73,8 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("3_touch")
-camera_pivot = NodePath("../../CameraPivot")
-camera = NodePath("../../CameraPivot/Camera3D")
+camera_pivot = NodePath("../../CameraPivotYaw")
+camera = NodePath("../../CameraPivotYaw/PitchNode/SpringArm3D/Camera3D")
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Control"]
 layout_mode = 1
