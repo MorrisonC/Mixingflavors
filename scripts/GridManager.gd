@@ -21,6 +21,7 @@ signal combo_updated(current_combo)
 signal history_updated(can_undo)
 signal game_over
 signal floor_cleared
+signal voxel_destroyed(pos: Vector3i, is_player_action: bool)
 
 var mistakes: int = 0
 var combo: int = 0
@@ -390,30 +391,31 @@ func _add_clue_label(grid_pos: Vector3, normal: Vector3, counts: Array) -> void:
 
 
 # Signal handlers for MobileTouchControls
-func on_chisel_requested(grid_pos: Vector3i) -> void:
+func on_chisel_requested(grid_pos: Vector3i, is_player_action: bool = true) -> void:
 	if not blocks.has(grid_pos):
 		return
 	var block = blocks[grid_pos] as PicrossBlock
 
 	if block.current_state == block.BlockState.MARKED:
 		# Marked blocks are protected from chiseling
-		if OS.has_feature("mobile"):
+		if OS.has_feature("mobile") and is_player_action:
 			Input.vibrate_handheld(20) # Small bump indicating protection
 		return
 
 	if block.current_state == block.BlockState.UNBROKEN:
-		_record_move(grid_pos, block.current_state)
+		# If this is not a player action, we append it to the last move (for undoing chain reactions)
+		_record_move(grid_pos, block.current_state, not is_player_action)
 
 		# If it's a target block, it's a mistake
 		if target_solution.get(grid_pos, false):
-			_destroy_block(block) # We break it to reveal the mistake underneath
-			_handle_mistake()
+			_destroy_block(block, is_player_action) # We break it to reveal the mistake underneath
+			_handle_mistake(is_player_action)
 		else:
-			_destroy_block(block)
-			if OS.has_feature("mobile"):
+			_destroy_block(block, is_player_action)
+			if OS.has_feature("mobile") and is_player_action:
 				Input.vibrate_handheld(40) # Haptic feedback on valid move
 	elif block.current_state != block.BlockState.DESTROYED:
-		_handle_mistake()
+		_handle_mistake(is_player_action)
 
 func on_mark_requested(grid_pos: Vector3i) -> void:
 	if not blocks.has(grid_pos):
@@ -432,20 +434,40 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 	else:
 		_handle_mistake()
 
-func _record_move(pos: Vector3i, previous_state: int) -> void:
-	move_history.append({"pos": pos, "state": previous_state})
+func _record_move(pos: Vector3i, previous_state: int, append_to_last: bool = false) -> void:
+	if append_to_last and move_history.size() > 0:
+		var last_entry = move_history.back()
+		if typeof(last_entry) == TYPE_ARRAY:
+			last_entry.append({"pos": pos, "state": previous_state})
+		else:
+			var new_array = [last_entry, {"pos": pos, "state": previous_state}]
+			move_history[move_history.size() - 1] = new_array
+	else:
+		move_history.append({"pos": pos, "state": previous_state})
 	emit_signal("history_updated", true)
 
 func undo_last_move() -> void:
 	if move_history.is_empty():
 		return
 	var last_move = move_history.pop_back()
-	var pos = last_move["pos"]
-	var prev_state = last_move["state"]
-	if blocks.has(pos):
-		var block = blocks[pos] as PicrossBlock
-		block.set_state(prev_state)
-		_update_slicing() # Ensure visibility is correct if hidden by slice
+
+	if typeof(last_move) == TYPE_ARRAY:
+		# Undo in reverse order
+		for i in range(last_move.size() - 1, -1, -1):
+			var move = last_move[i]
+			var pos = move["pos"]
+			var prev_state = move["state"]
+			if blocks.has(pos):
+				var block = blocks[pos] as PicrossBlock
+				block.set_state(prev_state)
+	else:
+		var pos = last_move["pos"]
+		var prev_state = last_move["state"]
+		if blocks.has(pos):
+			var block = blocks[pos] as PicrossBlock
+			block.set_state(prev_state)
+
+	_update_slicing() # Ensure visibility is correct if hidden by slice
 	emit_signal("history_updated", not move_history.is_empty())
 
 func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
@@ -466,17 +488,18 @@ func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
 			hovered_block.set_highlight(false)
 			hovered_block = null
 
-func _handle_mistake() -> void:
-	mistakes += 1
-	combo = 0
-	player_hp -= 1
-	_update_ui_state()
-	emit_signal("mistake_made", mistakes)
+func _handle_mistake(is_player_action: bool = true) -> void:
+	if is_player_action:
+		mistakes += 1
+		combo = 0
+		player_hp -= 1
+		_update_ui_state()
+		emit_signal("mistake_made", mistakes)
 
-	if OS.has_feature("mobile"):
-		Input.vibrate_handheld(120)
-	if camera and camera.get_parent() and camera.get_parent().has_method("shake"):
-		camera.get_parent().shake(0.3, 0.2)
+		if OS.has_feature("mobile"):
+			Input.vibrate_handheld(120)
+		if camera and camera.get_parent() and camera.get_parent().has_method("shake"):
+			camera.get_parent().shake(0.3, 0.2)
 
 	if player_hp <= 0:
 		is_puzzle_active = false
@@ -487,11 +510,13 @@ func _handle_mistake() -> void:
 		current_floor = 1
 		start_level()
 
-func _destroy_block(block: PicrossBlock) -> void:
+func _destroy_block(block: PicrossBlock, is_player_action: bool = true) -> void:
 	block.set_state(block.BlockState.DESTROYED)
-	combo += 1
+	if is_player_action:
+		combo += 1
 	_update_ui_state()
 	_check_win_condition()
+	emit_signal("voxel_destroyed", block.grid_position, is_player_action)
 
 func _check_win_condition() -> void:
 	if not is_puzzle_active: return
