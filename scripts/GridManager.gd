@@ -52,6 +52,22 @@ func _ready() -> void:
 			pivot.min_zoom = target_zoom * 0.5
 		camera.position.z = target_zoom
 
+	# Find UI elements that might have moved
+	if not slice_slider_x:
+		slice_slider_x = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/SliderX")
+	if not slice_slider_y:
+		slice_slider_y = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/SliderY")
+	if not slice_slider_z:
+		slice_slider_z = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/SliderZ")
+	if not mode_toggle:
+		mode_toggle = get_node_or_null("CanvasLayer/Control/MarginContainer/HBoxContainer/ModeToggle")
+
+	var touch_controls = get_node_or_null("CanvasLayer/Control")
+	if touch_controls and touch_controls is MobileTouchControls:
+		touch_controls.chisel_voxel_requested.connect(on_chisel_requested)
+		touch_controls.mark_voxel_requested.connect(on_mark_requested)
+		touch_controls.hover_voxel_requested.connect(on_hover_requested)
+
 	# Connect UI
 
 	if slice_slider_x:
@@ -88,6 +104,7 @@ func _build_grid() -> void:
 				var block = block_scene.instantiate() as PicrossBlock
 				add_child(block)
 				block.set_grid_position(pos)
+				block.set_meta("grid_pos", pos)
 				# Center the grid slightly based on origin, or keep it 0-based
 				block.position = Vector3(x, y, z) - Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
 				blocks[pos] = block
@@ -109,6 +126,9 @@ func _on_slice_z_changed(value: float) -> void:
 
 func _on_mode_toggled(button_pressed: bool) -> void:
 	current_mode = EditMode.MARK if button_pressed else EditMode.DESTROY
+	var touch_controls = get_node_or_null("CanvasLayer/Control")
+	if touch_controls and touch_controls is MobileTouchControls:
+		touch_controls.set_touch_mode(touch_controls.TouchMode.MARK if button_pressed else touch_controls.TouchMode.CHISEL)
 
 func _update_slicing() -> void:
 	for pos in blocks.keys():
@@ -201,75 +221,50 @@ func _add_clue_label(grid_pos: Vector3, normal: Vector3, counts: Array) -> void:
 	labels_container.add_child(label)
 
 
-var _touch_start_pos: Vector2 = Vector2.ZERO
-var _touch_dragged: bool = false
-const TOUCH_DRAG_THRESHOLD: float = 10.0
+# Signal handlers for MobileTouchControls
+func on_chisel_requested(grid_pos: Vector3i) -> void:
+	if not blocks.has(grid_pos):
+		return
+	var block = blocks[grid_pos] as PicrossBlock
+	if block.current_state == block.BlockState.UNBROKEN:
+		_destroy_block(block)
+		if OS.has_feature("mobile"):
+			Input.vibrate_handheld(50) # Haptic feedback on valid move
+	elif OS.has_feature("mobile"):
+		Input.vibrate_handheld(150) # Haptic error feedback
 
-func _unhandled_input(event: InputEvent) -> void:
-	# Raycast logic for hover and click
-	if not camera:
+func on_mark_requested(grid_pos: Vector3i) -> void:
+	if not blocks.has(grid_pos):
+		return
+	var block = blocks[grid_pos] as PicrossBlock
+	if block.current_state == block.BlockState.UNBROKEN:
+		block.set_state(block.BlockState.MARKED)
+		if OS.has_feature("mobile"):
+			Input.vibrate_handheld(50)
+	elif block.current_state == block.BlockState.MARKED:
+		block.set_state(block.BlockState.UNBROKEN)
+		if OS.has_feature("mobile"):
+			Input.vibrate_handheld(50)
+	elif OS.has_feature("mobile"):
+		Input.vibrate_handheld(150)
+
+func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
+	if not blocks.has(grid_pos):
+		if hovered_block:
+			hovered_block.set_highlight(false)
+			hovered_block = null
 		return
 
-	var is_click = false
-	var mouse_pos = Vector2.ZERO
-	var is_hover = false
-
-	# Since emulate_mouse_from_touch is true, we ONLY listen to MouseEvents to prevent double firing.
-	# InputEventScreenTouch will automatically generate InputEventMouseButton.
-	if event is InputEventMouseMotion:
-		is_hover = true
-		mouse_pos = event.position
-	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			_touch_start_pos = event.position
-			_touch_dragged = false
-		else:
-			if not _touch_dragged and event.position.distance_to(_touch_start_pos) < TOUCH_DRAG_THRESHOLD:
-				is_click = true
-				mouse_pos = event.position
-			elif event.position.distance_to(_touch_start_pos) >= TOUCH_DRAG_THRESHOLD:
-				_touch_dragged = true
-
-	if is_hover or is_click:
-		if mouse_pos == Vector2.ZERO:
-			mouse_pos = get_viewport().get_mouse_position()
-
-		var space_state = get_world_3d().direct_space_state
-		var ray_origin = camera.project_ray_origin(mouse_pos)
-		var ray_end = ray_origin + camera.project_ray_normal(mouse_pos) * 100.0
-
-		var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_end)
-		var result = space_state.intersect_ray(query)
-
-		if result:
-			var collider = result.collider
-			if collider is PicrossBlock:
-				if hovered_block != collider:
-					if hovered_block:
-						hovered_block.set_highlight(false)
-					hovered_block = collider
-					hovered_block.set_highlight(true)
-
-				if is_click:
-					# Consume event
-					get_viewport().set_input_as_handled()
-
-					# Alternate keys for modes
-					var is_mark_key = Input.is_key_pressed(KEY_2)
-					var actual_mode = EditMode.MARK if is_mark_key else current_mode
-
-					if actual_mode == EditMode.DESTROY:
-						if collider.current_state == collider.BlockState.UNBROKEN:
-							_destroy_block(collider)
-					elif actual_mode == EditMode.MARK:
-						if collider.current_state == collider.BlockState.UNBROKEN:
-							collider.set_state(collider.BlockState.MARKED)
-						elif collider.current_state == collider.BlockState.MARKED:
-							collider.set_state(collider.BlockState.UNBROKEN)
-		else:
-			if hovered_block:
-				hovered_block.set_highlight(false)
-				hovered_block = null
+	var block = blocks[grid_pos] as PicrossBlock
+	if is_hover:
+		if hovered_block and hovered_block != block:
+			hovered_block.set_highlight(false)
+		hovered_block = block
+		hovered_block.set_highlight(true)
+	else:
+		if hovered_block == block:
+			hovered_block.set_highlight(false)
+			hovered_block = null
 
 func _destroy_block(block: PicrossBlock) -> void:
 	block.set_state(block.BlockState.DESTROYED)

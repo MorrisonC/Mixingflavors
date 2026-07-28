@@ -26,3 +26,24 @@
 - **Creator**: Jules (Agent)
 - **License**: CC0 1.0 Universal (Public Domain)
 - **Use Case**: Abstract earthy environment background and stylized vibrant cube textures.
+
+## Mobile UI & Icons
+- **Asset Name**: Kenney Mobile UI Pack
+- **Source**: https://www.kenney.nl/assets/ui-pack
+- **Creator**: Kenney
+- **License**: CC0 1.0 Universal
+- **Use Case**: Touch buttons, sliders, mode toggle icons for mobile HUD.
+
+## Puzzle Audio & SFX
+- **Asset Name**: UI & Game Audio Pack
+- **Source**: https://opengameart.org/
+- **Creator**: Various Open Source Authors
+- **License**: CC0 / CC-BY 3.0
+- **Use Case**: Chisel impact, block breaking, menu clicks.
+
+## 2D Art & Overlays
+- **Asset Name**: Public Domain Classical & Fantasy Paintings
+- **Source**: https://opengameart.org/
+- **Creator**: Various Open Source Authors
+- **License**: Public Domain / CC0
+- **Use Case**: Masquerade Painting hidden-line canvas art.
