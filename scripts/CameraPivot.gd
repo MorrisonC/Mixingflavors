@@ -61,3 +61,15 @@ func _zoom_camera(amount: float) -> void:
 	if _camera:
 		_camera.position.z += amount
 		_camera.position.z = clamp(_camera.position.z, min_zoom, max_zoom)
+
+func shake(duration: float = 0.2, magnitude: float = 0.1) -> void:
+	var tween = create_tween()
+	var original_pos = position
+	for i in range(5):
+		var offset = Vector3(
+			randf_range(-magnitude, magnitude),
+			randf_range(-magnitude, magnitude),
+			0
+		)
+		tween.tween_property(self, "position", original_pos + offset, duration / 10.0)
+	tween.tween_property(self, "position", original_pos, duration / 10.0)
