@@ -26,13 +26,13 @@ jobs:
           godot --version
 
       - name: Initialize Godot Project
-        run: godot --headless --editor --quit
+        run: godot --headless --rendering-driver opengl3 --editor --quit || true
 
       - name: Run Telemetry Generation
-        run: godot --headless --script res://tools/telemetry_runner.gd
+        run: godot --headless --rendering-driver opengl3 --script res://tools/telemetry_runner.gd
 
       - name: Run Telemetry Analysis
-        run: godot --headless --script res://tools/analyze_telemetry.gd
+        run: godot --headless --rendering-driver opengl3 --script res://tools/analyze_telemetry.gd
 
       - name: Commit and Push Changes
         run: |
