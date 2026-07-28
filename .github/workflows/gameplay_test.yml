@@ -30,15 +30,15 @@ jobs:
       - name: Import Resources
         run: |
           # First run to import all assets properly
-          godot --headless --editor --quit
+          godot --headless --rendering-driver opengl3 --editor --quit || true
 
       - name: Run Telemetry Bot Test
         run: |
-          godot --headless --script res://tools/telemetry_runner.gd
+          godot --headless --rendering-driver opengl3 --script res://tools/telemetry_runner.gd
 
       - name: Analyze & Auto-Patch Balance
         run: |
-          godot --headless --script res://tools/analyze_telemetry.gd
+          godot --headless --rendering-driver opengl3 --script res://tools/analyze_telemetry.gd
 
       - name: Upload Telemetry Output
         uses: actions/upload-artifact@v4
