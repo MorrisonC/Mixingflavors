@@ -5,9 +5,6 @@ var bot_agent: BotAgent
 var game_manager_node: Node
 var main_scene_node: Node
 
-const TelemetryTrackerClass = preload("res://scripts/telemetry_tracker.gd")
-const BotAgentClass = preload("res://tools/bot_agent.gd")
-
 var total_test_duration: float = 30.0 # Total fallback timeout
 var time_elapsed: float = 0.0
 

@@ -23,7 +23,7 @@ res://test/unit/test_escape_gauntlet.gd
 * test_boss_round
 * test_mistake_failure
 [EscapeGauntlet] Gauntlet Failed!
-[GameManager] Switched to mode: 0
+[GameManager] Switched to mode: 1
 [33m[WARNING]:  [0mTest script has 5 unfreed children.  Increase log level for more details.
 [1m4/4 passed.
 [0m[4m
@@ -32,7 +32,7 @@ res://test/unit/test_game_manager.gd
 [0m* test_game_manager_autoload
 * test_initial_stats
 * test_switch_mode
-[GameManager] Switched to mode: 2
+[GameManager] Switched to mode: 3
 [1m3/3 passed.
 [0m[4m
 
@@ -71,7 +71,7 @@ Scripts           6
 Tests             13
   Passing         13
 Asserts           28
-Time              0.138s
+Time              0.13s
 
 
 [32m---- All tests passed! ----

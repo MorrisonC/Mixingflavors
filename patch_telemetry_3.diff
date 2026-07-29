@@ -1,0 +1,18 @@
+--- tools/telemetry_runner.gd
++++ tools/telemetry_runner.gd
+@@ -19,13 +19,13 @@
+     root.add_child(main_scene_node)
+
+     # Setup Telemetry Tracker
+-    telemetry_tracker = Node.new()
+-    telemetry_tracker.set_script(TelemetryTrackerClass)
++    telemetry_tracker = TelemetryTrackerClass.new()
+     telemetry_tracker.name = "TelemetryTracker"
+     root.add_child(telemetry_tracker)
+
+     # Setup Bot Agent
+-    bot_agent = Node.new()
+-    bot_agent.set_script(BotAgentClass)
++    bot_agent = BotAgentClass.new()
+     bot_agent.name = "BotAgent"
+     root.add_child(bot_agent)
