@@ -40,8 +40,10 @@ var base_grid_size: int = 3
 @onready var slice_controls: VBoxContainer = null
 @onready var chisel_btn: Button = null
 @onready var mark_btn: Button = null
+@onready var rotate_btn: Button = null
 @onready var slice_toggle_btn: Button = null
 @onready var undo_btn: Button = null
+@onready var export_btn: Button = null
 
 @onready var round_label: Label = null
 @onready var hp_label: Label = null
@@ -50,12 +52,24 @@ var base_grid_size: int = 3
 @onready var boss_name_label: Label = null
 @onready var boss_hp_bar: ProgressBar = null
 
-enum EditMode { DESTROY, MARK }
+enum EditMode { DESTROY, MARK, ROTATE, BUILD }
 var current_mode: EditMode = EditMode.DESTROY
-
+var is_editor_mode: bool = false
+enum HintType { SIMPLE, CIRCLE, SQUARE }
 var hovered_block: PicrossBlock = null
 
 func _ready() -> void:
+	var game_manager = get_node_or_null("/root/GameManager")
+	var has_custom_puzzle = false
+	var custom_puzzle_data = {}
+
+	if game_manager and game_manager.get("mode_payload"):
+		if game_manager.mode_payload.get("mode") == "editor":
+			is_editor_mode = true
+		if game_manager.mode_payload.has("custom_puzzle"):
+			has_custom_puzzle = true
+			custom_puzzle_data = game_manager.mode_payload["custom_puzzle"]
+
 	# Find UI elements
 	slice_controls = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls")
 	if slice_controls:
@@ -65,8 +79,16 @@ func _ready() -> void:
 
 	chisel_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ChiselButton")
 	mark_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/MarkButton")
+	rotate_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/RotateButton")
 	slice_toggle_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/SliceToggleButton")
 	undo_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/UndoButton")
+	export_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ExportButton")
+
+	if is_editor_mode and mark_btn and chisel_btn and export_btn:
+		chisel_btn.text = "Remove"
+		mark_btn.text = "Add"
+		mark_btn.modulate = Color(0.2, 1.0, 0.2)
+		export_btn.visible = true
 
 	var top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer")
 	if top_info:
@@ -108,10 +130,44 @@ func _ready() -> void:
 		chisel_btn.pressed.connect(_on_chisel_mode_selected)
 	if mark_btn and not mark_btn.pressed.is_connected(_on_mark_mode_selected):
 		mark_btn.pressed.connect(_on_mark_mode_selected)
+	if rotate_btn and not rotate_btn.pressed.is_connected(_on_rotate_mode_selected):
+		rotate_btn.pressed.connect(_on_rotate_mode_selected)
 	if slice_toggle_btn and not slice_toggle_btn.pressed.is_connected(_on_slice_toggle_pressed):
 		slice_toggle_btn.pressed.connect(_on_slice_toggle_pressed)
 	if undo_btn and not undo_btn.pressed.is_connected(undo_last_move):
 		undo_btn.pressed.connect(undo_last_move)
+	if export_btn and not export_btn.pressed.is_connected(_export_puzzle):
+		export_btn.pressed.connect(_export_puzzle)
+
+	if has_custom_puzzle:
+		_load_custom_puzzle(custom_puzzle_data)
+
+func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
+	# Clean up logic here before setting grid size if needed
+	grid_size = Vector3i(puzzle_data["dims"][0], puzzle_data["dims"][1], puzzle_data["dims"][2])
+	slice_max = grid_size
+
+	target_solution.clear()
+	for pos in blocks.keys():
+		blocks[pos].queue_free()
+	blocks.clear()
+	move_history.clear()
+
+	_build_grid()
+
+	var cells = puzzle_data["cells"]
+	var index = 0
+	for z in range(grid_size.z):
+		for y in range(grid_size.y):
+			for x in range(grid_size.x):
+				var pos = Vector3i(x, y, z)
+				if index < cells.size() and cells[index] == 1:
+					target_solution[pos] = true
+				else:
+					target_solution[pos] = false
+				index += 1
+
+	_update_clues()
 
 func start_level() -> void:
 	is_puzzle_active = true
@@ -132,6 +188,11 @@ func start_level() -> void:
 
 	max_boss_hp = 100.0 + (current_floor * 50.0)
 	boss_hp = max_boss_hp
+
+	var game_manager = get_node_or_null("/root/GameManager")
+	if game_manager and game_manager.get("mode_payload") and game_manager.mode_payload.has("custom_puzzle"):
+		_load_custom_puzzle(game_manager.mode_payload["custom_puzzle"])
+		return
 
 	_generate_solution()
 	_build_grid()
@@ -168,8 +229,10 @@ func start_level() -> void:
 
 	chisel_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ChiselButton")
 	mark_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/MarkButton")
+	rotate_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/RotateButton")
 	slice_toggle_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/SliceToggleButton")
 	undo_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/UndoButton")
+	export_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ExportButton")
 
 	var top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer")
 	if top_info:
@@ -181,12 +244,6 @@ func start_level() -> void:
 		if boss_container:
 			boss_name_label = boss_container.get_node_or_null("BossNameLabel")
 			boss_hp_bar = boss_container.get_node_or_null("BossHPBar")
-
-	var touch_controls = get_node_or_null("CanvasLayer/Control")
-	if touch_controls and touch_controls is MobileTouchControls:
-		touch_controls.chisel_voxel_requested.connect(on_chisel_requested)
-		touch_controls.mark_voxel_requested.connect(on_mark_requested)
-		touch_controls.hover_voxel_requested.connect(on_hover_requested)
 
 	# Connect UI
 
@@ -207,6 +264,8 @@ func start_level() -> void:
 		chisel_btn.pressed.connect(_on_chisel_mode_selected)
 	if mark_btn:
 		mark_btn.pressed.connect(_on_mark_mode_selected)
+	if rotate_btn:
+		rotate_btn.pressed.connect(_on_rotate_mode_selected)
 	if slice_toggle_btn:
 		slice_toggle_btn.pressed.connect(_on_slice_toggle_pressed)
 	if undo_btn:
@@ -253,9 +312,10 @@ func _update_ui_state() -> void:
 	if combo_label:
 		combo_label.text = "Combo: x%d" % combo
 
-	if chisel_btn and mark_btn:
+	if chisel_btn and mark_btn and rotate_btn:
 		chisel_btn.disabled = (current_mode == EditMode.DESTROY)
-		mark_btn.disabled = (current_mode == EditMode.MARK)
+		mark_btn.disabled = (current_mode == EditMode.MARK or current_mode == EditMode.BUILD)
+		rotate_btn.disabled = (current_mode == EditMode.ROTATE)
 
 func _on_chisel_mode_selected() -> void:
 	current_mode = EditMode.DESTROY
@@ -265,11 +325,21 @@ func _on_chisel_mode_selected() -> void:
 		touch_controls.set_touch_mode(touch_controls.TouchMode.CHISEL)
 
 func _on_mark_mode_selected() -> void:
-	current_mode = EditMode.MARK
+	if is_editor_mode:
+		current_mode = EditMode.BUILD
+	else:
+		current_mode = EditMode.MARK
 	_update_ui_state()
 	var touch_controls = get_node_or_null("CanvasLayer/Control")
 	if touch_controls and touch_controls is MobileTouchControls:
 		touch_controls.set_touch_mode(touch_controls.TouchMode.MARK)
+
+func _on_rotate_mode_selected() -> void:
+	current_mode = EditMode.ROTATE
+	_update_ui_state()
+	var touch_controls = get_node_or_null("CanvasLayer/Control")
+	if touch_controls and touch_controls is MobileTouchControls:
+		touch_controls.set_touch_mode(touch_controls.TouchMode.ROTATE)
 
 func _on_slice_toggle_pressed() -> void:
 	if slice_controls:
@@ -437,18 +507,49 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 	if not blocks.has(grid_pos):
 		return
 	var block = blocks[grid_pos] as PicrossBlock
-	if block.current_state == block.BlockState.UNBROKEN:
-		_record_move(grid_pos, block.current_state)
-		block.set_state(block.BlockState.MARKED)
-		if OS.has_feature("mobile"):
-			Input.vibrate_handheld(40)
-	elif block.current_state == block.BlockState.MARKED:
-		_record_move(grid_pos, block.current_state)
-		block.set_state(block.BlockState.UNBROKEN)
-		if OS.has_feature("mobile"):
-			Input.vibrate_handheld(40)
+
+	if is_editor_mode:
+		if block.current_state == block.BlockState.DESTROYED:
+			_record_move(grid_pos, block.current_state)
+			block.set_state(block.BlockState.UNBROKEN)
+			target_solution[grid_pos] = true
+			_update_clues()
 	else:
-		_handle_mistake()
+		if block.current_state == block.BlockState.UNBROKEN:
+			_record_move(grid_pos, block.current_state)
+			block.set_state(block.BlockState.MARKED)
+			if OS.has_feature("mobile"):
+				Input.vibrate_handheld(40)
+		elif block.current_state == block.BlockState.MARKED:
+			_record_move(grid_pos, block.current_state)
+			block.set_state(block.BlockState.UNBROKEN)
+			if OS.has_feature("mobile"):
+				Input.vibrate_handheld(40)
+		else:
+			_handle_mistake()
+
+func _export_puzzle() -> void:
+	var puzzle_data = {
+		"dims": [grid_size.x, grid_size.y, grid_size.z],
+		"cells": []
+	}
+
+	for z in range(grid_size.z):
+		for y in range(grid_size.y):
+			for x in range(grid_size.x):
+				var pos = Vector3i(x, y, z)
+				var state = 1 if target_solution.get(pos, false) else 0
+				puzzle_data["cells"].append(state)
+
+	var json_string = JSON.stringify(puzzle_data)
+	print("EXPORTED JSON: ", json_string)
+
+	# Try to save to user dir
+	var file = FileAccess.open("user://exported_puzzle.json", FileAccess.WRITE)
+	if file:
+		file.store_string(json_string)
+		file.close()
+		print("Saved puzzle to user://exported_puzzle.json")
 
 func _record_move(pos: Vector3i, previous_state: int) -> void:
 	move_history.append({"pos": pos, "state": previous_state})

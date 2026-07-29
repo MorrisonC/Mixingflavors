@@ -6,6 +6,7 @@ signal stat_changed(stat_name, new_value)
 
 # GameMode Identifiers as defined in Master Level Design
 enum GameMode {
+	MAIN_MENU,
 	LONE_WOLF_NARRATIVE,
 	MASQUERADE_PAINTING,
 	PICROSS_3D,
@@ -26,10 +27,11 @@ var stats: Dictionary = {
 # Cross-Mechanic Data Buffer (Passes state between modes)
 var active_voxel_template: Array = []
 var discovered_anchors: Array = []
-var current_mode: GameMode = GameMode.ESCAPE_GAUNTLET
+var current_mode: GameMode = GameMode.MAIN_MENU
 
 # Scene File Paths (Ensure case-sensitivity matches your project files)
 const MODE_SCENES: Dictionary = {
+	GameMode.MAIN_MENU: "res://scenes/MainMenu.tscn",
 	GameMode.LONE_WOLF_NARRATIVE: "res://scenes/LoneWolfNarrative.tscn",
 	GameMode.MASQUERADE_PAINTING: "res://scenes/MasqueradePainting.tscn",
 	GameMode.PICROSS_3D: "res://scenes/Picross3D.tscn",
