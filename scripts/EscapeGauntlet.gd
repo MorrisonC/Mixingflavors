@@ -12,9 +12,44 @@ var active_puzzle: Node3D = null
 
 @onready var timer_label: Label = $UI/TimerLabel
 @onready var round_label: Label = $UI/RoundLabel
+@onready var quit_btn: Button = $UI/QuitButton
+@onready var confirm_dialog: Panel = $UI/ConfirmDialog
+@onready var yes_btn: Button = $UI/ConfirmDialog/VBoxContainer/HBoxContainer/YesButton
+@onready var no_btn: Button = $UI/ConfirmDialog/VBoxContainer/HBoxContainer/NoButton
 
 func _ready() -> void:
+	_apply_theme()
+
+	quit_btn.pressed.connect(func(): confirm_dialog.show())
+	no_btn.pressed.connect(func(): confirm_dialog.hide())
+	yes_btn.pressed.connect(func():
+		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
+	)
+
 	_start_round()
+
+func _apply_theme() -> void:
+	if GameManagerClass.is_valentine_theme():
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.98, 0.92, 0.93, 1)
+		style.corner_radius_top_left = 8
+		style.corner_radius_top_right = 8
+		style.corner_radius_bottom_left = 8
+		style.corner_radius_bottom_right = 8
+		confirm_dialog.add_theme_stylebox_override("panel", style)
+
+		var label = $UI/ConfirmDialog/VBoxContainer/Label
+		label.add_theme_color_override("font_color", Color(0.85, 0.15, 0.3, 1))
+
+		var btn_style = StyleBoxFlat.new()
+		btn_style.bg_color = Color(0.95, 0.45, 0.55, 1)
+		btn_style.corner_radius_top_left = 8
+		btn_style.corner_radius_top_right = 8
+		btn_style.corner_radius_bottom_left = 8
+		btn_style.corner_radius_bottom_right = 8
+
+		for btn in [quit_btn, yes_btn, no_btn]:
+			btn.add_theme_stylebox_override("normal", btn_style)
 
 func _process(delta: float) -> void:
 	if time_left > 0:
