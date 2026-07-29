@@ -14,6 +14,8 @@ var target_solution: Dictionary = {}
 
 var slice_max: Vector3i
 var move_history: Array = []
+var current_move_group: Array = []
+var is_grouping_moves: bool = false
 
 @onready var labels_container: Node3D = $LabelsContainer
 
@@ -23,6 +25,7 @@ signal combo_updated(current_combo)
 signal history_updated(can_undo)
 signal game_over
 signal floor_cleared
+signal block_destroyed(grid_pos: Vector3i, is_player_action: bool)
 
 var mistakes: int = 0
 var combo: int = 0
@@ -65,7 +68,7 @@ const GameManagerClass = preload("res://scripts/GameManager.gd")
 var has_custom_puzzle: bool = false
 
 func _ready() -> void:
-	if GameManagerClass.has_method("is_valentine_theme") and GameManagerClass.is_valentine_theme():
+	if get_node_or_null("/root/GameManager") and get_node("/root/GameManager").has_method("is_valentine_theme") and get_node("/root/GameManager").is_valentine_theme():
 		var env_node = get_node_or_null("WorldEnvironment")
 		if env_node and env_node.environment:
 			env_node.environment.background_color = Color(1.0, 0.94, 0.96)
@@ -565,7 +568,7 @@ func _calculate_clue(start: Vector3i, step: Vector3i, length: int) -> Array:
 	return groups
 
 # Signal handlers for MobileTouchControls
-func on_chisel_requested(grid_pos: Vector3i) -> void:
+func on_chisel_requested(grid_pos: Vector3i, is_player_action: bool = true) -> void:
 	if not blocks.has(grid_pos):
 		return
 	var block = blocks[grid_pos] as VoxelBlock
@@ -581,10 +584,10 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 
 		# If it's a target block, it's a mistake
 		if target_solution.get(grid_pos, false):
-			_destroy_block(block) # We break it to reveal the mistake underneath
+			_destroy_block(block, is_player_action) # We break it to reveal the mistake underneath
 			_handle_mistake()
 		else:
-			_destroy_block(block)
+			_destroy_block(block, is_player_action)
 			if OS.has_feature("mobile"):
 				Input.vibrate_handheld(40) # Haptic feedback on valid move
 	elif block.current_state != block.BlockState.DESTROYED:
@@ -650,21 +653,44 @@ func _export_puzzle() -> void:
 		file.close()
 		print("Saved puzzle to user://exported_puzzle.json")
 
+func start_move_group() -> void:
+	is_grouping_moves = true
+	current_move_group = []
+
+func end_move_group() -> void:
+	is_grouping_moves = false
+	if not current_move_group.is_empty():
+		move_history.append(current_move_group)
+		current_move_group = []
+		emit_signal("history_updated", true)
+
 func _record_move(pos: Vector3i, previous_state: int) -> void:
-	move_history.append({"pos": pos, "state": previous_state})
-	emit_signal("history_updated", true)
+	if is_grouping_moves:
+		current_move_group.append({"pos": pos, "state": previous_state})
+	else:
+		move_history.append({"pos": pos, "state": previous_state})
+		emit_signal("history_updated", true)
 
 func undo_last_move() -> void:
 	if move_history.is_empty():
 		return
 	var last_move = move_history.pop_back()
-	var pos = last_move["pos"]
-	var prev_state = last_move["state"]
+
+	if typeof(last_move) == TYPE_ARRAY:
+		for i in range(last_move.size() - 1, -1, -1):
+			_undo_single_move(last_move[i])
+	else:
+		_undo_single_move(last_move)
+
+	_update_slicing() # Ensure visibility is correct if hidden by slice
+	emit_signal("history_updated", not move_history.is_empty())
+
+func _undo_single_move(move: Dictionary) -> void:
+	var pos = move["pos"]
+	var prev_state = move["state"]
 	if blocks.has(pos):
 		var block = blocks[pos] as VoxelBlock
 		block.set_state(prev_state)
-		_update_slicing() # Ensure visibility is correct if hidden by slice
-	emit_signal("history_updated", not move_history.is_empty())
 
 func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
 	if not blocks.has(grid_pos):
@@ -709,10 +735,14 @@ func _handle_mistake() -> void:
 		current_floor = 1
 		start_level()
 
-func _destroy_block(block: VoxelBlock) -> void:
+func _destroy_block(block: VoxelBlock, is_player_action: bool = true) -> void:
 	block.set_state(block.BlockState.DESTROYED)
-	combo += 1
+	if is_player_action:
+		combo += 1
 	_update_ui_state()
+	emit_signal("block_destroyed", block.grid_position, is_player_action)
+	if is_player_action:
+		emit_signal("combo_updated", combo)
 	_check_win_condition()
 
 func _check_win_condition() -> void:
