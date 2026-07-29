@@ -39,7 +39,7 @@ const MODE_SCENES: Dictionary = {
 }
 
 func _ready() -> void:
-	print("[GameManager] Initialized successfully. Current Mode: EscapeGauntlet")
+	print("[GameManager] Initialized successfully. Current Mode: MainMenu")
 
 func set_stat(stat_name: String, value: int) -> void:
 	if stats.has(stat_name):
