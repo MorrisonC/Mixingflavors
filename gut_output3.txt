@@ -1,0 +1,105 @@
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+ERROR: Attempt to open script 'res://addons/gut/gut_loader.gd' resulted in error 'File not found'.
+   at: load_source_code (modules/gdscript/gdscript.cpp:1094)
+ERROR: Failed loading resource: res://addons/gut/gut_loader.gd. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+[GameManager] Initialized successfully. Current Mode: MainMenu
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/jules/.local/share/godot/app_userdata/HybridTacticalPuzzleRPG] for temporary output.
+Godot version:  4.3.0
+GUT version:  9.3.0
+[4m
+
+res://test/unit/test_boss_loop.gd
+[0m* test_boss_loop_hp_and_damage
+ERROR: Parameter "m" is null.
+   at: mesh_get_surface_count (servers/rendering/dummy/storage/mesh_storage.h:120)
+[1m1/1 passed.
+[0m[4m
+
+res://test/unit/test_escape_gauntlet.gd
+[0m* test_initialization
+* test_round_progression
+* test_boss_round
+ERROR: Parameter "m" is null.
+   at: mesh_get_surface_count (servers/rendering/dummy/storage/mesh_storage.h:120)
+* test_mistake_failure
+[EscapeGauntlet] Gauntlet Failed!
+[33m[WARNING]:  [0mTest script has 2 unfreed children.  Increase log level for more details.
+[1m4/4 passed.
+[0m[4m
+
+res://test/unit/test_game_manager.gd
+[0m* test_game_manager_autoload
+* test_initial_stats
+* test_switch_mode
+[GameManager] Switched to mode: 1
+[1m3/3 passed.
+[0m[4m
+
+res://test/unit/test_grid_manager.gd
+[0m* test_build_grid
+* test_slicing_hides_blocks
+[33m[WARNING]:  [0mTest script has 3 unfreed children.  Increase log level for more details.
+[1m2/2 passed.
+[0m[4m
+
+res://test/unit/test_main_menu.gd
+[0m* test_play_button_switches_mode
+[GameManager] Switched to mode: 2
+* test_editor_button_switches_mode
+[GameManager] Switched to mode: 3
+ERROR: Parameter "m" is null.
+   at: mesh_get_surface_count (servers/rendering/dummy/storage/mesh_storage.h:120)
+* test_settings_button_shows_panel
+[33m[WARNING]:  [0mTest script has 2 unfreed children.  Increase log level for more details.
+[1m3/3 passed.
+[0m[4m
+
+res://test/unit/test_mobile_touch_controls.gd
+[0m* test_tap_vs_drag_disambiguation
+* test_drag_threshold_exceeded
+[33m[WARNING]:  [0mTest script has 3 unfreed children.  Increase log level for more details.
+[1m2/2 passed.
+[0m[4m
+
+res://test/unit/test_undo_system.gd
+[0m* test_undo_multiple_moves
+[33m[WARNING]:  [0mTest script has 2 unfreed children.  Increase log level for more details.
+[1m1/1 passed.
+[0m[4m
+
+res://test/unit/test_valentine_theme.gd
+[0m* test_valentine_theme_toggle
+[GameManager] Initialized successfully. Current Mode: MainMenu
+SCRIPT ERROR: Invalid call. Nonexistent function 'is_valentine_theme' in base 'Node (GameManager.gd)'.
+          at: test_valentine_theme_toggle (res://test/unit/test_valentine_theme.gd:14)
+[33m    [Risky]:  [0mtest_valentine_theme_toggle did not assert
+ERROR: Parameter "m" is null.
+   at: mesh_get_surface_count (servers/rendering/dummy/storage/mesh_storage.h:120)
+
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m- test_valentine_theme_toggle
+[33m    [Risky]:  [0mDid not assert
+
+---- Totals ----
+Warnings          5
+
+Scripts           8
+Tests             17
+  Passing         16
+  Risky/Pending   1
+Asserts           36
+Time              0.459s
+
+
+[33m---- 1 pending/risky tests. ----
+[0m
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+     at: cleanup (core/object/object.cpp:2284)
