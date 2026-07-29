@@ -65,12 +65,12 @@ const GameManagerClass = preload("res://scripts/GameManager.gd")
 var has_custom_puzzle: bool = false
 
 func _ready() -> void:
-	if GameManagerClass.has_method("is_valentine_theme") and GameManagerClass.is_valentine_theme():
+	var game_manager = get_node_or_null("/root/GameManager")
+	if game_manager and game_manager.has_method("is_valentine_theme") and game_manager.is_valentine_theme():
 		var env_node = get_node_or_null("WorldEnvironment")
 		if env_node and env_node.environment:
 			env_node.environment.background_color = Color(1.0, 0.94, 0.96)
 
-	var game_manager = get_node_or_null("/root/GameManager")
 	var custom_puzzle_data = {}
 
 	if game_manager and game_manager.get("mode_payload"):
@@ -606,22 +606,26 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED:
 				_record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.PAINTED)
+				block.play_interaction_juice()
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(40)
 			elif block.current_state == block.BlockState.PAINTED:
 				_record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.UNBROKEN)
+				block.play_interaction_juice()
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(20)
 		elif current_mode == EditMode.MARK:
 			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.PAINTED:
 				_record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.MARKED)
+				block.play_interaction_juice()
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(40)
 			elif block.current_state == block.BlockState.MARKED:
 				_record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.UNBROKEN)
+				block.play_interaction_juice()
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(20)
 		else:
