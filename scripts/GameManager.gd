@@ -4,25 +4,22 @@ extends Node
 signal mode_changed(new_mode_id)
 signal stat_changed(stat_name, new_value)
 
-# GameMode Identifiers as defined in Master Level Design
+# GameMode Identifiers
 enum GameMode {
 	MAIN_MENU,
-	LONE_WOLF_NARRATIVE,
-	MASQUERADE_PAINTING,
-	PICROSS_3D,
-	DETECTIVE_CRIME_SCENE,
+	VOXEL_LOGIC,
 	ESCAPE_GAUNTLET,
-	TIME_SHIFT_PALIMPSEST,
-	PUZZLE_EDITOR
+	PUZZLE_EDITOR,
+	PUZZLE_SELECTION
 }
 
 # Core RPG Stats
 var stats: Dictionary = {
-	"perception": 2,          # Unlocks hidden anchors in MasqueradePainting if > 1
-	"health": 100,            # High health prevents Picross3D corruption (> 50)
-	"endurance": 100,         # High endurance prevents Picross3D corruption (> 50)
-	"alchemy_discipline": 2,  # Allows custom voxel coloring/solving advanced constraints (> 1)
-	"lore_discipline": 1      # Unlocks additional narrative dialogue options
+	"perception": 2,
+	"health": 100,
+	"endurance": 100,
+	"alchemy_discipline": 2,
+	"lore_discipline": 1
 }
 
 # Cross-Mechanic Data Buffer (Passes state between modes)
@@ -33,11 +30,10 @@ var current_mode: GameMode = GameMode.MAIN_MENU
 # Scene File Paths (Ensure case-sensitivity matches your project files)
 const MODE_SCENES: Dictionary = {
 	GameMode.MAIN_MENU: "res://scenes/MainMenu.tscn",
-	GameMode.LONE_WOLF_NARRATIVE: "res://scenes/LoneWolfNarrative.tscn",
-	GameMode.MASQUERADE_PAINTING: "res://scenes/MasqueradePainting.tscn",
-	GameMode.PICROSS_3D: "res://scenes/Picross3D.tscn",
+	GameMode.VOXEL_LOGIC: "res://scenes/VoxelLogic.tscn",
 	GameMode.ESCAPE_GAUNTLET: "res://scenes/EscapeGauntlet.tscn",
-	GameMode.PUZZLE_EDITOR: "res://scenes/PuzzleEditor.tscn"
+	GameMode.PUZZLE_EDITOR: "res://scenes/PuzzleEditor.tscn",
+	GameMode.PUZZLE_SELECTION: "res://scenes/PuzzleSelection.tscn"
 }
 
 func _ready() -> void:

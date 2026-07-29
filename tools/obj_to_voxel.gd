@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 # Simple voxelizer script for converting an .obj file to a Picross 3D JSON puzzle
 # Intended for internal use by devs to generate puzzles.

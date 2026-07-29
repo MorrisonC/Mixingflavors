@@ -1,4 +1,4 @@
-class_name BotAgent
+﻿class_name BotAgent
 extends Node
 
 const GameManagerClass = preload("res://scripts/GameManager.gd")
@@ -37,20 +37,20 @@ func _on_game_mode_changed(new_mode: int):
     time_since_last_action = 0.0
     is_stuck = false
 
-    if current_mode == GameManagerClass.GameMode.PICROSS_3D:
+    if current_mode == GameManagerClass.GameMode.VOXEL_LOGIC:
         visited_picross = true
-    if current_mode == GameManagerClass.GameMode.MASQUERADE_PAINTING:
+    if current_mode == GameManagerClass.GameMode.MAIN_MENU:
         visited_painting = true
 
     _update_system_name()
 
 func _update_system_name():
     match current_mode:
-        GameManagerClass.GameMode.LONE_WOLF_NARRATIVE:
+        GameManagerClass.GameMode.MAIN_MENU:
             current_system = "Narrative"
-        GameManagerClass.GameMode.MASQUERADE_PAINTING:
+        GameManagerClass.GameMode.MAIN_MENU:
             current_system = "Painting2D"
-        GameManagerClass.GameMode.PICROSS_3D:
+        GameManagerClass.GameMode.VOXEL_LOGIC:
             current_system = "Voxel3D"
         _:
             current_system = "Unknown"
@@ -63,7 +63,7 @@ func _process(delta: float):
     check_stuck_state()
 
     # Check if we have completed a full loop
-    if current_mode == GameManagerClass.GameMode.LONE_WOLF_NARRATIVE and visited_picross and visited_painting:
+    if current_mode == GameManagerClass.GameMode.MAIN_MENU and visited_picross and visited_painting:
         # Avoid firing multiple times
         visited_picross = false
         visited_painting = false
@@ -72,16 +72,16 @@ func _process(delta: float):
 func simulate_gameplay(delta: float):
     # Simulate a player trying to solve the puzzle/level based on current mode
     match current_mode:
-        GameManagerClass.GameMode.LONE_WOLF_NARRATIVE:
+        GameManagerClass.GameMode.MAIN_MENU:
             if time_since_last_action > 2.0:
                 perform_action("narrative_reading", {})
                 # Try to press UI buttons
                 if not visited_picross:
-                    _find_and_press_button("Investigate 3D Voxel Sigil (Enter Picross3D)")
+                    _find_and_press_button("Investigate 3D Voxel Sigil (Enter VoxelLogic)")
                 else:
                     _find_and_press_button("[Perception] Inspect Canvas Patterns (Enter Masquerade Painting)")
 
-        GameManagerClass.GameMode.MASQUERADE_PAINTING:
+        GameManagerClass.GameMode.MAIN_MENU:
             if time_since_last_action > 1.0:
                 # Simulate drawing lines
                 var start = Vector2(randf_range(0, 800), randf_range(0, 600))
@@ -93,7 +93,7 @@ func simulate_gameplay(delta: float):
                 if time_in_current_state > 3.0:
                     _find_and_press_button("Back to Narrative")
 
-        GameManagerClass.GameMode.PICROSS_3D:
+        GameManagerClass.GameMode.VOXEL_LOGIC:
             if time_since_last_action > 0.5:
                 # Simulate chiseling voxels
                 var target_x = randi() % 5

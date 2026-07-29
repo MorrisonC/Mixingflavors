@@ -1,4 +1,4 @@
-extends GutTest
+﻿extends GutTest
 
 const MainMenuScene = preload("res://scenes/MainMenu.tscn")
 var main_menu

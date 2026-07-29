@@ -10,8 +10,8 @@ panorama = ExtResource("2_6dx2x")
 sky_material = SubResource("PanoramaSkyMaterial_6skyl")
 
 [sub_resource type="Environment" id="Environment_ikp3j"]
-background_mode = 2
-sky = SubResource("Sky_wtn17")
+background_mode = 1
+background_color = Color(0.97, 0.91, 0.59, 1)
 
 [node name="EscapeGauntlet" type="Node3D"]
 script = ExtResource("1_escape")

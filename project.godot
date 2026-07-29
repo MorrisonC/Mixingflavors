@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.97, 0.91, 0.59, 1)
 
 [autoload]
 GameManager="*res://scripts/GameManager.gd"

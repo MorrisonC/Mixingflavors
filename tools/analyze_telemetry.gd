@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 var telemetry_file_path = "user://telemetry_output.json"
 var roadmap_file_path = "res://BALANCE_ROADMAP.md"
@@ -161,7 +161,7 @@ func apply_patches(adjustments: Array):
         var modified = false
         for adj in adjustments:
             if adj.type == "decrease_difficulty":
-                if "Picross3D" in adj.mode:
+                if "VoxelLogic" in adj.mode:
                     content = content.replace("var alchemy_discipline: int = 1", "var alchemy_discipline: int = 2")
                     modified = true
                 elif "MasqueradePainting" in adj.mode:
@@ -169,7 +169,7 @@ func apply_patches(adjustments: Array):
                     modified = true
 
             elif adj.type == "increase_difficulty":
-                if "Picross3D" in adj.mode:
+                if "VoxelLogic" in adj.mode:
                     content = content.replace("var health: int = 100", "var health: int = 50")
                     modified = true
 
@@ -187,7 +187,7 @@ func apply_patches(adjustments: Array):
 
         var modified = false
         for adj in adjustments:
-            if adj.type == "decrease_difficulty" and "Picross3D" in adj.mode:
+            if adj.type == "decrease_difficulty" and "VoxelLogic" in adj.mode:
                 content = content.replace("@export var GridSizeX: int = 5", "@export var GridSizeX: int = 4")
                 content = content.replace("@export var GridSizeY: int = 5", "@export var GridSizeY: int = 4")
                 content = content.replace("@export var GridSizeZ: int = 5", "@export var GridSizeZ: int = 4")

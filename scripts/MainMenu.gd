@@ -10,9 +10,16 @@ func _ready() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	editor_button.pressed.connect(_on_editor_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
+	
+	var select_btn = get_node_or_null("VBoxContainer/SelectButton")
+	if select_btn:
+		select_btn.pressed.connect(_on_select_pressed)
 
 func _on_play_pressed() -> void:
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)
+
+func _on_select_pressed() -> void:
+	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PUZZLE_SELECTION)
 
 func _on_editor_pressed() -> void:
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PUZZLE_EDITOR)

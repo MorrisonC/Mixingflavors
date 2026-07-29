@@ -47,3 +47,11 @@
 - **Creator**: Various Open Source Authors
 - **License**: Public Domain / CC0
 - **Use Case**: Masquerade Painting hidden-line canvas art.
+
+## Valentine-Themed Assets
+- **Asset Name**: Valentine Heart, Rose, and Cupid's Bow Voxel Models
+- **Source**: Procedural designs inspired by Kenney's Valentine/Holiday Voxel Pack
+- **Creator**: Jules (Agent)
+- **License**: CC0 1.0 Universal (Public Domain)
+- **Use Case**: Target models for Gauntlet mode rounds 1, 2, and Boss fight.
+

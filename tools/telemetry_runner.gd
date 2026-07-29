@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 var telemetry_tracker: TelemetryTracker
 var bot_agent: BotAgent

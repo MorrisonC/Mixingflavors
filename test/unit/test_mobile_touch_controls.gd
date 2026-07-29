@@ -1,4 +1,4 @@
-extends GutTest
+﻿extends GutTest
 
 const MobileTouchControlsClass = preload("res://scripts/MobileTouchControls.gd")
 var controls

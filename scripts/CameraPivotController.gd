@@ -9,9 +9,9 @@ signal view_snapped(face_name: String)
 enum SnapFace { FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM }
 
 @export_category("Orbit Settings")
-@export var orbit_sensitivity: Vector2 = Vector2(0.004, 0.004)
-@export var pitch_min_deg: float = -89.0
-@export var pitch_max_deg: float = 89.0
+@export var orbit_sensitivity: Vector2 = Vector2(0.015, 0.015)
+@export var pitch_min_deg: float = -89.9
+@export var pitch_max_deg: float = 89.9
 @export var damping_inertia: float = 12.0
 
 @export_category("Zoom Settings")

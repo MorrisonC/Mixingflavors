@@ -23,11 +23,13 @@ func test_round_progression():
 
 func test_boss_round():
 	gauntlet._on_puzzle_solved() # To round 2
-	gauntlet._on_puzzle_solved() # To round 3 (boss)
-	assert_eq(gauntlet.current_round, 3, "Round should be 3 (max_rounds)")
+	gauntlet._on_puzzle_solved() # To round 3
+	gauntlet._on_puzzle_solved() # To round 4
+	gauntlet._on_puzzle_solved() # To round 5 (boss)
+	assert_eq(gauntlet.current_round, 5, "Round should be 5 (max_rounds)")
 	assert_eq(gauntlet.time_left, 120.0, "Time should be 120.0 for boss round")
 
 func test_mistake_failure():
 	gauntlet._on_mistake_made(3)
-	# Should switch mode to LONE_WOLF_NARRATIVE
-	assert_eq(get_node("/root/GameManager").current_mode, GameManagerClass.GameMode.LONE_WOLF_NARRATIVE, "Failed gauntlet should return to Hub (Narrative)")
+	assert_eq(get_node("/root/GameManager").current_mode, GameManagerClass.GameMode.MAIN_MENU, "Failed gauntlet should return to Main Menu")
+

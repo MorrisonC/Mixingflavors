@@ -2,6 +2,8 @@ extends Node3D
 
 class_name GridManager
 
+const VoxelLogicSolver = preload("res://scripts/VoxelLogicSolver.gd")
+
 @export var grid_size: Vector3i = Vector3i(5, 5, 5)
 @export var block_scene: PackedScene = preload("res://scenes/Block.tscn")
 @export var camera: Camera3D
@@ -56,11 +58,14 @@ enum EditMode { DESTROY, MARK, ROTATE, BUILD, PAINT }
 var current_mode: EditMode = EditMode.DESTROY
 var is_editor_mode: bool = false
 enum HintType { SIMPLE, CIRCLE, SQUARE }
-var hovered_block: PicrossBlock = null
+var hovered_block: VoxelBlock = null
+
+const GameManagerClass = preload("res://scripts/GameManager.gd")
+
+var has_custom_puzzle: bool = false
 
 func _ready() -> void:
 	var game_manager = get_node_or_null("/root/GameManager")
-	var has_custom_puzzle = false
 	var custom_puzzle_data = {}
 
 	if game_manager and game_manager.get("mode_payload"):
@@ -146,7 +151,6 @@ func _ready() -> void:
 		_load_custom_puzzle(custom_puzzle_data)
 
 func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
-	# Clean up logic here before setting grid size if needed
 	grid_size = Vector3i(puzzle_data["dims"][0], puzzle_data["dims"][1], puzzle_data["dims"][2])
 	slice_max = grid_size
 
@@ -158,19 +162,23 @@ func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
 
 	_build_grid()
 
-	var cells = puzzle_data["cells"]
-	var index = 0
-	for z in range(grid_size.z):
-		for y in range(grid_size.y):
-			for x in range(grid_size.x):
-				var pos = Vector3i(x, y, z)
-				if index < cells.size() and cells[index] == 1:
-					target_solution[pos] = true
-				else:
-					target_solution[pos] = false
-				index += 1
+	if puzzle_data.has("hints"):
+		target_solution = VoxelLogicSolver.solve(grid_size, puzzle_data["hints"])
+	elif puzzle_data.has("cells"):
+		var cells = puzzle_data["cells"]
+		var index = 0
+		for z in range(grid_size.z):
+			for y in range(grid_size.y):
+				for x in range(grid_size.x):
+					var pos = Vector3i(x, y, z)
+					if index < cells.size() and cells[index] == 1:
+						target_solution[pos] = true
+					else:
+						target_solution[pos] = false
+					index += 1
 
 	_update_clues()
+
 
 func start_level() -> void:
 	is_puzzle_active = true
@@ -356,21 +364,84 @@ func _on_slice_toggle_pressed() -> void:
 		slice_controls.visible = not slice_controls.visible
 
 func _generate_solution() -> void:
-	# Generate a basic boolean array for the target shape solution
-	for x in range(grid_size.x):
-		for y in range(grid_size.y):
-			for z in range(grid_size.z):
-				var pos = Vector3i(x, y, z)
-				# Simple pattern for testing: inner core is filled, outer is not
-				var is_filled = (x > 0 and x < grid_size.x - 1) and (y > 0 and y < grid_size.y - 1) and (z > 0 and z < grid_size.z - 1)
-				target_solution[pos] = is_filled
+	target_solution.clear()
+	
+	# Detect round from EscapeGauntlet if active
+	var round_num = 1
+	var gauntlet = get_parent()
+	if gauntlet and gauntlet.name == "EscapeGauntlet" and "current_round" in gauntlet:
+		round_num = gauntlet.current_round
+
+	if grid_size == Vector3i(3, 3, 3):
+		if round_num == 1:
+			# Heart Shape for Round 1
+			var heart_pattern = [
+				# z=0
+				[0,0,0], [1,0,1], [0,1,0],
+				# z=1
+				[1,0,1], [1,1,1], [0,1,0],
+				# z=2
+				[0,0,0], [0,1,0], [0,0,0]
+			]
+			for z in range(3):
+				for y in range(3):
+					for x in range(3):
+						target_solution[Vector3i(x, y, z)] = (heart_pattern[z * 3 + y][x] == 1)
+		else:
+			# Love Letter / Envelope Shape for Round 2
+			var letter_pattern = [
+				# z=0
+				[1,1,1], [1,1,1], [1,1,1],
+				# z=1
+				[1,0,1], [1,1,1], [1,1,1],
+				# z=2
+				[0,0,0], [1,0,1], [1,1,1]
+			]
+			for z in range(3):
+				for y in range(3):
+					for x in range(3):
+						target_solution[Vector3i(x, y, z)] = (letter_pattern[z * 3 + y][x] == 1)
+	elif grid_size == Vector3i(4, 4, 4):
+		if round_num == 3:
+			# Diamond Ring for Round 3
+			for z in range(4):
+				for y in range(4):
+					for x in range(4):
+						var is_filled = false
+						if y == 3: # Diamond on top
+							is_filled = (x == 2 and z == 2)
+						else: # Ring band
+							var is_edge = (x == 0 or x == 3 or z == 0 or z == 3)
+							var is_middle_height = (y == 1 or y == 2)
+							is_filled = is_edge and is_middle_height
+						target_solution[Vector3i(x, y, z)] = is_filled
+		else:
+			# Rose Shape for Round 4: Red rose petals top, green stem bottom
+			for z in range(4):
+				for y in range(4):
+					for x in range(4):
+						var is_filled = false
+						if y >= 2: # Rose flower top
+							is_filled = (x >= 1 and x <= 2) and (z >= 1 and z <= 2)
+						else: # Stem
+							is_filled = (x == 2 and z == 2) or (y == 1 and x == 1 and z == 2)
+						target_solution[Vector3i(x, y, z)] = is_filled
+	else:
+		# Cupid Bow & Arrow for Boss Round 5 (5x5x5)
+		for z in range(grid_size.z):
+			for y in range(grid_size.y):
+				for x in range(grid_size.x):
+					var is_filled = (x == y) or (x + y == grid_size.x - 1) or (y == z)
+					target_solution[Vector3i(x, y, z)] = is_filled
+
+
 
 func _build_grid() -> void:
 	for x in range(grid_size.x):
 		for y in range(grid_size.y):
 			for z in range(grid_size.z):
 				var pos = Vector3i(x, y, z)
-				var block = block_scene.instantiate() as PicrossBlock
+				var block = block_scene.instantiate() as VoxelBlock
 				add_child(block)
 				block.set_grid_position(pos)
 				block.set_meta("grid_pos", pos)
@@ -395,7 +466,7 @@ func _on_slice_z_changed(value: float) -> void:
 
 func _update_slicing() -> void:
 	for pos in blocks.keys():
-		var block = blocks[pos] as PicrossBlock
+		var block = blocks[pos] as VoxelBlock
 
 		# If it's outside the slice bounds, hide it
 		if pos.x > slice_max.x or pos.y > slice_max.y or pos.z > slice_max.z:
@@ -407,34 +478,71 @@ func _update_slicing() -> void:
 				block.set_state(block.BlockState.UNBROKEN)
 
 func _update_clues() -> void:
-	# Clear existing labels
-	for child in labels_container.get_children():
-		child.queue_free()
+	# Clear all block hints first
+	for pos in blocks.keys():
+		blocks[pos].clear_all_hints()
 
-	# Recalculate based on current slice
-	# X clues (along X axis, placed on the exposed Y-Z face)
-	for y in range(slice_max.y + 1):
-		for z in range(slice_max.z + 1):
-			var counts = _calculate_clue(Vector3i(0, y, z), Vector3i(1, 0, 0), slice_max.x + 1)
+	# X clues (along X axis)
+	for y in range(grid_size.y):
+		for z in range(grid_size.z):
+			var counts = _calculate_clue(Vector3i(0, y, z), Vector3i(1, 0, 0), grid_size.x)
 			if counts.size() > 0:
-				var exposed_pos = Vector3(slice_max.x, y, z)
-				_add_clue_label(exposed_pos, Vector3.RIGHT, counts)
+				var hint_text = _format_hint_text(counts)
+				var visible_blocks = []
+				for x in range(grid_size.x):
+					var pos = Vector3i(x, y, z)
+					if blocks.has(pos):
+						var block = blocks[pos]
+						if block.current_state != block.BlockState.DESTROYED and block.current_state != block.BlockState.HIDDEN_BY_SLICE:
+							visible_blocks.append(block)
+				if visible_blocks.size() > 0:
+					visible_blocks[0].set_face_hint(Vector3i(-1, 0, 0), hint_text)
+					visible_blocks[-1].set_face_hint(Vector3i(1, 0, 0), hint_text)
 
-	# Y clues
-	for x in range(slice_max.x + 1):
-		for z in range(slice_max.z + 1):
-			var counts = _calculate_clue(Vector3i(x, 0, z), Vector3i(0, 1, 0), slice_max.y + 1)
+	# Y clues (along Y axis)
+	for x in range(grid_size.x):
+		for z in range(grid_size.z):
+			var counts = _calculate_clue(Vector3i(x, 0, z), Vector3i(0, 1, 0), grid_size.y)
 			if counts.size() > 0:
-				var exposed_pos = Vector3(x, slice_max.y, z)
-				_add_clue_label(exposed_pos, Vector3.UP, counts)
+				var hint_text = _format_hint_text(counts)
+				var visible_blocks = []
+				for y in range(grid_size.y):
+					var pos = Vector3i(x, y, z)
+					if blocks.has(pos):
+						var block = blocks[pos]
+						if block.current_state != block.BlockState.DESTROYED and block.current_state != block.BlockState.HIDDEN_BY_SLICE:
+							visible_blocks.append(block)
+				if visible_blocks.size() > 0:
+					visible_blocks[0].set_face_hint(Vector3i(0, -1, 0), hint_text)
+					visible_blocks[-1].set_face_hint(Vector3i(0, 1, 0), hint_text)
 
-	# Z clues
-	for x in range(slice_max.x + 1):
-		for y in range(slice_max.y + 1):
-			var counts = _calculate_clue(Vector3i(x, y, 0), Vector3i(0, 0, 1), slice_max.z + 1)
+	# Z clues (along Z axis)
+	for x in range(grid_size.x):
+		for y in range(grid_size.y):
+			var counts = _calculate_clue(Vector3i(x, y, 0), Vector3i(0, 0, 1), grid_size.z)
 			if counts.size() > 0:
-				var exposed_pos = Vector3(x, y, slice_max.z)
-				_add_clue_label(exposed_pos, Vector3.BACK, counts)
+				var hint_text = _format_hint_text(counts)
+				var visible_blocks = []
+				for z in range(grid_size.z):
+					var pos = Vector3i(x, y, z)
+					if blocks.has(pos):
+						var block = blocks[pos]
+						if block.current_state != block.BlockState.DESTROYED and block.current_state != block.BlockState.HIDDEN_BY_SLICE:
+							visible_blocks.append(block)
+				if visible_blocks.size() > 0:
+					visible_blocks[0].set_face_hint(Vector3i(0, 0, -1), hint_text)
+					visible_blocks[-1].set_face_hint(Vector3i(0, 0, 1), hint_text)
+
+func _format_hint_text(counts: Array) -> String:
+	var sum = 0
+	for c in counts:
+		sum += c
+	if counts.size() == 1:
+		return str(sum)
+	elif counts.size() == 2:
+		return "(%d)" % sum
+	else:
+		return "[%d]" % sum
 
 func _calculate_clue(start: Vector3i, step: Vector3i, length: int) -> Array:
 	var groups = []
@@ -451,47 +559,11 @@ func _calculate_clue(start: Vector3i, step: Vector3i, length: int) -> Array:
 		groups.append(count)
 	return groups
 
-func _add_clue_label(grid_pos: Vector3, normal: Vector3, counts: Array) -> void:
-	var label = Label3D.new()
-	var text = ""
-
-	if counts.size() == 1:
-		text = str(counts[0])
-	elif counts.size() == 2:
-		text = "(" + str(counts[0] + counts[1]) + ")"
-	elif counts.size() >= 3:
-		var sum = 0
-		for c in counts:
-			sum += c
-		text = "[" + str(sum) + "]"
-
-	label.text = text
-
-	# Adjust position slightly outside the block face
-	var world_pos = grid_pos - Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
-	label.position = world_pos + (normal * 0.51)
-
-	# Align to face normal
-	if normal == Vector3.RIGHT:
-		label.rotation_degrees.y = 90
-	elif normal == Vector3.UP:
-		label.rotation_degrees.x = -90
-	elif normal == Vector3.BACK:
-		label.rotation_degrees.y = 0
-
-	label.pixel_size = 0.05
-	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
-	label.outline_render_priority = 0
-	label.outline_size = 8
-	label.outline_modulate = Color(0, 0, 0, 0.8)
-	labels_container.add_child(label)
-
-
 # Signal handlers for MobileTouchControls
 func on_chisel_requested(grid_pos: Vector3i) -> void:
 	if not blocks.has(grid_pos):
 		return
-	var block = blocks[grid_pos] as PicrossBlock
+	var block = blocks[grid_pos] as VoxelBlock
 
 	if block.current_state == block.BlockState.MARKED or block.current_state == block.BlockState.PAINTED:
 		# Marked/Painted blocks are protected from chiseling
@@ -516,7 +588,7 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 func on_mark_requested(grid_pos: Vector3i) -> void:
 	if not blocks.has(grid_pos):
 		return
-	var block = blocks[grid_pos] as PicrossBlock
+	var block = blocks[grid_pos] as VoxelBlock
 
 	if is_editor_mode:
 		if block.current_state == block.BlockState.DESTROYED:
@@ -584,7 +656,7 @@ func undo_last_move() -> void:
 	var pos = last_move["pos"]
 	var prev_state = last_move["state"]
 	if blocks.has(pos):
-		var block = blocks[pos] as PicrossBlock
+		var block = blocks[pos] as VoxelBlock
 		block.set_state(prev_state)
 		_update_slicing() # Ensure visibility is correct if hidden by slice
 	emit_signal("history_updated", not move_history.is_empty())
@@ -596,7 +668,7 @@ func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
 			hovered_block = null
 		return
 
-	var block = blocks[grid_pos] as PicrossBlock
+	var block = blocks[grid_pos] as VoxelBlock
 	if is_hover:
 		if hovered_block and hovered_block != block:
 			hovered_block.set_highlight(false)
@@ -632,7 +704,7 @@ func _handle_mistake() -> void:
 		current_floor = 1
 		start_level()
 
-func _destroy_block(block: PicrossBlock) -> void:
+func _destroy_block(block: VoxelBlock) -> void:
 	block.set_state(block.BlockState.DESTROYED)
 	combo += 1
 	_update_ui_state()
@@ -641,14 +713,13 @@ func _destroy_block(block: PicrossBlock) -> void:
 func _check_win_condition() -> void:
 	if not is_puzzle_active: return
 
-	# Win condition: All non-target blocks are DESTROYED.
-	# We do NOT fail here if a target block is destroyed; that is handled at the time of chisel.
+	# Win condition: No target blocks are DESTROYED, and all non-target blocks ARE destroyed.
 	for pos in blocks.keys():
-		var block = blocks[pos] as PicrossBlock
+		var block = blocks[pos] as VoxelBlock
 		var is_target = target_solution.get(pos, false)
 
 		if is_target:
-			if block.current_state != block.BlockState.PAINTED:
+			if block.current_state == block.BlockState.DESTROYED:
 				return
 		else:
 			if block.current_state != block.BlockState.DESTROYED:
@@ -657,7 +728,6 @@ func _check_win_condition() -> void:
 	# Puzzle Solved!
 	is_puzzle_active = false
 	print("Puzzle Solved! Revealing model...")
-	emit_signal("puzzle_solved")
 	_reveal_model()
 
 func _reveal_model() -> void:
@@ -667,32 +737,123 @@ func _reveal_model() -> void:
 	slice_max = grid_size
 	_update_slicing()
 
-	# Clear clues
-	for child in labels_container.get_children():
-		child.queue_free()
+	# Clear clues and disable outlines for a clean sculpture look
+	for pos in blocks.keys():
+		blocks[pos].clear_all_hints()
+		blocks[pos].disable_outline()
 
-	# Apply random stylish color to remaining blocks
+
+
+	# Restyle background color dynamically to pastel pink
+	var env = get_node_or_null("WorldEnvironment")
+	if env and env.environment:
+		env.environment.background_color = Color(0.98, 0.88, 0.90, 1.0) # Pastel Valentine Pink
+
+	# Detect round from EscapeGauntlet if active
+	var round_num = 1
+	var gauntlet = get_parent()
+	if gauntlet and gauntlet.name == "EscapeGauntlet" and "current_round" in gauntlet:
+		round_num = gauntlet.current_round
+
+	var puzzle_name = ""
+	var game_manager = get_node_or_null("/root/GameManager")
+	if game_manager and game_manager.get("mode_payload") and game_manager.mode_payload.has("custom_puzzle"):
+		puzzle_name = game_manager.mode_payload["custom_puzzle"].get("name", "")
+	elif not has_custom_puzzle:
+		if round_num == 1:
+			puzzle_name = "Heart"
+		elif round_num == 2:
+			puzzle_name = "Love Letter"
+		elif round_num == 3:
+			puzzle_name = "Diamond Ring"
+		elif round_num == 4:
+			puzzle_name = "Rose"
+		else:
+			puzzle_name = "Cupid's Bow & Arrow"
+
+	# Subject color palette matching Valentine themes
+	var puzzle_colors = {
+		"Heart": Color(0.95, 0.15, 0.35, 1.0),            # Ruby Red
+		"Love Letter": Color(0.95, 0.95, 0.85, 1.0),       # Cream Paper
+		"Diamond Ring": Color(1.0, 0.84, 0.0, 1.0),        # Gold
+		"Rose": Color(0.85, 0.1, 0.2, 1.0),                # Crimson Red
+		"Cupid's Bow & Arrow": Color(0.95, 0.5, 0.6, 1.0), # Rose Pink
+		"Horse": Color(0.55, 0.35, 0.2, 1.0),
+		"Platypus": Color(0.1, 0.45, 0.45, 1.0),
+		"Suzanne": Color(0.65, 0.65, 0.65, 1.0),
+		"Pyramid": Color(0.85, 0.75, 0.45, 1.0),
+		"Sphinx": Color(0.85, 0.75, 0.45, 1.0),
+		"Chair": Color(0.5, 0.3, 0.15, 1.0),
+		"Computer": Color(0.75, 0.75, 0.75, 1.0),
+		"Strange tree": Color(0.15, 0.55, 0.15, 1.0),
+		"Simple hints": Color(0.8, 0.4, 0.4, 1.0),
+	}
+
+	var sculpture_color = puzzle_colors.get(puzzle_name, Color(0.95, 0.45, 0.55, 1.0)) # Romantic Pinkish-Red by default
+
+	# Color the final sculpture
 	for pos in target_solution.keys():
 		if target_solution[pos] and blocks.has(pos):
-			var block = blocks[pos] as PicrossBlock
-			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED or block.current_state == block.BlockState.PAINTED:
-				block.base_material.albedo_color = Color(randf_range(0.2, 1.0), randf_range(0.2, 1.0), randf_range(0.2, 1.0))
+			var block = blocks[pos] as VoxelBlock
+			block.base_material.albedo_color = sculpture_color
 
-	# Deal damage to Boss
+	# Create a celebratory victory label overlay
+	var victory_label = Label.new()
+	victory_label.text = "SOLVED:\n" + (puzzle_name.to_upper()) + "!"
+	victory_label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
+	victory_label.add_theme_font_size_override("font_size", 48)
+	victory_label.add_theme_color_override("font_color", Color(0.95, 0.15, 0.35, 1.0)) # Brilliant ruby red
+	victory_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	victory_label.position.y -= 150 # Shift up
+	victory_label.position.x -= 200 # Center horizontally
+	victory_label.custom_minimum_size = Vector2(400, 200)
+	
+	var canvas_layer = get_node_or_null("CanvasLayer/Control")
+	if canvas_layer:
+		canvas_layer.add_child(victory_label)
+		
+		# Spawn celebratory falling heart particles
+		for i in range(25):
+			var heart = Label.new()
+			heart.text = ["❤️", "💖", "💝", "💕"].pick_random()
+			heart.add_theme_font_size_override("font_size", randi_range(24, 48))
+			heart.position = Vector2(randf_range(100, 924), randf_range(-100, 0))
+			canvas_layer.add_child(heart)
+			
+			var tween = create_tween()
+			tween.tween_property(heart, "position:y", 800.0, randf_range(2.0, 3.5))
+			tween.parallel().tween_property(heart, "position:x", heart.position.x + randf_range(-80.0, 80.0), randf_range(2.0, 3.5))
+			tween.parallel().tween_property(heart, "rotation", randf_range(-PI, PI), randf_range(2.0, 3.5))
+			tween.tween_callback(heart.queue_free)
+
+	# Deal damage to Boss (if in endless gauntlet mode)
 	var time_bonus = max(0.0, 60.0 - time_elapsed) * 2.0
 	var combo_bonus = combo * 5.0
 	var damage = 50.0 + time_bonus + combo_bonus
 	boss_hp -= damage
 	_update_ui_state()
 
-	await get_tree().create_timer(3.0).timeout
 
-	if boss_hp <= 0:
-		print("Boss Defeated! Advancing floor.")
-		current_floor += 1
-		base_grid_size = min(base_grid_size + 1, 5) # Max 5x5x5 for now to prevent lag
-		emit_signal("floor_cleared")
-		start_level()
+	await get_tree().create_timer(3.0).timeout
+	
+	# Remove victory label before advancing/switching
+	if is_instance_valid(victory_label):
+		victory_label.queue_free()
+
+	# Emit signal AFTER the reveal is complete so listeners (like EscapeGauntlet) can transition
+	emit_signal("puzzle_solved")
+
+	if has_custom_puzzle:
+		# Return to Level Select screen
+		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PUZZLE_SELECTION)
 	else:
-		print("Next phase of the boss!")
-		start_level() # Next puzzle, same floor
+		if boss_hp <= 0:
+			print("Boss Defeated! Advancing floor.")
+			current_floor += 1
+			base_grid_size = min(base_grid_size + 1, 5)
+			emit_signal("floor_cleared")
+			start_level()
+		else:
+			print("Next phase of the boss!")
+			start_level()
+
