@@ -52,7 +52,7 @@ var base_grid_size: int = 3
 @onready var boss_name_label: Label = null
 @onready var boss_hp_bar: ProgressBar = null
 
-enum EditMode { DESTROY, MARK, ROTATE, BUILD }
+enum EditMode { DESTROY, MARK, ROTATE, BUILD, PAINT }
 var current_mode: EditMode = EditMode.DESTROY
 var is_editor_mode: bool = false
 enum HintType { SIMPLE, CIRCLE, SQUARE }
@@ -78,6 +78,7 @@ func _ready() -> void:
 		slice_slider_z = slice_controls.get_node_or_null("SliderZ")
 
 	chisel_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ChiselButton")
+	var paint_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/PaintButton")
 	mark_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/MarkButton")
 	rotate_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/RotateButton")
 	slice_toggle_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/SliceToggleButton")
@@ -128,6 +129,8 @@ func _ready() -> void:
 
 	if chisel_btn and not chisel_btn.pressed.is_connected(_on_chisel_mode_selected):
 		chisel_btn.pressed.connect(_on_chisel_mode_selected)
+	if paint_btn and not paint_btn.pressed.is_connected(_on_paint_mode_selected):
+		paint_btn.pressed.connect(_on_paint_mode_selected)
 	if mark_btn and not mark_btn.pressed.is_connected(_on_mark_mode_selected):
 		mark_btn.pressed.connect(_on_mark_mode_selected)
 	if rotate_btn and not rotate_btn.pressed.is_connected(_on_rotate_mode_selected):
@@ -324,6 +327,13 @@ func _on_chisel_mode_selected() -> void:
 	if touch_controls and touch_controls is MobileTouchControls:
 		touch_controls.set_touch_mode(touch_controls.TouchMode.CHISEL)
 
+func _on_paint_mode_selected() -> void:
+	current_mode = EditMode.PAINT if not is_editor_mode else EditMode.BUILD
+	_update_ui_state()
+	var touch_controls = get_node_or_null("CanvasLayer/Control")
+	if touch_controls and touch_controls is MobileTouchControls:
+		touch_controls.set_touch_mode(touch_controls.TouchMode.PAINT)
+
 func _on_mark_mode_selected() -> void:
 	if is_editor_mode:
 		current_mode = EditMode.BUILD
@@ -483,8 +493,8 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 		return
 	var block = blocks[grid_pos] as PicrossBlock
 
-	if block.current_state == block.BlockState.MARKED:
-		# Marked blocks are protected from chiseling
+	if block.current_state == block.BlockState.MARKED or block.current_state == block.BlockState.PAINTED:
+		# Marked/Painted blocks are protected from chiseling
 		if OS.has_feature("mobile"):
 			Input.vibrate_handheld(20) # Small bump indicating protection
 		return
@@ -515,16 +525,28 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 			target_solution[grid_pos] = true
 			_update_clues()
 	else:
-		if block.current_state == block.BlockState.UNBROKEN:
-			_record_move(grid_pos, block.current_state)
-			block.set_state(block.BlockState.MARKED)
-			if OS.has_feature("mobile"):
-				Input.vibrate_handheld(40)
-		elif block.current_state == block.BlockState.MARKED:
-			_record_move(grid_pos, block.current_state)
-			block.set_state(block.BlockState.UNBROKEN)
-			if OS.has_feature("mobile"):
-				Input.vibrate_handheld(40)
+		if current_mode == EditMode.PAINT:
+			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED:
+				_record_move(grid_pos, block.current_state)
+				block.set_state(block.BlockState.PAINTED)
+				if OS.has_feature("mobile"):
+					Input.vibrate_handheld(40)
+			elif block.current_state == block.BlockState.PAINTED:
+				_record_move(grid_pos, block.current_state)
+				block.set_state(block.BlockState.UNBROKEN)
+				if OS.has_feature("mobile"):
+					Input.vibrate_handheld(20)
+		elif current_mode == EditMode.MARK:
+			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.PAINTED:
+				_record_move(grid_pos, block.current_state)
+				block.set_state(block.BlockState.MARKED)
+				if OS.has_feature("mobile"):
+					Input.vibrate_handheld(40)
+			elif block.current_state == block.BlockState.MARKED:
+				_record_move(grid_pos, block.current_state)
+				block.set_state(block.BlockState.UNBROKEN)
+				if OS.has_feature("mobile"):
+					Input.vibrate_handheld(20)
 		else:
 			_handle_mistake()
 
@@ -625,7 +647,10 @@ func _check_win_condition() -> void:
 		var block = blocks[pos] as PicrossBlock
 		var is_target = target_solution.get(pos, false)
 
-		if not is_target:
+		if is_target:
+			if block.current_state != block.BlockState.PAINTED:
+				return
+		else:
 			if block.current_state != block.BlockState.DESTROYED:
 				return
 
@@ -650,7 +675,7 @@ func _reveal_model() -> void:
 	for pos in target_solution.keys():
 		if target_solution[pos] and blocks.has(pos):
 			var block = blocks[pos] as PicrossBlock
-			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED:
+			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED or block.current_state == block.BlockState.PAINTED:
 				block.base_material.albedo_color = Color(randf_range(0.2, 1.0), randf_range(0.2, 1.0), randf_range(0.2, 1.0))
 
 	# Deal damage to Boss

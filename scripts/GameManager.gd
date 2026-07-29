@@ -12,7 +12,8 @@ enum GameMode {
 	PICROSS_3D,
 	DETECTIVE_CRIME_SCENE,
 	ESCAPE_GAUNTLET,
-	TIME_SHIFT_PALIMPSEST
+	TIME_SHIFT_PALIMPSEST,
+	PUZZLE_EDITOR
 }
 
 # Core RPG Stats
@@ -35,7 +36,8 @@ const MODE_SCENES: Dictionary = {
 	GameMode.LONE_WOLF_NARRATIVE: "res://scenes/LoneWolfNarrative.tscn",
 	GameMode.MASQUERADE_PAINTING: "res://scenes/MasqueradePainting.tscn",
 	GameMode.PICROSS_3D: "res://scenes/Picross3D.tscn",
-	GameMode.ESCAPE_GAUNTLET: "res://scenes/EscapeGauntlet.tscn"
+	GameMode.ESCAPE_GAUNTLET: "res://scenes/EscapeGauntlet.tscn",
+	GameMode.PUZZLE_EDITOR: "res://scenes/PuzzleEditor.tscn"
 }
 
 func _ready() -> void:

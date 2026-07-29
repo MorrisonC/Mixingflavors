@@ -6,8 +6,11 @@ signal mark_voxel_requested(grid_pos: Vector3i)
 signal hover_voxel_requested(grid_pos: Vector3i, is_hover: bool)
 signal layer_slice_changed(axis: String, value: int)
 
-enum TouchMode { CHISEL, MARK, ROTATE }
+enum TouchMode { CHISEL, MARK, PAINT, ROTATE }
 var current_mode: TouchMode = TouchMode.CHISEL
+
+func set_mode(mode: TouchMode) -> void:
+	current_mode = mode
 
 var touch_start_pos: Vector2 = Vector2.ZERO
 var touch_dragged: bool = false
@@ -155,6 +158,8 @@ func _handle_single_tap(tap_pos: Vector2) -> void:
 			if current_mode == TouchMode.CHISEL:
 				emit_signal("chisel_voxel_requested", grid_pos)
 			elif current_mode == TouchMode.MARK:
+				emit_signal("mark_voxel_requested", grid_pos)
+			elif current_mode == TouchMode.PAINT:
 				emit_signal("mark_voxel_requested", grid_pos)
 
 func set_touch_mode(mode: TouchMode) -> void:
