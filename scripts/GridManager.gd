@@ -65,6 +65,11 @@ const GameManagerClass = preload("res://scripts/GameManager.gd")
 var has_custom_puzzle: bool = false
 
 func _ready() -> void:
+	if GameManagerClass.has_method("is_valentine_theme") and GameManagerClass.is_valentine_theme():
+		var env_node = get_node_or_null("WorldEnvironment")
+		if env_node and env_node.environment:
+			env_node.environment.background_color = Color(1.0, 0.94, 0.96)
+
 	var game_manager = get_node_or_null("/root/GameManager")
 	var custom_puzzle_data = {}
 

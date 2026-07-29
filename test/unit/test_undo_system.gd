@@ -5,7 +5,7 @@ var grid_manager
 
 func before_each():
 	grid_manager = GridManagerScene.instantiate()
-	grid_manager.grid_size = Vector3i(2, 2, 2)
+	grid_manager.base_grid_size = 2
 	add_child(grid_manager)
 
 func after_each():
