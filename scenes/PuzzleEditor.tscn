@@ -1,0 +1,92 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/PuzzleEditor.gd" id="1_editor"]
+[ext_resource type="Script" path="res://scripts/GridManager.gd" id="2_grid"]
+[ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
+[ext_resource type="Script" path="res://scripts/CameraPivotController.gd" id="4_camera"]
+[ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="5_sky"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_n2"]
+panorama = ExtResource("5_sky")
+
+[sub_resource type="Sky" id="Sky_g3"]
+sky_material = SubResource("PanoramaSkyMaterial_n2")
+
+[sub_resource type="Environment" id="Environment_c1"]
+background_mode = 2
+sky = SubResource("Sky_g3")
+
+[node name="PuzzleEditor" type="Node3D"]
+script = ExtResource("1_editor")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_c1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8, -0.4, 0.4, 0, 0.7, 0.7, -0.6, -0.5, 0.5, 0, 5, 0)
+shadow_enabled = true
+
+[node name="CameraPivotYaw" type="Node3D" parent="."]
+script = ExtResource("4_camera")
+rotation_speed = 0.5
+zoom_speed = 0.5
+
+[node name="PitchNode" type="Node3D" parent="CameraPivotYaw"]
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivotYaw/PitchNode"]
+spring_length = 8.0
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivotYaw/PitchNode/SpringArm3D"]
+
+[node name="GridManager" type="Node3D" parent="."]
+script = ExtResource("2_grid")
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MobileTouchControls" type="Control" parent="UI" node_paths=PackedStringArray("camera_pivot", "camera")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_touch")
+camera_pivot = NodePath("../../CameraPivotYaw")
+camera = NodePath("../../CameraPivotYaw/PitchNode/SpringArm3D/Camera3D")
+
+[node name="SaveButton" type="Button" parent="UI"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -120.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 60.0
+text = "Save"
+
+[node name="BackButton" type="Button" parent="UI"]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 120.0
+offset_bottom = 60.0
+text = "Back"
+
+[node name="StatusLabel" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 20.0
+offset_right = 100.0
+offset_bottom = 60.0
+horizontal_alignment = 1

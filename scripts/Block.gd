@@ -5,6 +5,7 @@ class_name PicrossBlock
 enum BlockState {
 	UNBROKEN,
 	MARKED,
+	PAINTED,
 	DESTROYED,
 	HIDDEN_BY_SLICE
 }
@@ -19,8 +20,9 @@ var grid_position: Vector3i
 # Visual properties
 var base_material: StandardMaterial3D
 var outline_material: ShaderMaterial
-var marked_color: Color = Color(0.2, 0.2, 0.8) # Blueish
-var highlight_color: Color = Color(1.0, 1.0, 0.2) # Yellowish
+var marked_color: Color = Color(1.0, 0.4, 0.7) # Pink for marked (Valentine's)
+var painted_color: Color = Color(0.8, 0.1, 0.2) # Dark red for painted
+var highlight_color: Color = Color(1.0, 0.8, 0.8) # Light pink for highlight
 
 func _ready() -> void:
 	base_material = StandardMaterial3D.new()
@@ -61,6 +63,11 @@ func _update_visuals() -> void:
 			mesh_instance.show()
 			collision_layer = 1
 			base_material.albedo_color = marked_color
+		BlockState.PAINTED:
+			show()
+			mesh_instance.show()
+			collision_layer = 1
+			base_material.albedo_color = painted_color
 		BlockState.DESTROYED:
 			mesh_instance.hide()
 			collision_layer = 0
