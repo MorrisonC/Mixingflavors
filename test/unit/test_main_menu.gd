@@ -4,6 +4,13 @@ const MainMenuScene = preload("res://scenes/MainMenu.tscn")
 var main_menu
 
 func before_each():
+	# Mock GameManager Autoload for tests
+	var gm = get_tree().root.get_node_or_null("GameManager")
+	if not gm:
+		gm = preload("res://scripts/GameManager.gd").new()
+		gm.name = "GameManager"
+		get_tree().root.add_child(gm)
+
 	main_menu = MainMenuScene.instantiate()
 	add_child(main_menu)
 
