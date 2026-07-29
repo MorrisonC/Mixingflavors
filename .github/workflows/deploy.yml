@@ -80,6 +80,34 @@ jobs:
           progressive_web_app/icon_512x512=""
           progressive_web_app/background_color=Color(0, 0, 0, 1)
 
+          [preset.1]
+          name="Android"
+          platform="Android"
+          runnable=true
+          dedicated_server=false
+          custom_features=""
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter=""
+          export_path="build/android/HybridTacticalPuzzleRPG.apk"
+          encryption_include_filters=""
+          encryption_exclude_filters=""
+          encrypt_pck=false
+          encrypt_directory=false
+
+          [preset.1.options]
+          custom_template/debug=""
+          custom_template/release=""
+          architectures/armeabi-v7a=true
+          architectures/arm64-v8a=true
+          architectures/x86=false
+          architectures/x86_64=true
+          keystore/debug="debug.keystore"
+          keystore/debug_user="androiddebugkey"
+          keystore/debug_password="android"
+          keystore/release=""
+          keystore/release_user=""
+          keystore/release_password=""
           PRESET_EOF
 
       - name: Build Web Export
@@ -88,6 +116,11 @@ jobs:
           godot --headless --rendering-driver opengl3 --editor --quit || true
           godot --headless --rendering-driver opengl3 --export-release "Web" build/web/index.html
 
+      - name: Build Android Export
+        run: |
+          mkdir -p build/android
+          godot --headless --rendering-driver opengl3 --export-release "Android" build/android/HybridTacticalPuzzleRPG.apk
+
       - name: Inject COI Service Worker (for SharedArrayBuffer)
         run: |
           # Fetch the coi-serviceworker script
@@ -95,6 +128,12 @@ jobs:
 
           # Inject the script into the exported HTML file
           sed -i 's|</head>|<script src="coi-serviceworker.js"></script></head>|' build/web/index.html
+
+      - name: Upload Android APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-APK
+          path: build/android/HybridTacticalPuzzleRPG.apk
 
       - name: Upload Web Artifact
         uses: actions/upload-pages-artifact@v3

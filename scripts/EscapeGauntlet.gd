@@ -30,6 +30,10 @@ func _ready() -> void:
 
 func _apply_theme() -> void:
 	if GameManagerClass.is_valentine_theme():
+		var env = $WorldEnvironment.environment
+		if env:
+			env.background_color = Color(1.0, 0.94, 0.96) # Match valentine default_color theme block bg
+
 		var style = StyleBoxFlat.new()
 		style.bg_color = Color(0.98, 0.92, 0.93, 1)
 		style.corner_radius_top_left = 8
