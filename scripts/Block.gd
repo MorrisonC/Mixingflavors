@@ -220,3 +220,12 @@ func disable_outline() -> void:
 	if outline_material:
 		outline_material.set_shader_parameter("outline_width", 0.0)
 
+func play_interaction_juice() -> void:
+	if not mesh_instance:
+		return
+
+	var tween = create_tween()
+	# Squash and stretch effect
+	tween.tween_property(mesh_instance, "scale", Vector3(1.2, 0.8, 1.2), 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(mesh_instance, "scale", Vector3(0.9, 1.1, 0.9), 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(mesh_instance, "scale", Vector3.ONE, 0.08).set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
