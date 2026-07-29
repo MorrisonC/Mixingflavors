@@ -1,0 +1,9 @@
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+[TelemetryRunner] Initializing headless test run...
+[TelemetryRunner] Setup complete. Bot starting natural flow.
+[GameManager] Initialized successfully. Current Mode: MainMenu
+[GameManager] Initialized successfully. Current Mode: MainMenu
+[TelemetryRunner] Test timeout reached.
+[TelemetryRunner] Testing finished. Saving telemetry...
+Saved telemetry to user://telemetry_output.json

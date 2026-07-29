@@ -13,6 +13,10 @@ enum GameMode {
 	PUZZLE_SELECTION
 }
 
+signal theme_changed(is_valentine)
+
+var _valentine_theme_active: bool = false
+
 # Core RPG Stats
 var stats: Dictionary = {
 	"perception": 2,
@@ -47,6 +51,17 @@ func set_stat(stat_name: String, value: int) -> void:
 
 func get_stat(stat_name: String) -> int:
 	return stats.get(stat_name, 0)
+
+static func is_valentine_theme() -> bool:
+	var gm = Engine.get_main_loop().root.get_node_or_null("GameManager")
+	if gm:
+		return gm._valentine_theme_active
+	return false
+
+func set_valentine_theme(active: bool) -> void:
+	if _valentine_theme_active != active:
+		_valentine_theme_active = active
+		emit_signal("theme_changed", active)
 
 # Main Scene-Switching Logic
 func switch_mode(target_mode: GameMode, payload: Dictionary = {}) -> void:
