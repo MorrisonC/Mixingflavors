@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Build and Upload Artifacts
 
 on:
   push:
@@ -12,8 +12,6 @@ concurrency:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   build_and_deploy:
@@ -134,12 +132,3 @@ jobs:
         with:
           name: Android-APK
           path: build/android/HybridTacticalPuzzleRPG.apk
-
-      - name: Upload Web Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build/web
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
