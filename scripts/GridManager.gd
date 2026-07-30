@@ -14,6 +14,7 @@ var target_solution: Dictionary = {}
 
 var slice_max: Vector3i
 var move_history: Array = []
+var is_player_action: bool = true
 
 @onready var labels_container: Node3D = get_node_or_null("LabelsContainer")
 
@@ -592,8 +593,45 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 			_destroy_block(block)
 			if OS.has_feature("mobile"):
 				Input.vibrate_handheld(40) # Haptic feedback on valid move
+
+			if is_player_action:
+				_check_explosive_chain(grid_pos)
 	elif block.current_state != block.BlockState.DESTROYED:
 		_handle_mistake()
+
+func _check_explosive_chain(start_pos: Vector3i) -> void:
+	is_player_action = false
+
+	# Check X axis
+	var x_clues = _calculate_clue(Vector3i(0, start_pos.y, start_pos.z), Vector3i(1, 0, 0), grid_size.x)
+	if x_clues.size() == 0 or (x_clues.size() == 1 and x_clues[0] == 0):
+		for x in range(grid_size.x):
+			var pos = Vector3i(x, start_pos.y, start_pos.z)
+			if pos != start_pos and blocks.has(pos):
+				_auto_destroy(blocks[pos], pos)
+
+	# Check Y axis
+	var y_clues = _calculate_clue(Vector3i(start_pos.x, 0, start_pos.z), Vector3i(0, 1, 0), grid_size.y)
+	if y_clues.size() == 0 or (y_clues.size() == 1 and y_clues[0] == 0):
+		for y in range(grid_size.y):
+			var pos = Vector3i(start_pos.x, y, start_pos.z)
+			if pos != start_pos and blocks.has(pos):
+				_auto_destroy(blocks[pos], pos)
+
+	# Check Z axis
+	var z_clues = _calculate_clue(Vector3i(start_pos.x, start_pos.y, 0), Vector3i(0, 0, 1), grid_size.z)
+	if z_clues.size() == 0 or (z_clues.size() == 1 and z_clues[0] == 0):
+		for z in range(grid_size.z):
+			var pos = Vector3i(start_pos.x, start_pos.y, z)
+			if pos != start_pos and blocks.has(pos):
+				_auto_destroy(blocks[pos], pos)
+
+	is_player_action = true
+
+func _auto_destroy(block: VoxelBlock, pos: Vector3i) -> void:
+	if block.current_state == block.BlockState.UNBROKEN:
+		_record_move(pos, block.current_state)
+		_destroy_block(block)
 
 func on_mark_requested(grid_pos: Vector3i) -> void:
 	if not blocks.has(grid_pos):
@@ -656,20 +694,36 @@ func _export_puzzle() -> void:
 		print("Saved puzzle to user://exported_puzzle.json")
 
 func _record_move(pos: Vector3i, previous_state: int) -> void:
-	move_history.append({"pos": pos, "state": previous_state})
+	if not is_player_action and not move_history.is_empty():
+		var last_entry = move_history.back()
+		if typeof(last_entry) == TYPE_ARRAY:
+			last_entry.append({"pos": pos, "state": previous_state})
+		else:
+			move_history[-1] = [last_entry, {"pos": pos, "state": previous_state}]
+	else:
+		move_history.append({"pos": pos, "state": previous_state})
 	emit_signal("history_updated", true)
 
 func undo_last_move() -> void:
 	if move_history.is_empty():
 		return
 	var last_move = move_history.pop_back()
-	var pos = last_move["pos"]
-	var prev_state = last_move["state"]
+
+	if typeof(last_move) == TYPE_ARRAY:
+		for move in last_move:
+			_undo_single_move(move)
+	else:
+		_undo_single_move(last_move)
+
+	_update_slicing() # Ensure visibility is correct if hidden by slice
+	emit_signal("history_updated", not move_history.is_empty())
+
+func _undo_single_move(move: Dictionary) -> void:
+	var pos = move["pos"]
+	var prev_state = move["state"]
 	if blocks.has(pos):
 		var block = blocks[pos] as VoxelBlock
 		block.set_state(prev_state)
-		_update_slicing() # Ensure visibility is correct if hidden by slice
-	emit_signal("history_updated", not move_history.is_empty())
 
 func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
 	if not blocks.has(grid_pos):
