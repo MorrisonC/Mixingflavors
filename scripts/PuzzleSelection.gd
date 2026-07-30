@@ -12,7 +12,8 @@ var collections: Dictionary = {
 	"Animals": ["res://assets/puzzles/animals/horse.json", "res://assets/puzzles/animals/platypus.json", "res://assets/puzzles/animals/suzanne.json"],
 	"Furniture": ["res://assets/puzzles/furniture/chair.json", "res://assets/puzzles/furniture/computer.json"],
 	"Egypt": ["res://assets/puzzles/egypt/pyramid.json", "res://assets/puzzles/egypt/sphinx.json"],
-	"Nature": ["res://assets/puzzles/nature/strange_tree.json"]
+	"Nature": ["res://assets/puzzles/nature/strange_tree.json"],
+	"Valentine": ["res://assets/puzzles/valentine/heart.json", "res://assets/puzzles/valentine/love_letter.json", "res://assets/puzzles/valentine/diamond_ring.json", "res://assets/puzzles/valentine/rose.json", "res://assets/puzzles/valentine/bow_and_arrow.json"]
 }
 
 var btn_normal: StyleBoxFlat

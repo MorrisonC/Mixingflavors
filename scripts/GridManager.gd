@@ -317,7 +317,12 @@ func _process(delta: float) -> void:
 
 func _update_ui_state() -> void:
 	if hp_label:
-		hp_label.text = "HP: %d/3" % player_hp
+		var gauntlet = get_parent()
+		var max_hp = 3
+		if gauntlet and "max_mistakes" in gauntlet:
+			max_hp = gauntlet.max_mistakes
+		hp_label.text = "HP: %d/%d" % [player_hp, max_hp]
+
 	if round_label:
 		round_label.text = "Floor %d" % current_floor
 	if boss_hp_bar:

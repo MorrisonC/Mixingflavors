@@ -38,5 +38,6 @@ func test_boss_round():
 
 func test_mistake_failure():
 	gauntlet._on_mistake_made(3)
+	await get_tree().create_timer(3.5).timeout
 	assert_eq(get_node("/root/GameManager").current_mode, GameManagerClass.GameMode.MAIN_MENU, "Failed gauntlet should return to Main Menu")
 
