@@ -165,6 +165,13 @@ func set_state(new_state: BlockState) -> void:
 	if current_state == BlockState.UNBROKEN and new_state == BlockState.DESTROYED:
 		if break_particles:
 			break_particles.restart()
+
+	if current_state != new_state and (new_state == BlockState.MARKED or new_state == BlockState.PAINTED or new_state == BlockState.UNBROKEN):
+		if mesh_instance:
+			var tween = create_tween()
+			tween.tween_property(mesh_instance, "scale", Vector3(1.15, 1.15, 1.15), 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			tween.tween_property(mesh_instance, "scale", Vector3(1.0, 1.0, 1.0), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
 	current_state = new_state
 	_update_visuals()
 
