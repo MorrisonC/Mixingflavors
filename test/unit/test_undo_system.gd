@@ -28,3 +28,26 @@ func test_undo_multiple_moves():
 
 	grid_manager.undo_last_move()
 	assert_eq(grid_manager.blocks[pos1].current_state, 0, "Block 1 should be unbroken after second undo")
+
+func test_undo_array_of_moves():
+	var pos1 = Vector3i(0, 0, 0)
+	var pos2 = Vector3i(1, 0, 0)
+	var pos3 = Vector3i(0, 1, 0)
+
+	grid_manager.blocks[pos1].current_state = 3
+	grid_manager.blocks[pos2].current_state = 3
+	grid_manager.blocks[pos3].current_state = 3
+
+	var array_move = [
+		{"pos": pos1, "state": 0},
+		{"pos": pos2, "state": 0},
+		{"pos": pos3, "state": 0}
+	]
+
+	grid_manager.move_history.append(array_move)
+
+	grid_manager.undo_last_move()
+
+	assert_eq(grid_manager.blocks[pos1].current_state, 0, "Block 1 should be unbroken after array undo")
+	assert_eq(grid_manager.blocks[pos2].current_state, 0, "Block 2 should be unbroken after array undo")
+	assert_eq(grid_manager.blocks[pos3].current_state, 0, "Block 3 should be unbroken after array undo")
