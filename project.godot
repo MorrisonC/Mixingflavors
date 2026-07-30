@@ -21,9 +21,6 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.97, 0.91, 0.59, 1)
 
-[autoload]
-GameManager="*res://scripts/GameManager.gd"
-
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true
@@ -33,3 +30,7 @@ pointing/emulate_mouse_from_touch=true
 
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[autoload]
+GameManager="*res://scripts/GameManager.gd"
+TestBridge="*res://scripts/test_bridge.gd"

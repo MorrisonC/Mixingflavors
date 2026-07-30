@@ -15,7 +15,7 @@ var target_solution: Dictionary = {}
 var slice_max: Vector3i
 var move_history: Array = []
 
-@onready var labels_container: Node3D = $LabelsContainer
+@onready var labels_container: Node3D = get_node_or_null("LabelsContainer")
 
 signal puzzle_solved
 signal mistake_made(total_mistakes)
@@ -65,7 +65,7 @@ const GameManagerClass = preload("res://scripts/GameManager.gd")
 var has_custom_puzzle: bool = false
 
 func _ready() -> void:
-	if GameManagerClass.has_method("is_valentine_theme") and GameManagerClass.is_valentine_theme():
+	if is_instance_valid(GameManager) and GameManager.has_method("is_valentine_theme") and GameManager.is_valentine_theme():
 		var env_node = get_node_or_null("WorldEnvironment")
 		if env_node and env_node.environment:
 			env_node.environment.background_color = Color(1.0, 0.94, 0.96)
