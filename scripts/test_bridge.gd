@@ -71,9 +71,15 @@ func _on_js_call(args):
                 # As this is a test bridge, let's look for ways to force solve
                 if "has_custom_puzzle" in grid_mgr:
                     grid_mgr.has_custom_puzzle = false # Make it easy
-                # We can call internal functions if available, or just mock it.
-                result = true
-                print("[TestBridge] Triggering win condition")
+
+                # Directly reveal the model to trigger the puzzle solved event
+                if grid_mgr.has_method("_reveal_model"):
+                    grid_mgr.boss_hp = 0
+                    grid_mgr._reveal_model()
+                    result = true
+                    print("[TestBridge] Triggering win condition via _reveal_model")
+                else:
+                    result = false
             else:
                 result = false
 
@@ -104,7 +110,7 @@ func _on_js_call(args):
             print("[TestBridge] Resolved via eval: null")
 
 func _find_grid_manager(node: Node) -> Node:
-    if node.name == "GridManager" or node.has_method("is_solved"):
+    if node.name == "GridManager" or node.name == "VoxelLogic" or node.has_method("_check_win_condition") or node.get_script() != null and node.get_script().resource_path.ends_with("GridManager.gd"):
         return node
     for child in node.get_children():
         var found = _find_grid_manager(child)
