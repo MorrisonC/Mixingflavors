@@ -10,7 +10,8 @@ panorama = ExtResource("2_6dx2x")
 sky_material = SubResource("PanoramaSkyMaterial_6skyl")
 
 [sub_resource type="Environment" id="Environment_ikp3j"]
-background_mode = 1
+background_mode = 2
+sky = SubResource("Sky_wtn17")
 background_color = Color(0.97, 0.91, 0.59, 1)
 
 [node name="EscapeGauntlet" type="Node3D"]
@@ -20,7 +21,9 @@ script = ExtResource("1_escape")
 transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 5, 0)
 shadow_enabled = true
 
-[node name="UI" type="Control" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UI" type="Control" parent="CanvasLayer"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,7 +32,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TimerLabel" type="Label" parent="UI"]
+[node name="TimerLabel" type="Label" parent="CanvasLayer/UI"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -42,7 +45,7 @@ grow_horizontal = 0
 text = "Time: 60s"
 horizontal_alignment = 2
 
-[node name="RoundLabel" type="Label" parent="UI"]
+[node name="RoundLabel" type="Label" parent="CanvasLayer/UI"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -55,7 +58,7 @@ grow_horizontal = 2
 text = "Round: 1"
 horizontal_alignment = 1
 
-[node name="QuitButton" type="Button" parent="UI"]
+[node name="QuitButton" type="Button" parent="CanvasLayer/UI"]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -70,7 +73,7 @@ grow_horizontal = 0
 grow_vertical = 0
 text = "Leave"
 
-[node name="ConfirmDialog" type="Panel" parent="UI"]
+[node name="ConfirmDialog" type="Panel" parent="CanvasLayer/UI"]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -85,7 +88,7 @@ offset_bottom = 80.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/ConfirmDialog"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI/ConfirmDialog"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -98,21 +101,21 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20
 
-[node name="Label" type="Label" parent="UI/ConfirmDialog/VBoxContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/UI/ConfirmDialog/VBoxContainer"]
 layout_mode = 2
 text = "Quit to Main Menu?"
 horizontal_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/ConfirmDialog/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/UI/ConfirmDialog/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="YesButton" type="Button" parent="UI/ConfirmDialog/VBoxContainer/HBoxContainer"]
+[node name="YesButton" type="Button" parent="CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Yes"
 
-[node name="NoButton" type="Button" parent="UI/ConfirmDialog/VBoxContainer/HBoxContainer"]
+[node name="NoButton" type="Button" parent="CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "No"
 
