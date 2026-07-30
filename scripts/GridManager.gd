@@ -807,35 +807,6 @@ func _reveal_model() -> void:
 			var block = blocks[pos] as VoxelBlock
 			block.base_material.albedo_color = sculpture_color
 
-	# Create a celebratory victory label overlay
-	var victory_label = Label.new()
-	victory_label.text = "SOLVED:\n" + (puzzle_name.to_upper()) + "!"
-	victory_label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
-	victory_label.add_theme_font_size_override("font_size", 48)
-	victory_label.add_theme_color_override("font_color", Color(0.95, 0.15, 0.35, 1.0)) # Brilliant ruby red
-	victory_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	victory_label.position.y -= 150 # Shift up
-	victory_label.position.x -= 200 # Center horizontally
-	victory_label.custom_minimum_size = Vector2(400, 200)
-	
-	var canvas_layer = get_node_or_null("CanvasLayer/Control")
-	if canvas_layer:
-		canvas_layer.add_child(victory_label)
-		
-		# Spawn celebratory falling heart particles
-		for i in range(25):
-			var heart = Label.new()
-			heart.text = ["❤️", "💖", "💝", "💕"].pick_random()
-			heart.add_theme_font_size_override("font_size", randi_range(24, 48))
-			heart.position = Vector2(randf_range(100, 924), randf_range(-100, 0))
-			canvas_layer.add_child(heart)
-			
-			var tween = create_tween()
-			tween.tween_property(heart, "position:y", 800.0, randf_range(2.0, 3.5))
-			tween.parallel().tween_property(heart, "position:x", heart.position.x + randf_range(-80.0, 80.0), randf_range(2.0, 3.5))
-			tween.parallel().tween_property(heart, "rotation", randf_range(-PI, PI), randf_range(2.0, 3.5))
-			tween.tween_callback(heart.queue_free)
-
 	# Deal damage to Boss (if in endless gauntlet mode)
 	var time_bonus = max(0.0, 60.0 - time_elapsed) * 2.0
 	var combo_bonus = combo * 5.0
@@ -843,18 +814,44 @@ func _reveal_model() -> void:
 	boss_hp -= damage
 	_update_ui_state()
 
+	# Wait a short moment to show the pure 3D model
+	await get_tree().create_timer(2.0).timeout
 
-	await get_tree().create_timer(3.0).timeout
+	# Create and show high-fidelity Victory Screen
+	_show_victory_screen(puzzle_name)
+
+
+func _show_victory_screen(puzzle_name: String) -> void:
+	var stats = preload("res://scripts/stats.gd").new()
+	stats.time_seconds = time_elapsed
+	stats.current_level_string = "Endless " + str(current_floor) + " - " + puzzle_name if not has_custom_puzzle else puzzle_name
+
+	# Calculate a raw score based on time and mistakes
+	var base_score = 10000
+	var time_penalty = int(time_elapsed * 10)
+	var mistake_penalty = mistakes * 500
+	stats.raw_score = max(0, base_score - time_penalty - mistake_penalty)
 	
-	# Remove victory label before advancing/switching
-	if is_instance_valid(victory_label):
-		victory_label.queue_free()
+	# Calculate stars earned
+	if mistakes == 0 and time_elapsed < 120.0:
+		stats.stars_earned = 3
+	elif mistakes <= 1 and time_elapsed < 300.0:
+		stats.stars_earned = 2
+	else:
+		stats.stars_earned = 1
 
-	# Emit signal AFTER the reveal is complete so listeners (like EscapeGauntlet) can transition
+	var victory_scene = preload("res://scenes/victory_screen.tscn").instantiate()
+	var canvas_layer = get_node_or_null("CanvasLayer")
+	if canvas_layer:
+		canvas_layer.add_child(victory_scene)
+		victory_scene.initialize(stats)
+		victory_scene.start_next_nonogram_requested.connect(_on_next_level_requested.bind(victory_scene))
+
+func _on_next_level_requested(victory_scene: Node) -> void:
+	victory_scene.queue_free()
 	emit_signal("puzzle_solved")
 
 	if has_custom_puzzle:
-		# Return to Level Select screen
 		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PUZZLE_SELECTION)
 	else:
 		if boss_hp <= 0:
