@@ -14,6 +14,7 @@ var target_solution: Dictionary = {}
 
 var slice_max: Vector3i
 var move_history: Array = []
+var is_player_action: bool = true
 
 @onready var labels_container: Node3D = get_node_or_null("LabelsContainer")
 
@@ -23,6 +24,7 @@ signal combo_updated(current_combo)
 signal history_updated(can_undo)
 signal game_over
 signal floor_cleared
+signal block_destroyed(grid_pos: Vector3i, is_player_action: bool)
 
 var mistakes: int = 0
 var combo: int = 0
@@ -663,12 +665,21 @@ func undo_last_move() -> void:
 	if move_history.is_empty():
 		return
 	var last_move = move_history.pop_back()
-	var pos = last_move["pos"]
-	var prev_state = last_move["state"]
-	if blocks.has(pos):
-		var block = blocks[pos] as VoxelBlock
-		block.set_state(prev_state)
-		_update_slicing() # Ensure visibility is correct if hidden by slice
+
+	if typeof(last_move) == TYPE_ARRAY:
+		for move in last_move:
+			var pos = move["pos"]
+			var prev_state = move["state"]
+			if blocks.has(pos):
+				var block = blocks[pos] as VoxelBlock
+				block.set_state(prev_state)
+	else:
+		var pos = last_move["pos"]
+		var prev_state = last_move["state"]
+		if blocks.has(pos):
+			var block = blocks[pos] as VoxelBlock
+			block.set_state(prev_state)
+	_update_slicing() # Ensure visibility is correct if hidden by slice
 	emit_signal("history_updated", not move_history.is_empty())
 
 func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
@@ -716,9 +727,11 @@ func _handle_mistake() -> void:
 
 func _destroy_block(block: VoxelBlock) -> void:
 	block.set_state(block.BlockState.DESTROYED)
-	combo += 1
-	_update_ui_state()
+	if is_player_action:
+		combo += 1
+		_update_ui_state()
 	_check_win_condition()
+	emit_signal("block_destroyed", block.grid_position, is_player_action)
 
 func _check_win_condition() -> void:
 	if not is_puzzle_active: return
