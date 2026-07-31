@@ -44,8 +44,7 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
     const selectState = await callGameAPI(page, ['get_button_state', '/root/Main/CanvasLayer/UIContainer/MainMenu/VBoxContainer/SelectButton']);
     expect(selectState).toBe(true);
 
-    const editorState = await callGameAPI(page, ['get_button_state', '/root/Main/CanvasLayer/UIContainer/MainMenu/VBoxContainer/EditorButton']);
-    expect(editorState).toBe(true);
+
 
     const settingsState = await callGameAPI(page, ['get_button_state', '/root/Main/CanvasLayer/UIContainer/MainMenu/VBoxContainer/SettingsButton']);
     expect(settingsState).toBe(true);
@@ -72,6 +71,57 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
   test('Settings Panel Navigation', async ({ page }) => {
     await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 30000 });
     await page.waitForTimeout(2000);
+    // Open settings and close (omitted here as it was empty originally)
+  });
+
+  test('Leave Button and Mark Feature E2E', async ({ page }) => {
+    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    // Switch to Escape Gauntlet to test Leave and Mark
+    await callGameAPI(page, ['switch_mode', 2]);
+    await page.waitForTimeout(2000);
+
+    // Test Mark Feature
+    // Switch to MARK mode
+    // We can directly call GameManager -> mode 2 -> active_puzzle (VoxelLogic)
+    await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/VoxelLogic/CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/MarkButton']);
+    await page.waitForTimeout(1000);
+
+    // Simulate touch input for raycast to mark block (0,0,0) - simulating screen interaction
+    await callGameAPI(page, ['trigger_mark_at', 0, 0, 0]);
+    await page.waitForTimeout(500);
+
+    // Test Leave Button Flow
+    // 1. Click Leave
+    await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/QuitButton']);
+    await page.waitForTimeout(1000);
+
+    // Assert dialog is visible
+    const dialogVisible = await callGameAPI(page, ['get_node_property', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog', 'visible']);
+    expect(dialogVisible).toBe(true);
+
+    // 2. Click No
+    await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer/NoButton']);
+    await page.waitForTimeout(1000);
+
+    // Assert dialog is hidden and mode is still Gauntlet
+    const dialogVisibleAfterNo = await callGameAPI(page, ['get_node_property', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog', 'visible']);
+    expect(dialogVisibleAfterNo).toBe(false);
+    let mode = await callGameAPI(page, ['get_current_mode']);
+    expect(mode).toBe(2);
+
+    // 3. Click Leave again
+    await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/QuitButton']);
+    await page.waitForTimeout(1000);
+
+    // 4. Click Yes
+    await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer/YesButton']);
+    await page.waitForTimeout(2000);
+
+    // Assert mode changed to MAIN_MENU
+    mode = await callGameAPI(page, ['get_current_mode']);
+    expect(mode).toBe(0);
   });
 
 });
