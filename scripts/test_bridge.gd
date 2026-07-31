@@ -90,6 +90,33 @@ func _on_js_call(args):
             if btn and btn is Button:
                 result = not btn.disabled
 
+    elif action == "press_button":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 1:
+            var btn_path = js_obj[1]
+            var btn = get_tree().root.get_node_or_null(btn_path)
+            if btn and btn is Button:
+                btn.emit_signal("pressed")
+                result = true
+            else:
+                result = false
+
+    elif action == "get_node_property":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 2:
+            var node_path = js_obj[1]
+            var prop_name = js_obj[2]
+            var node = get_tree().root.get_node_or_null(node_path)
+            if node:
+                result = node.get(prop_name)
+
+    elif action == "trigger_mark_at":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 3:
+            var main_loop = Engine.get_main_loop()
+            if main_loop and main_loop.root:
+                var grid_mgr = _find_grid_manager(main_loop.root)
+                if grid_mgr and grid_mgr.has_method("on_mark_requested"):
+                    grid_mgr.on_mark_requested(Vector3i(js_obj[1], js_obj[2], js_obj[3]))
+                    result = true
+
     if result != null:
         var window = JavaScriptBridge.get_interface("window")
         if window:

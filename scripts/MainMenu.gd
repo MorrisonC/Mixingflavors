@@ -14,6 +14,16 @@ func _ready() -> void:
 	var select_btn = get_node_or_null("VBoxContainer/SelectButton")
 	if select_btn:
 		select_btn.pressed.connect(_on_select_pressed)
+	var editor_btn = get_node_or_null("VBoxContainer/EditorButton")
+	if editor_btn:
+		editor_btn.queue_free()
+
+	var title = get_node_or_null("Title")
+	if title:
+		title.pivot_offset = title.size / 2
+		var tween = create_tween().set_loops()
+		tween.tween_property(title, "scale", Vector2(1.05, 1.05), 1.0).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(title, "scale", Vector2(1.0, 1.0), 1.0).set_trans(Tween.TRANS_SINE)
 
 func _on_play_pressed() -> void:
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)

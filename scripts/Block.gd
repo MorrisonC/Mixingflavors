@@ -20,7 +20,7 @@ var grid_position: Vector3i
 # Visual properties
 var base_material: StandardMaterial3D
 var outline_material: ShaderMaterial
-var marked_color: Color = Color(0.18, 0.55, 0.85) # Nice Blue/Cyan for marked (nathsou's style)
+var marked_color: Color = Color(0.18, 0.85, 0.55) # Greenish for marked
 var painted_color: Color = Color(0.18, 0.55, 0.85) # Keep simple: marked and painted both show as blue/kept block
 var highlight_color: Color = Color(1.0, 0.7, 0.1) # Bold orange highlight for hovered outlines
 var outline_default_color: Color = Color(0.0, 0.0, 0.0) # Bold black outlines by default
@@ -169,7 +169,6 @@ func set_state(new_state: BlockState) -> void:
 	current_state = new_state
 	_update_visuals()
 
-
 func _update_visuals() -> void:
 	match current_state:
 		BlockState.UNBROKEN:
@@ -187,11 +186,32 @@ func _update_visuals() -> void:
 					var sprite = face_sprites[dir]
 					if sprite.texture != null:
 						sprite.visible = true
-		BlockState.MARKED, BlockState.PAINTED:
+		BlockState.MARKED:
 			show()
 			mesh_instance.show()
 			collision_layer = 1
 			base_material.albedo_color = marked_color
+			outline_material.set_shader_parameter("outline_color", Color(1.0, 1.0, 1.0)) # White outline for marked
+			outline_material.set_shader_parameter("outline_width", 0.03)
+
+			if is_inside_tree():
+				if scale_tween and scale_tween.is_valid():
+					scale_tween.kill()
+				scale_tween = create_tween()
+				scale_tween.tween_property(self, "scale", Vector3(1.1, 1.1, 1.1), 0.1)
+				scale_tween.tween_property(self, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+
+			for dir in face_labels.keys():
+				if face_labels[dir].text != "":
+					face_labels[dir].visible = true
+					var sprite = face_sprites[dir]
+					if sprite.texture != null:
+						sprite.visible = true
+		BlockState.PAINTED:
+			show()
+			mesh_instance.show()
+			collision_layer = 1
+			base_material.albedo_color = painted_color
 			outline_material.set_shader_parameter("outline_color", Color(1.0, 1.0, 1.0)) # White outline for marked
 			outline_material.set_shader_parameter("outline_width", 0.03)
 

@@ -17,9 +17,15 @@ func test_play_button_switches_mode():
 	play_button.emit_signal("pressed")
 
 func test_editor_button_switches_mode():
+	# Note: In the latest update, the Editor button is removed from the menu in _ready()
+	# so we don't expect it to exist or trigger events anymore.
+
+	# wait for ready to complete
+	await get_tree().process_frame
+
 	var editor_button = main_menu.get_node_or_null("VBoxContainer/EditorButton")
-	assert_not_null(editor_button, "Editor button should exist")
-	editor_button.emit_signal("pressed")
+	var is_freed = (editor_button == null or editor_button.is_queued_for_deletion())
+	assert_true(is_freed, "Editor button should have been removed")
 
 func test_settings_button_shows_panel():
 	var settings_button = main_menu.get_node_or_null("VBoxContainer/SettingsButton")

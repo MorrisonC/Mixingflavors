@@ -21,8 +21,12 @@ var active_puzzle: Node3D = null
 func _ready() -> void:
 	_apply_theme()
 
-	quit_btn.pressed.connect(func(): confirm_dialog.show())
-	no_btn.pressed.connect(func(): confirm_dialog.hide())
+	quit_btn.pressed.connect(func():
+		confirm_dialog.show()
+	)
+	no_btn.pressed.connect(func():
+		confirm_dialog.hide()
+	)
 	yes_btn.pressed.connect(func():
 		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
 	)
