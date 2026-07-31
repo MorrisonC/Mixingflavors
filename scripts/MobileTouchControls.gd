@@ -162,6 +162,7 @@ func _raycast_block(screen_pos: Vector2) -> Vector3i:
 	var ray_dir = camera.project_ray_normal(screen_pos) * 100.0
 	var space_state = camera.get_world_3d().direct_space_state
 	var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_dir)
+	query.collision_mask = 1
 	var result = space_state.intersect_ray(query)
 
 	if result:
