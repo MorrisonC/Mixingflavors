@@ -707,6 +707,16 @@ func _handle_mistake() -> void:
 	_update_ui_state()
 	emit_signal("mistake_made", mistakes)
 
+	if hp_label:
+		# Visual juice for player taking damage
+		hp_label.pivot_offset = hp_label.size / 2
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(hp_label, "modulate", Color(1, 0, 0, 1), 0.1)
+		tween.tween_property(hp_label, "scale", Vector2(1.5, 1.5), 0.1)
+		tween.chain().tween_property(hp_label, "modulate", Color(1, 1, 1, 1), 0.2)
+		tween.parallel().tween_property(hp_label, "scale", Vector2(1, 1), 0.2)
+
 	if OS.has_feature("mobile"):
 		Input.vibrate_handheld(120)
 	if camera:
