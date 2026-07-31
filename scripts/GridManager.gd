@@ -759,6 +759,24 @@ func _reveal_model() -> void:
 	if env and env.environment:
 		env.environment.background_color = Color(0.98, 0.88, 0.90, 1.0) # Pastel Valentine Pink
 
+	# Smooth in-place wave scale transition
+	for pos in blocks.keys():
+		var block = blocks[pos]
+		if block.current_state != block.BlockState.DESTROYED and block.current_state != block.BlockState.HIDDEN_BY_SLICE:
+			var delay = float(pos.x + pos.y + pos.z) * 0.05
+			var tween = create_tween()
+			tween.tween_interval(delay)
+			tween.tween_property(block, "scale", Vector3(1.2, 1.2, 1.2), 0.15).set_trans(Tween.TRANS_SINE)
+			tween.tween_property(block, "scale", Vector3(1.0, 1.0, 1.0), 0.15).set_trans(Tween.TRANS_SINE)
+
+	# Start camera orbit
+	if camera:
+		var pivot = camera.get_parent()
+		if pivot and pivot.has_method("add_orbit_input"):
+			var spin_time = 10.0
+			var tween = create_tween()
+			tween.tween_property(pivot, "target_yaw", pivot.target_yaw + deg_to_rad(360.0), spin_time).set_trans(Tween.TRANS_SINE)
+
 	# Detect round from EscapeGauntlet if active
 	var round_num = 1
 	var gauntlet = get_parent()

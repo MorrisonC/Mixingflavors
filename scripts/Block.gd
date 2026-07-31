@@ -25,6 +25,7 @@ var painted_color: Color = Color(0.18, 0.55, 0.85) # Keep simple: marked and pai
 var highlight_color: Color = Color(1.0, 0.7, 0.1) # Bold orange highlight for hovered outlines
 var outline_default_color: Color = Color(0.0, 0.0, 0.0) # Bold black outlines by default
 var default_color: Color = Color(1.0, 1.0, 1.0) # Solid clean white blocks (nathsou's style)
+var scale_tween: Tween
 
 # Face elements mapped by direction Vector3i
 var face_labels: Dictionary = {}
@@ -168,6 +169,7 @@ func set_state(new_state: BlockState) -> void:
 	current_state = new_state
 	_update_visuals()
 
+
 func _update_visuals() -> void:
 	match current_state:
 		BlockState.UNBROKEN:
@@ -175,6 +177,8 @@ func _update_visuals() -> void:
 			mesh_instance.show()
 			collision_layer = 1
 			base_material.albedo_color = default_color
+			outline_material.set_shader_parameter("outline_color", outline_default_color)
+			outline_material.set_shader_parameter("outline_width", 0.02)
 			for dir in face_labels.keys():
 				if face_labels[dir].text != "":
 					face_labels[dir].visible = true
@@ -188,6 +192,16 @@ func _update_visuals() -> void:
 			mesh_instance.show()
 			collision_layer = 1
 			base_material.albedo_color = marked_color
+			outline_material.set_shader_parameter("outline_color", Color(1.0, 1.0, 1.0)) # White outline for marked
+			outline_material.set_shader_parameter("outline_width", 0.03)
+
+			if is_inside_tree():
+				if scale_tween and scale_tween.is_valid():
+					scale_tween.kill()
+				scale_tween = create_tween()
+				scale_tween.tween_property(self, "scale", Vector3(1.1, 1.1, 1.1), 0.1)
+				scale_tween.tween_property(self, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+
 			for dir in face_labels.keys():
 				if face_labels[dir].text != "":
 					face_labels[dir].visible = true
