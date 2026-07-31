@@ -1,11 +1,12 @@
 [gd_scene load_steps=8 format=3]
-
 [ext_resource type="Script" path="res://scripts/GridManager.gd" id="1_grid"]
 [ext_resource type="Script" path="res://scripts/ExplosiveChainMechanic.gd" id="1_chain"]
 [ext_resource type="PackedScene" path="res://scenes/Block.tscn" id="2_1kbjf"]
 [ext_resource type="Script" path="res://scripts/CameraPivotController.gd" id="2_camera"]
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
 [ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="4_twcvd"]
+[ext_resource type="Script" path="res://scripts/CooldownHintMechanic.gd" id="1_hint"]
+
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_bcnql"]
 panorama = ExtResource("4_twcvd")
@@ -213,3 +214,6 @@ text = "Undo"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_6b0qt")
+
+[node name="CooldownHintMechanic" type="Node" parent="."]
+script = ExtResource("1_hint")
