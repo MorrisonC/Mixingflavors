@@ -1,6 +1,7 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/GridManager.gd" id="1_grid"]
+[ext_resource type="Script" path="res://scripts/ExplosiveChainMechanic.gd" id="1_chain"]
 [ext_resource type="PackedScene" path="res://scenes/Block.tscn" id="2_1kbjf"]
 [ext_resource type="Script" path="res://scripts/CameraPivotController.gd" id="2_camera"]
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
@@ -36,6 +37,9 @@ script = ExtResource("1_grid")
 grid_size = Vector3i(5, 5, 5)
 block_scene = ExtResource("2_1kbjf")
 camera = NodePath("CameraPivotYaw/PitchNode/SpringArm3D/Camera3D")
+
+[node name="ExplosiveChainMechanic" type="Node" parent="."]
+script = ExtResource("1_chain")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 5, 0)
