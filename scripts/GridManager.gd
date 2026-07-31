@@ -584,14 +584,14 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 		return
 
 	if block.current_state == block.BlockState.UNBROKEN:
-		_record_move(grid_pos, block.current_state)
+		record_move(grid_pos, block.current_state)
 
 		# If it's a target block, it's a mistake
 		if target_solution.get(grid_pos, false):
-			_destroy_block(block) # We break it to reveal the mistake underneath
+			destroy_block(block) # We break it to reveal the mistake underneath
 			_handle_mistake()
 		else:
-			_destroy_block(block)
+			destroy_block(block)
 			if OS.has_feature("mobile"):
 				Input.vibrate_handheld(40) # Haptic feedback on valid move
 	elif block.current_state != block.BlockState.DESTROYED:
@@ -604,30 +604,30 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 
 	if is_editor_mode:
 		if block.current_state == block.BlockState.DESTROYED:
-			_record_move(grid_pos, block.current_state)
+			record_move(grid_pos, block.current_state)
 			block.set_state(block.BlockState.UNBROKEN)
 			target_solution[grid_pos] = true
 			_update_clues()
 	else:
 		if current_mode == EditMode.PAINT:
 			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED:
-				_record_move(grid_pos, block.current_state)
+				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.PAINTED)
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(40)
 			elif block.current_state == block.BlockState.PAINTED:
-				_record_move(grid_pos, block.current_state)
+				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.UNBROKEN)
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(20)
 		elif current_mode == EditMode.MARK:
 			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.PAINTED:
-				_record_move(grid_pos, block.current_state)
+				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.MARKED)
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(40)
 			elif block.current_state == block.BlockState.MARKED:
-				_record_move(grid_pos, block.current_state)
+				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.UNBROKEN)
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(20)
@@ -657,7 +657,7 @@ func _export_puzzle() -> void:
 		file.close()
 		print("Saved puzzle to user://exported_puzzle.json")
 
-func _record_move(pos: Vector3i, previous_state: int) -> void:
+func record_move(pos: Vector3i, previous_state: int) -> void:
 	move_history.append({"pos": pos, "state": previous_state})
 	emit_signal("history_updated", true)
 
@@ -735,7 +735,7 @@ func _handle_mistake() -> void:
 		current_floor = 1
 		start_level()
 
-func _destroy_block(block: VoxelBlock) -> void:
+func destroy_block(block: VoxelBlock) -> void:
 	block.set_state(block.BlockState.DESTROYED)
 	if is_player_action:
 		combo += 1
