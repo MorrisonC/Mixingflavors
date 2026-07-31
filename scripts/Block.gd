@@ -166,8 +166,24 @@ func set_state(new_state: BlockState) -> void:
 	if current_state == BlockState.UNBROKEN and new_state == BlockState.DESTROYED:
 		if break_particles:
 			break_particles.restart()
+
+	if new_state == BlockState.MARKED or (current_state == BlockState.MARKED and new_state == BlockState.UNBROKEN):
+		_play_juice_tween()
+
 	current_state = new_state
 	_update_visuals()
+
+func _play_juice_tween() -> void:
+	if mesh_instance:
+		var tween = create_tween()
+		tween.set_trans(Tween.TRANS_SPRING)
+		tween.set_ease(Tween.EASE_OUT)
+		# Squash
+		tween.tween_property(mesh_instance, "scale", Vector3(1.2, 0.8, 1.2), 0.05)
+		# Stretch
+		tween.tween_property(mesh_instance, "scale", Vector3(0.9, 1.1, 0.9), 0.1)
+		# Settle
+		tween.tween_property(mesh_instance, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
 
 func _update_visuals() -> void:
 	match current_state:
