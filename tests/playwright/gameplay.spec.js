@@ -83,7 +83,6 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
     await page.waitForTimeout(2000);
 
     // Test Mark Feature
-    // Switch to MARK mode
     // We can directly call GameManager -> mode 2 -> active_puzzle (VoxelLogic)
     await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/VoxelLogic/CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/MarkButton']);
     await page.waitForTimeout(1000);
@@ -92,8 +91,7 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
     await callGameAPI(page, ['trigger_mark_at', 0, 0, 0]);
     await page.waitForTimeout(500);
 
-    // Test Leave Button Flow
-    // 1. Click Leave
+    // Test Leave Button Flow via direct node property checking to ensure visual state changes are unblocked
     await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/QuitButton']);
     await page.waitForTimeout(1000);
 
@@ -101,7 +99,7 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
     const dialogVisible = await callGameAPI(page, ['get_node_property', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog', 'visible']);
     expect(dialogVisible).toBe(true);
 
-    // 2. Click No
+    // Click No via bridge
     await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer/NoButton']);
     await page.waitForTimeout(1000);
 
@@ -111,11 +109,11 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
     let mode = await callGameAPI(page, ['get_current_mode']);
     expect(mode).toBe(2);
 
-    // 3. Click Leave again
+    // Click Leave again via bridge
     await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/QuitButton']);
     await page.waitForTimeout(1000);
 
-    // 4. Click Yes
+    // Click Yes via bridge
     await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer/YesButton']);
     await page.waitForTimeout(2000);
 
