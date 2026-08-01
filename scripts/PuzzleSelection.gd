@@ -43,6 +43,13 @@ func _ready() -> void:
 
 	back_button.pressed.connect(_on_back_pressed)
 
+	randomize()
+	var bg_index = randi() % 8 + 1
+	var bg_tex = load("res://assets/textures/valentine/bg" + str(bg_index) + ".jpg")
+	var background = get_node_or_null("Background")
+	if background and background is TextureRect and bg_tex:
+		background.texture = bg_tex
+
 	_build_category_menu()
 	# Load Tutorials by default
 	_load_category("Tutorials")
