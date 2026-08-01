@@ -740,6 +740,14 @@ func destroy_block(block: VoxelBlock) -> void:
 	if is_player_action:
 		combo += 1
 		_update_ui_state()
+		if combo_label:
+			combo_label.pivot_offset = combo_label.size / 2
+			var tween = create_tween()
+			tween.set_parallel(true)
+			tween.tween_property(combo_label, "scale", Vector2(1.5, 1.5), 0.1)
+			tween.tween_property(combo_label, "modulate", Color(1.0, 0.84, 0.0, 1.0), 0.1) # Gold
+			tween.chain().tween_property(combo_label, "scale", Vector2(1, 1), 0.2)
+			tween.parallel().tween_property(combo_label, "modulate", Color(1, 1, 1, 1), 0.2)
 	_check_win_condition()
 	emit_signal("block_destroyed", block.grid_position, is_player_action)
 
