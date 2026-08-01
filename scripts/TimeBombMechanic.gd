@@ -54,12 +54,12 @@ func _spawn_bomb():
 
 	var valid_positions = []
 	var blocks = grid_manager.blocks
-	var target_solution = grid_manager.target_solution
+	var target_shape = grid_manager.target_shape
 
 	for pos in blocks.keys():
 		var block = blocks[pos]
 		# Find unbroken blocks that are NOT part of the solution
-		if block.current_state == block.BlockState.UNBROKEN and not target_solution.get(pos, false):
+		if block.current_state == block.BlockState.UNBROKEN and not (pos in target_shape):
 			# Ensure it's not hidden by the slicing tool
 			if pos.x <= grid_manager.slice_max.x and pos.y <= grid_manager.slice_max.y and pos.z <= grid_manager.slice_max.z:
 				valid_positions.append(pos)

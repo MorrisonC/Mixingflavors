@@ -10,7 +10,8 @@ enum GameMode {
 	VOXEL_LOGIC,
 	ESCAPE_GAUNTLET,
 	PUZZLE_EDITOR,
-	PUZZLE_SELECTION
+	PUZZLE_SELECTION,
+	MASQUERADE_PAINTING
 }
 
 signal theme_changed(is_valentine)

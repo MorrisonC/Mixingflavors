@@ -35,7 +35,7 @@ func use_hint() -> bool:
 
 	# Look for an unbroken block that we can safely resolve
 	var blocks = grid_manager.blocks
-	var target_solution = grid_manager.target_solution
+	var target_shape = grid_manager.target_shape
 
 	# Priority 1: Find a target block that is UNBROKEN and mark it (since there is no PAINTED state in the test, let's mark it)
 	var found_pos = Vector3i(-1, -1, -1)
@@ -45,7 +45,7 @@ func use_hint() -> bool:
 	for pos in blocks.keys():
 		var block = blocks[pos]
 		if block.current_state == block.BlockState.UNBROKEN:
-			var is_target_block = target_solution.get(pos, false)
+			var is_target_block = pos in target_shape
 			found_pos = pos
 			found_block = block
 			is_target = is_target_block

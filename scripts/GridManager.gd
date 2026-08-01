@@ -12,6 +12,9 @@ const VoxelLogicSolver = preload("res://scripts/VoxelLogicSolver.gd")
 var blocks: Dictionary = {}
 var target_solution: Dictionary = {}
 
+var target_shape: Array[Vector3i] = []
+var voxel_states: Dictionary = {}
+
 var slice_max: Vector3i
 var move_history: Array = []
 var is_player_action: bool = true
@@ -184,6 +187,18 @@ func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
 						target_solution[pos] = false
 					index += 1
 
+	target_shape.clear()
+	voxel_states.clear()
+	for pos in target_solution.keys():
+		var is_target = target_solution[pos]
+		if is_target:
+			target_shape.append(pos)
+		voxel_states[pos] = {
+			"is_target": is_target,
+			"is_chiseled": false,
+			"is_marked": false
+		}
+
 	_update_clues()
 
 
@@ -214,6 +229,19 @@ func start_level() -> void:
 
 	_generate_solution()
 	_build_grid()
+
+	target_shape.clear()
+	voxel_states.clear()
+	for pos in target_solution.keys():
+		var is_target = target_solution[pos]
+		if is_target:
+			target_shape.append(pos)
+		voxel_states[pos] = {
+			"is_target": is_target,
+			"is_chiseled": false,
+			"is_marked": false
+		}
+
 	_update_slicing()
 
 	_update_clues()
@@ -587,10 +615,19 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 		record_move(grid_pos, block.current_state)
 
 		# If it's a target block, it's a mistake
-		if target_solution.get(grid_pos, false):
-			destroy_block(block) # We break it to reveal the mistake underneath
+		var is_target = false
+		if voxel_states.has(grid_pos):
+			is_target = voxel_states[grid_pos].get("is_target", false)
+
+		if is_target:
+			# Mistake: Force mark to prevent accidental destruction and preserve shape
+			block.set_state(block.BlockState.MARKED)
+			if voxel_states.has(grid_pos):
+				voxel_states[grid_pos]["is_marked"] = true
 			_handle_mistake()
 		else:
+			if voxel_states.has(grid_pos):
+				voxel_states[grid_pos]["is_chiseled"] = true
 			destroy_block(block)
 			if OS.has_feature("mobile"):
 				Input.vibrate_handheld(40) # Haptic feedback on valid move
@@ -624,11 +661,15 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.PAINTED:
 				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.MARKED)
+				if voxel_states.has(grid_pos):
+					voxel_states[grid_pos]["is_marked"] = true
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(40)
 			elif block.current_state == block.BlockState.MARKED:
 				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.UNBROKEN)
+				if voxel_states.has(grid_pos):
+					voxel_states[grid_pos]["is_marked"] = false
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(20)
 		else:
@@ -746,22 +787,36 @@ func destroy_block(block: VoxelBlock) -> void:
 func _check_win_condition() -> void:
 	if not is_puzzle_active: return
 
-	# Win condition: No target blocks are DESTROYED, and all non-target blocks ARE destroyed.
-	for pos in blocks.keys():
-		var block = blocks[pos] as VoxelBlock
-		var is_target = target_solution.get(pos, false)
+	if player_hp <= 0:
+		return
 
-		if is_target:
-			if block.current_state == block.BlockState.DESTROYED:
-				return
-		else:
-			if block.current_state != block.BlockState.DESTROYED:
-				return
+	var non_target_remaining = 0
+
+	# Win condition: All non-target blocks are chiseled (destroyed)
+	for pos in voxel_states.keys():
+		var state = voxel_states[pos]
+		if not state["is_target"] and not state["is_chiseled"]:
+			# Ensure it actually isn't destroyed in the block state just in case
+			if blocks.has(pos) and blocks[pos].current_state != blocks[pos].BlockState.DESTROYED:
+				non_target_remaining += 1
+
+	if non_target_remaining > 0:
+		return
 
 	# Puzzle Solved!
 	is_puzzle_active = false
 	print("Puzzle Solved! Revealing model...")
-	_reveal_model()
+
+	# Prepare payload for Masquerade Painting mode if supported
+	var payload = {
+		"target_shape": target_shape.duplicate(),
+		"grid_size": grid_size
+	}
+
+	if is_instance_valid(GameManager) and "MASQUERADE_PAINTING" in GameManager.GameMode:
+		GameManager.switch_mode(GameManager.GameMode.MASQUERADE_PAINTING, payload)
+	else:
+		_reveal_model()
 
 func _reveal_model() -> void:
 	# Hide all slice constraints
