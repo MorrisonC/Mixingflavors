@@ -75,7 +75,7 @@ func _explode_bomb():
 		if block.current_state == block.BlockState.UNBROKEN:
 			grid_manager.is_player_action = false
 			# Destroy the block and trigger a mistake penalty
-			grid_manager._destroy_block(block)
+			grid_manager.destroy_block(block)
 			grid_manager._handle_mistake()
 			grid_manager.is_player_action = true
 

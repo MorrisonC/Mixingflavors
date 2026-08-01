@@ -99,7 +99,7 @@ func test_defusing_bomb_resets_mechanic():
 	if bomb_pos == Vector3i(-1, -1, -1): return
 
 	var block = grid.blocks[bomb_pos]
-	grid._destroy_block(block) # Player destroys block manually
+	grid.destroy_block(block) # Player destroys block manually
 
 	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should have reset after defusal")
 	assert_eq(grid.player_hp, initial_hp, "Player should NOT lose HP on defusal")
