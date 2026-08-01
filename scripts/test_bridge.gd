@@ -117,6 +117,81 @@ func _on_js_call(args):
                     grid_mgr.on_mark_requested(Vector3i(js_obj[1], js_obj[2], js_obj[3]))
                     result = true
 
+
+    elif action == "trigger_chisel_at":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 3:
+            var main_loop = Engine.get_main_loop()
+            if main_loop and main_loop.root:
+                var grid_mgr = _find_grid_manager(main_loop.root)
+                if grid_mgr and grid_mgr.has_method("on_chisel_requested"):
+                    grid_mgr.on_chisel_requested(Vector3i(js_obj[1], js_obj[2], js_obj[3]))
+                    result = true
+
+    elif action == "set_edit_mode":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 1:
+            var mode_name = js_obj[1]
+            var main_loop = Engine.get_main_loop()
+            if main_loop and main_loop.root:
+                var grid_mgr = _find_grid_manager(main_loop.root)
+                if grid_mgr:
+                    if mode_name == "chisel" and grid_mgr.has_method("_on_chisel_mode_selected"):
+                        grid_mgr._on_chisel_mode_selected()
+                        result = true
+                    elif mode_name == "paint" and grid_mgr.has_method("_on_paint_mode_selected"):
+                        grid_mgr._on_paint_mode_selected()
+                        result = true
+                    elif mode_name == "mark" and grid_mgr.has_method("_on_mark_mode_selected"):
+                        grid_mgr._on_mark_mode_selected()
+                        result = true
+
+    elif action == "set_slice":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 2:
+            var axis = js_obj[1]
+            var val = js_obj[2]
+            var main_loop = Engine.get_main_loop()
+            if main_loop and main_loop.root:
+                var grid_mgr = _find_grid_manager(main_loop.root)
+                if grid_mgr:
+                    if axis == "x" and grid_mgr.has_method("_on_slice_x_changed"):
+                        grid_mgr._on_slice_x_changed(val)
+                        result = true
+                    elif axis == "y" and grid_mgr.has_method("_on_slice_y_changed"):
+                        grid_mgr._on_slice_y_changed(val)
+                        result = true
+                    elif axis == "z" and grid_mgr.has_method("_on_slice_z_changed"):
+                        grid_mgr._on_slice_z_changed(val)
+                        result = true
+
+    elif action == "toggle_slice":
+        var main_loop = Engine.get_main_loop()
+        if main_loop and main_loop.root:
+            var grid_mgr = _find_grid_manager(main_loop.root)
+            if grid_mgr and grid_mgr.has_method("_on_slice_toggle_pressed"):
+                grid_mgr._on_slice_toggle_pressed()
+                result = true
+
+    elif action == "click_ui_button":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 1:
+            var btn_name = js_obj[1]
+            var main_loop = Engine.get_main_loop()
+            if main_loop and main_loop.root:
+                var btn = null
+
+                if btn_name == "menu_play":
+                    btn = main_loop.root.get_node_or_null("/root/Main/CanvasLayer/UIContainer/MainMenu/VBoxContainer/PlayButton")
+                elif btn_name == "leave":
+                    btn = main_loop.root.get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/QuitButton")
+                elif btn_name == "confirm_yes":
+                    btn = main_loop.root.get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer/YesButton")
+                elif btn_name == "confirm_no":
+                    btn = main_loop.root.get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer/NoButton")
+
+                if btn and btn is Button:
+                    btn.emit_signal("pressed")
+                    result = true
+                else:
+                    result = false
+
     if result != null:
         var window = JavaScriptBridge.get_interface("window")
         if window:

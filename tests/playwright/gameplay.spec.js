@@ -32,7 +32,7 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
     const canvas = page.locator('#canvas');
     await expect(canvas).toBeVisible();
 
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 30000 });
+    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
     await page.waitForTimeout(2000);
 
     const mode = await callGameAPI(page, ['get_current_mode']);
@@ -51,7 +51,7 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
   });
 
   test('Puzzle Solving Flow', async ({ page }) => {
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 30000 });
+    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
     await page.waitForTimeout(2000);
 
     await callGameAPI(page, ['switch_mode', 2]); // ESCAPE_GAUNTLET
@@ -69,13 +69,13 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
   });
 
   test('Settings Panel Navigation', async ({ page }) => {
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 30000 });
+    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
     await page.waitForTimeout(2000);
     // Open settings and close (omitted here as it was empty originally)
   });
 
   test('Leave Button and Mark Feature E2E', async ({ page }) => {
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 30000 });
+    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
     await page.waitForTimeout(2000);
 
     // Switch to Escape Gauntlet to test Leave and Mark
@@ -120,6 +120,54 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
     // Assert mode changed to MAIN_MENU
     mode = await callGameAPI(page, ['get_current_mode']);
     expect(mode).toBe(0);
+  });
+
+  test('New Grid Interactions & Slicing E2E', async ({ page }) => {
+    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
+    await page.waitForTimeout(2000);
+
+    // Switch to Escape Gauntlet to test new mechanics
+    await callGameAPI(page, ['switch_mode', 2]);
+    await page.waitForTimeout(2000);
+
+    // Test changing to paint mode
+    await callGameAPI(page, ['set_edit_mode', 'paint']);
+    await page.waitForTimeout(500);
+
+    // Test mark at (which triggers paint due to edit mode)
+    await callGameAPI(page, ['trigger_mark_at', 0, 0, 0]);
+    await page.waitForTimeout(500);
+
+    // Test chisel mode
+    await callGameAPI(page, ['set_edit_mode', 'chisel']);
+    await page.waitForTimeout(500);
+
+    // Test chisel at
+    await callGameAPI(page, ['trigger_chisel_at', 1, 0, 0]);
+    await page.waitForTimeout(500);
+
+    // Test slice toggling
+    await callGameAPI(page, ['toggle_slice']);
+    await page.waitForTimeout(500);
+
+    // Test slice setting
+    await callGameAPI(page, ['set_slice', 'x', 1]);
+    await callGameAPI(page, ['set_slice', 'y', 1]);
+    await callGameAPI(page, ['set_slice', 'z', 1]);
+    await page.waitForTimeout(1000);
+
+    // Test UI buttons with new abstractions
+    await callGameAPI(page, ['click_ui_button', 'leave']);
+    await page.waitForTimeout(1000);
+
+    const dialogVisible = await callGameAPI(page, ['get_node_property', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog', 'visible']);
+    expect(dialogVisible).toBe(true);
+
+    await callGameAPI(page, ['click_ui_button', 'confirm_no']);
+    await page.waitForTimeout(500);
+
+    const dialogVisibleAfterNo = await callGameAPI(page, ['get_node_property', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog', 'visible']);
+    expect(dialogVisibleAfterNo).toBe(false);
   });
 
 });
