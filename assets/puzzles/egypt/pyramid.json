@@ -1,386 +1,587 @@
 {
-    "name": "Pyramid",
-    "dims": [9, 5, 9],
-    "hints": [
-        [
-            [null, null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null, null]
-        ],
-        [
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 4,
-                "type": 0
-            }, {
-                "num": 4,
-                "type": 0
-            }, {
-                "num": 4,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 4,
-                "type": 0
-            }, {
-                "num": 5,
-                "type": 0
-            }, {
-                "num": 4,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 4,
-                "type": 0
-            }, {
-                "num": 4,
-                "type": 0
-            }, {
-                "num": 4,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }]
-        ],
-        [
-            [null, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [null, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [null, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 5,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [null, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 5,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [null, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 5,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [null, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 5,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [null, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 5,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [null, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [null, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }]
-        ]
+  "name": "Pyramid",
+  "dims": [
+    9,
+    5,
+    9
+  ],
+  "hints": [
+    [
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    ],
+    [
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 4,
+          "type": 0
+        },
+        {
+          "num": 4,
+          "type": 0
+        },
+        {
+          "num": 4,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 4,
+          "type": 0
+        },
+        {
+          "num": 5,
+          "type": 0
+        },
+        {
+          "num": 4,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 4,
+          "type": 0
+        },
+        {
+          "num": 4,
+          "type": 0
+        },
+        {
+          "num": 4,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ]
+    ],
+    [
+      [
+        null,
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 5,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 5,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 5,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 5,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 5,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ]
     ]
+  ],
+  "difficulty_score": 1980,
+  "difficulty_tier": "hard",
+  "par_time_seconds": 120
 }

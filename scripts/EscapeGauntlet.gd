@@ -81,35 +81,53 @@ func _start_round() -> void:
 
 	active_puzzle = VoxelLogicScene.instantiate()
 
-	# Modify grid size based on round for difficulty BEFORE adding to tree
-	if current_round == max_rounds:
-		# Boss round
+	var puzzle_data = get_next_puzzle_for_mode()
+	active_puzzle.custom_puzzle_data = puzzle_data
+
+	if current_round == max_rounds and get_node("/root/GameManager").selected_difficulty_mode != "endless":
 		round_label.text = "BOSS FIGHT"
-		active_puzzle.grid_size = Vector3i(5, 5, 5) # Large Bow & Arrow shape
-		time_left = 120.0
-		round_max_time = 120.0 # More time for boss
-	elif current_round in [1, 2]:
-		round_label.text = "Round: " + str(current_round)
-		active_puzzle.grid_size = Vector3i(3, 3, 3) # Heart, Love Letter
-		time_left = 60.0
-		round_max_time = 60.0
 	else:
 		round_label.text = "Round: " + str(current_round)
-		active_puzzle.grid_size = Vector3i(4, 4, 4) # Diamond Ring, Rose
-		time_left = 80.0
-		round_max_time = 80.0
 
+	if "par_time_seconds" in puzzle_data:
+		time_left = float(puzzle_data["par_time_seconds"])
+		round_max_time = time_left
+	else:
+		time_left = 120.0
+		round_max_time = 120.0
 
 	add_child(active_puzzle)
 
-	# Sync UI Health (VoxelLogic tracks player_hp out of 3, we want to allow more max hp)
+	# Sync UI Health
 	var current_health = max_mistakes
 	if current_round > 1 and active_puzzle.has_method("set"):
 		active_puzzle.set("player_hp", current_health)
 
-
 	active_puzzle.puzzle_solved.connect(_on_puzzle_solved)
 	active_puzzle.mistake_made.connect(_on_mistake_made)
+
+func get_next_puzzle_for_mode() -> Dictionary:
+	var mode = get_node("/root/GameManager").selected_difficulty_mode
+	if mode == "endless":
+		return _get_endless_scaling_puzzle()
+
+	var pool = PuzzleRegistry.get_puzzles_by_tier(mode)
+	if pool.is_empty():
+		pool = PuzzleRegistry.get_all_puzzles()
+	return pool.pick_random()
+
+func _get_endless_scaling_puzzle() -> Dictionary:
+	var target_tier = "easy"
+	if current_round >= 12:
+		target_tier = "hard"
+	elif current_round >= 6:
+		target_tier = "medium"
+
+	var pool = PuzzleRegistry.get_puzzles_by_tier(target_tier)
+	if pool.is_empty():
+		pool = PuzzleRegistry.get_all_puzzles()
+	return pool.pick_random()
+
 
 func _on_puzzle_solved() -> void:
 	var time_spent = round_max_time - time_left
