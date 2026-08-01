@@ -21,6 +21,8 @@ func test_mechanic_initialization():
 
 func test_chain_does_not_break_targets():
 	grid_manager.target_solution[Vector3i(0, 0, 0)] = true
+	grid_manager.target_shape.append(Vector3i(0, 0, 0))
+	grid_manager.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
 	grid_manager.on_chisel_requested(Vector3i(0, 1, 0)) # Chisel non-target, might trigger chain
 
 	assert_true(grid_manager.blocks[Vector3i(0, 0, 0)].current_state == grid_manager.blocks[Vector3i(0,0,0)].BlockState.UNBROKEN, "Target block should remain unbroken")
@@ -28,6 +30,8 @@ func test_chain_does_not_break_targets():
 func test_chain_breaks_zero_clue_lines():
 	# Make all blocks non-targets
 	grid_manager.target_solution.clear()
+	grid_manager.target_shape.clear()
+	grid_manager.voxel_states.clear()
 
 	# The line X=0, Y=0 (Z=0, Z=1) has no targets.
 	# If we chisel (0,0,0), it should chain and break (0,0,1)
@@ -37,6 +41,8 @@ func test_chain_breaks_zero_clue_lines():
 
 func test_undo_restores_chained_blocks():
 	grid_manager.target_solution.clear()
+	grid_manager.target_shape.clear()
+	grid_manager.voxel_states.clear()
 	grid_manager.on_chisel_requested(Vector3i(0, 0, 0))
 
 	assert_true(grid_manager.blocks[Vector3i(0, 0, 1)].current_state == grid_manager.blocks[Vector3i(0,0,1)].BlockState.DESTROYED, "Chain should break the block")

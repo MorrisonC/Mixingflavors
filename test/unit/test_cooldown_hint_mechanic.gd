@@ -21,6 +21,8 @@ func test_mechanic_initialization():
 
 func test_hint_usage():
 	grid_manager.target_solution[Vector3i(0, 0, 0)] = true
+	grid_manager.target_shape.append(Vector3i(0, 0, 0))
+	grid_manager.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
 
 	var initial_ready = hint_mechanic.is_ready
 	assert_true(initial_ready, "Hint should be ready initially")
@@ -35,6 +37,8 @@ func test_hint_usage():
 
 func test_cooldown_recharge():
 	grid_manager.target_solution[Vector3i(0, 0, 0)] = true
+	grid_manager.target_shape.append(Vector3i(0, 0, 0))
+	grid_manager.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
 	hint_mechanic.cooldown_duration = 0.5
 	hint_mechanic.use_hint()
 

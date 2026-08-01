@@ -35,9 +35,14 @@ func test_bomb_spawns_on_unbroken_block():
 	grid.is_puzzle_active = true
 
 	grid.target_solution.clear()
+	grid.target_shape.clear()
+	grid.voxel_states.clear()
 	# Set target solution so that we have at least one block that is NOT part of the solution
 	grid.target_solution[Vector3i(0, 0, 0)] = true
+	grid.target_shape.append(Vector3i(0, 0, 0))
+	grid.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
 	grid.target_solution[Vector3i(1, 0, 0)] = false # Valid bomb target
+	grid.voxel_states[Vector3i(1, 0, 0)] = {"is_target": false, "is_chiseled": false, "is_marked": false}
 
 	bomb_mechanic.grid_manager = grid
 	bomb_mechanic._ready() # Force ready to hook up signals
@@ -46,14 +51,18 @@ func test_bomb_spawns_on_unbroken_block():
 	bomb_mechanic._process(1.5)
 
 	assert_ne(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should have spawned")
-	assert_false(grid.target_solution.get(bomb_mechanic.active_bomb_pos, false), "Bomb should not spawn on a solution block")
+	assert_false(bomb_mechanic.active_bomb_pos in grid.target_shape, "Bomb should not spawn on a solution block")
 
 func test_bomb_explosion_causes_mistake():
 	grid.start_level()
 	grid.is_puzzle_active = true
 
 	grid.target_solution.clear()
+	grid.target_shape.clear()
+	grid.voxel_states.clear()
 	grid.target_solution[Vector3i(0, 0, 0)] = true
+	grid.target_shape.append(Vector3i(0, 0, 0))
+	grid.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
 
 	bomb_mechanic.grid_manager = grid
 	bomb_mechanic._ready() # Force ready to hook up signals
@@ -83,7 +92,11 @@ func test_defusing_bomb_resets_mechanic():
 	grid.is_puzzle_active = true
 
 	grid.target_solution.clear()
+	grid.target_shape.clear()
+	grid.voxel_states.clear()
 	grid.target_solution[Vector3i(0, 0, 0)] = true
+	grid.target_shape.append(Vector3i(0, 0, 0))
+	grid.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
 
 	bomb_mechanic.grid_manager = grid
 	bomb_mechanic._ready() # Force ready to hook up signals
@@ -111,6 +124,8 @@ func test_mechanic_disabled_when_flag_false():
 
 	bomb_mechanic.is_enabled = false
 	grid.target_solution.clear()
+	grid.target_shape.clear()
+	grid.voxel_states.clear()
 
 	bomb_mechanic.grid_manager = grid
 	bomb_mechanic._ready() # Force ready to hook up signals
