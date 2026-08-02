@@ -34,8 +34,6 @@ var active_voxel_template: Array = []
 var discovered_anchors: Array = []
 var current_mode: GameMode = GameMode.MAIN_MENU
 var selected_difficulty_mode: String = "medium"
-var tutorial_completed: bool = false
-var mode_payload: Dictionary = {}
 
 
 # Scene File Paths (Ensure case-sensitivity matches your project files)
