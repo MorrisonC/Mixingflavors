@@ -7,7 +7,7 @@
 
 ## How to Run Automated Tests
 Jules MUST run tests in headless mode inside the VM:
-`godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://test/unit/ -gexit`
+`godot --headless --rendering-driver opengl3 -s addons/gut/gut_cmdln.gd -gdir=res://test/unit/ -gexit`
 
 ## Architecture & Conventions
 - Always follow official GDScript style guidelines.
