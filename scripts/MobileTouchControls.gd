@@ -5,6 +5,7 @@ signal chisel_voxel_requested(grid_pos: Vector3i)
 signal mark_voxel_requested(grid_pos: Vector3i)
 signal hover_voxel_requested(grid_pos: Vector3i, is_hover: bool)
 signal layer_slice_changed(axis: String, value: int)
+signal camera_rotated(delta_angle: float)
 
 enum TouchMode { CHISEL, MARK, PAINT, ROTATE }
 var current_mode: TouchMode = TouchMode.CHISEL
@@ -174,12 +175,15 @@ func _raycast_block(screen_pos: Vector2) -> Vector3i:
 func _handle_camera_orbit(relative: Vector2) -> void:
 	if camera_pivot and camera_pivot.has_method("add_orbit_input"):
 		camera_pivot.add_orbit_input(relative)
+		emit_signal("camera_rotated", abs(relative.x * 0.01))
 	elif camera_pivot and camera_pivot.has_method("_orbit_camera"):
 		camera_pivot._orbit_camera(relative)
+		emit_signal("camera_rotated", abs(relative.x * 0.01))
 	elif camera_pivot:
 		camera_pivot.rotation_degrees.y -= relative.x * 0.5
 		camera_pivot.rotation_degrees.x -= relative.y * 0.5
 		camera_pivot.rotation_degrees.x = clamp(camera_pivot.rotation_degrees.x, -85.0, 85.0)
+		emit_signal("camera_rotated", deg_to_rad(abs(relative.x * 0.5)))
 
 func _handle_camera_zoom(amount: float) -> void:
 	if camera_pivot and camera_pivot.has_method("add_zoom_input"):
