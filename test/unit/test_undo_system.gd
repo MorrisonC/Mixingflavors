@@ -15,6 +15,7 @@ func test_undo_multiple_moves():
 	var pos1 = Vector3i(0, 0, 0)
 	var pos2 = Vector3i(1, 0, 0)
 
+	grid_manager.voxel_states[pos1] = {"is_target": false, "is_chiseled": false, "is_marked": false}
 	grid_manager.on_chisel_requested(pos1)
 	assert_eq(grid_manager.blocks[pos1].current_state, 3, "Block 1 should be destroyed") # 3 = DESTROYED
 
