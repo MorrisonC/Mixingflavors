@@ -1,0 +1,7 @@
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+ERROR: Cannot export project with preset "Web" due to configuration errors:
+
+   at: _fs_changed (editor/editor_node.cpp:1012)
+ERROR: Project export for preset "Web" failed.
+   at: _fs_changed (editor/editor_node.cpp:1028)
