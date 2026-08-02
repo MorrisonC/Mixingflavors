@@ -1,291 +1,494 @@
 {
-    "dims": [7, 7, 9],
-    "hints": [
-        [
-            [null, {
-                "num": 3,
-                "type": 1
-            }, null, null, null, {
-                "num": 3,
-                "type": 1
-            }, null, null, {
-                "num": 2,
-                "type": 0
-            }],
-            [null, null, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, null, null, null, null],
-            [{
-                "num": 1,
-                "type": 0
-            }, null, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, null, null, null, null],
-            [{
-                "num": 1,
-                "type": 0
-            }, null, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, null, null, null, null],
-            [{
-                "num": 1,
-                "type": 0
-            }, null, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, null, null, null, null],
-            [{
-                "num": 1,
-                "type": 0
-            }, null, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, null, null, null, null],
-            [{
-                "num": 1,
-                "type": 0
-            }, null, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, null, null, null, null]
-        ],
-        [
-            [{
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [{
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [{
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, null, null, null, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, null, null, null, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }],
-            [{
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [null, {
-                "num": 6,
-                "type": 1
-            }, null, null, null, {
-                "num": 6,
-                "type": 1
-            }, {
-                "num": 5,
-                "type": 0
-            }, null, null],
-            [{
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }]
-        ],
-        [
-            [null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null],
-            [{
-                "num": 1,
-                "type": 0
-            }, null, null, null, null, null, null],
-            [{
-                "num": 1,
-                "type": 0
-            }, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null],
-            [{
-                "num": 5,
-                "type": 0
-            }, {
-                "num": 3,
-                "type": 0
-            }, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 7,
-                "type": 0
-            }, {
-                "num": 7,
-                "type": 0
-            }],
-            [null, null, null, null, null, null, null]
-        ]
+  "dims": [
+    7,
+    7,
+    9
+  ],
+  "hints": [
+    [
+      [
+        null,
+        {
+          "num": 3,
+          "type": 1
+        },
+        null,
+        null,
+        null,
+        {
+          "num": 3,
+          "type": 1
+        },
+        null,
+        null,
+        {
+          "num": 2,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        null,
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        null
+      ]
     ],
-    "name": "Computer"
+    [
+      [
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 6,
+          "type": 1
+        },
+        null,
+        null,
+        null,
+        {
+          "num": 6,
+          "type": 1
+        },
+        {
+          "num": 5,
+          "type": 0
+        },
+        null,
+        null
+      ],
+      [
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ]
+    ],
+    [
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 1,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 5,
+          "type": 0
+        },
+        {
+          "num": 3,
+          "type": 0
+        },
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 7,
+          "type": 0
+        },
+        {
+          "num": 7,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    ]
+  ],
+  "name": "Computer",
+  "difficulty_score": 1762,
+  "difficulty_tier": "hard",
+  "par_time_seconds": 120
 }

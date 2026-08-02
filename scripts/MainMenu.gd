@@ -25,8 +25,28 @@ func _ready() -> void:
 		tween.tween_property(title, "scale", Vector2(1.05, 1.05), 1.0).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(title, "scale", Vector2(1.0, 1.0), 1.0).set_trans(Tween.TRANS_SINE)
 
+	var easy_btn = get_node_or_null("DifficultyModal/VBoxContainer/EasyButton")
+	if easy_btn:
+		easy_btn.pressed.connect(func(): _on_difficulty_selected("easy"))
+	var medium_btn = get_node_or_null("DifficultyModal/VBoxContainer/MediumButton")
+	if medium_btn:
+		medium_btn.pressed.connect(func(): _on_difficulty_selected("medium"))
+	var hard_btn = get_node_or_null("DifficultyModal/VBoxContainer/HardButton")
+	if hard_btn:
+		hard_btn.pressed.connect(func(): _on_difficulty_selected("hard"))
+	var endless_btn = get_node_or_null("DifficultyModal/VBoxContainer/EndlessButton")
+	if endless_btn:
+		endless_btn.pressed.connect(func(): _on_difficulty_selected("endless"))
+	var cancel_btn = get_node_or_null("DifficultyModal/VBoxContainer/CloseDifficultyButton")
+	if cancel_btn:
+		cancel_btn.pressed.connect(func(): get_node("DifficultyModal").visible = false)
+
 func _on_play_pressed() -> void:
-	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)
+	var difficulty_modal = get_node_or_null("DifficultyModal")
+	if difficulty_modal:
+		difficulty_modal.visible = true
+	else:
+		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)
 
 func _on_select_pressed() -> void:
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PUZZLE_SELECTION)
@@ -39,3 +59,10 @@ func _on_settings_pressed() -> void:
 	var settings_menu = get_node_or_null("SettingsPanel")
 	if settings_menu:
 		settings_menu.show()
+
+func _on_difficulty_selected(mode: String) -> void:
+	var difficulty_modal = get_node_or_null("DifficultyModal")
+	if difficulty_modal:
+		difficulty_modal.visible = false
+	get_node("/root/GameManager").selected_difficulty_mode = mode
+	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)

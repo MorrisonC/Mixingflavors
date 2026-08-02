@@ -1,219 +1,364 @@
 {
-    "dims": [12, 3, 5],
-    "hints": [
-        [
-            [{
-                "num": 2,
-                "type": 1
-            }, null, null, null, {
-                "num": 2,
-                "type": 1
-            }],
-            [{
-                "num": 8,
-                "type": 0
-            }, null, null, null, {
-                "num": 8,
-                "type": 0
-            }],
-            [{
-                "num": 6,
-                "type": 0
-            }, {
-                "num": 9,
-                "type": 0
-            }, {
-                "num": 9,
-                "type": 0
-            }, {
-                "num": 9,
-                "type": 0
-            }, {
-                "num": 6,
-                "type": 0
-            }]
-        ],
-        [
-            [null, {
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }, null],
-            [{
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }],
-            [null, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, null],
-            [null, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, null],
-            [null, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, null],
-            [null, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, null],
-            [null, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, null],
-            [{
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }],
-            [{
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }],
-            [null, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, null],
-            [{
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 2,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }],
-            [{
-                "num": 0,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 1,
-                "type": 0
-            }, {
-                "num": 0,
-                "type": 0
-            }]
-        ],
-        [
-            [null, {
-                "num": 1,
-                "type": 0
-            }, null],
-            [{
-                "num": 2,
-                "type": 1
-            }, null, null],
-            [null, null, null],
-            [null, null, null],
-            [null, null, null],
-            [null, null, null],
-            [null, null, null],
-            [null, null, null],
-            [{
-                "num": 2,
-                "type": 1
-            }, null, null],
-            [null, null, null],
-            [null, null, {
-                "num": 3,
-                "type": 0
-            }],
-            [null, {
-                "num": 3,
-                "type": 0
-            }, null]
-        ]
+  "dims": [
+    12,
+    3,
+    5
+  ],
+  "hints": [
+    [
+      [
+        {
+          "num": 2,
+          "type": 1
+        },
+        null,
+        null,
+        null,
+        {
+          "num": 2,
+          "type": 1
+        }
+      ],
+      [
+        {
+          "num": 8,
+          "type": 0
+        },
+        null,
+        null,
+        null,
+        {
+          "num": 8,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 6,
+          "type": 0
+        },
+        {
+          "num": 9,
+          "type": 0
+        },
+        {
+          "num": 9,
+          "type": 0
+        },
+        {
+          "num": 9,
+          "type": 0
+        },
+        {
+          "num": 6,
+          "type": 0
+        }
+      ]
     ],
-    "name": "Platypus"
+    [
+      [
+        null,
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        },
+        null
+      ],
+      [
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        null
+      ],
+      [
+        null,
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        null
+      ],
+      [
+        null,
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        null
+      ],
+      [
+        null,
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        null
+      ],
+      [
+        null,
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        null
+      ],
+      [
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        null
+      ],
+      [
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 2,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ],
+      [
+        {
+          "num": 0,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 1,
+          "type": 0
+        },
+        {
+          "num": 0,
+          "type": 0
+        }
+      ]
+    ],
+    [
+      [
+        null,
+        {
+          "num": 1,
+          "type": 0
+        },
+        null
+      ],
+      [
+        {
+          "num": 2,
+          "type": 1
+        },
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        {
+          "num": 2,
+          "type": 1
+        },
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        {
+          "num": 3,
+          "type": 0
+        }
+      ],
+      [
+        null,
+        {
+          "num": 3,
+          "type": 0
+        },
+        null
+      ]
+    ]
+  ],
+  "name": "Platypus",
+  "difficulty_score": 980,
+  "difficulty_tier": "hard",
+  "par_time_seconds": 120
 }

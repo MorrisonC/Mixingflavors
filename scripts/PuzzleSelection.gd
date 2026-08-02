@@ -13,7 +13,8 @@ var collections: Dictionary = {
 	"Furniture": ["res://assets/puzzles/furniture/chair.json", "res://assets/puzzles/furniture/computer.json"],
 	"Egypt": ["res://assets/puzzles/egypt/pyramid.json", "res://assets/puzzles/egypt/sphinx.json"],
 	"Nature": ["res://assets/puzzles/nature/strange_tree.json"],
-	"Valentine": ["res://assets/puzzles/valentine/heart.json", "res://assets/puzzles/valentine/love_letter.json", "res://assets/puzzles/valentine/diamond_ring.json", "res://assets/puzzles/valentine/rose.json", "res://assets/puzzles/valentine/bow_and_arrow.json"]
+	"Valentine": ["res://assets/puzzles/valentine/heart.json", "res://assets/puzzles/valentine/love_letter.json", "res://assets/puzzles/valentine/diamond_ring.json", "res://assets/puzzles/valentine/rose.json", "res://assets/puzzles/valentine/bow_and_arrow.json"],
+	"Fantasy": ["res://assets/puzzles/fantasy/vampire_fangs.json", "res://assets/puzzles/fantasy/werewolf_head.json", "res://assets/puzzles/fantasy/witch_hat.json", "res://assets/puzzles/fantasy/witch_house.json", "res://assets/puzzles/fantasy/wyvern.json", "res://assets/puzzles/fantasy/cthulhu.json"]
 }
 
 var btn_normal: StyleBoxFlat
@@ -80,7 +81,19 @@ func _load_category(category_name: String) -> void:
 			var puzzle_data = JSON.parse_string(json_text)
 			if puzzle_data:
 				var btn = Button.new()
-				btn.text = puzzle_data.get("name", "Untitled")
+				var btn_text = puzzle_data.get("name", "Untitled")
+
+				var tier = puzzle_data.get("difficulty_tier", "medium")
+				var stars = "★★☆"
+				if tier == "easy":
+					stars = "★☆☆"
+				elif tier == "hard":
+					stars = "★★★"
+
+				var time_sec = puzzle_data.get("par_time_seconds", 120)
+				btn_text += "\n" + stars + " | " + str(time_sec) + "s"
+
+				btn.text = btn_text
 				btn.custom_minimum_size = Vector2(180, 80)
 				btn.add_theme_font_size_override("font_size", 18)
 				btn.add_theme_stylebox_override("normal", btn_normal)
