@@ -11,8 +11,10 @@ func before_each():
 
 	combo_multiplier_mechanic = grid_manager.get_node_or_null("ComboMultiplierMechanic")
 	if combo_multiplier_mechanic:
-		combo_multiplier_mechanic.combo_thresholds = [2, 4]
-		combo_multiplier_mechanic.multiplier_values = [1.5, 2.0]
+		var thresholds: Array[int] = [2, 4]
+		var values: Array[float] = [1.5, 2.0]
+		combo_multiplier_mechanic.combo_thresholds = thresholds
+		combo_multiplier_mechanic.multiplier_values = values
 
 func after_each():
 	grid_manager.queue_free()
