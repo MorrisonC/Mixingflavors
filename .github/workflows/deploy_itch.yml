@@ -6,7 +6,17 @@ on:
       - main
     tags:
       - v*
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 jobs:
@@ -19,21 +29,33 @@ jobs:
       with:
         lfs: true
 
-    - name: Download Godot
+    - name: Cache Godot Engine and Templates
+      id: cache-godot
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.local/share/godot/export_templates
+          ~/.local/bin/godot
+        key: ${{ runner.os }}-godot-4.3-stable
+
+    - name: Download and Install Godot
+      if: steps.cache-godot.outputs.cache-hit != 'true'
       run: |
-        # Downloading Godot 4 (Standard version)
-        # Assuming 4.3 as placeholder for the mentioned 4.7 which isn't released yet
+        mkdir -p ~/.local/bin
         wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
         unzip Godot_v4.3-stable_linux.x86_64.zip
-        mv Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
-        chmod +x /usr/local/bin/godot
+        mv Godot_v4.3-stable_linux.x86_64 ~/.local/bin/godot
+        chmod +x ~/.local/bin/godot
 
-    - name: Download Export Templates
-      run: |
         wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
         mkdir -p ~/.local/share/godot/export_templates/4.3.stable
         unzip Godot_v4.3-stable_export_templates.tpz -d ~/.local/share/godot/export_templates/4.3.stable/
         mv ~/.local/share/godot/export_templates/4.3.stable/templates/* ~/.local/share/godot/export_templates/4.3.stable/
+
+    - name: Ensure Godot is executable
+      run: |
+        chmod +x ~/.local/bin/godot
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: Create export_presets.cfg
       run: |
