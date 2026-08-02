@@ -1,0 +1,133 @@
+{
+  "total_puzzles": 10000,
+  "themes": {
+    "mythical": {
+      "file": "mythical_puzzles.json",
+      "count": 625,
+      "easy_count": 203,
+      "medium_count": 245,
+      "hard_count": 127,
+      "boss_count": 50
+    },
+    "animals": {
+      "file": "animals_puzzles.json",
+      "count": 625,
+      "easy_count": 187,
+      "medium_count": 251,
+      "hard_count": 130,
+      "boss_count": 57
+    },
+    "scifi": {
+      "file": "scifi_puzzles.json",
+      "count": 625,
+      "easy_count": 178,
+      "medium_count": 253,
+      "hard_count": 133,
+      "boss_count": 61
+    },
+    "cyberpunk": {
+      "file": "cyberpunk_puzzles.json",
+      "count": 625,
+      "easy_count": 195,
+      "medium_count": 244,
+      "hard_count": 126,
+      "boss_count": 60
+    },
+    "medieval": {
+      "file": "medieval_puzzles.json",
+      "count": 625,
+      "easy_count": 188,
+      "medium_count": 256,
+      "hard_count": 117,
+      "boss_count": 64
+    },
+    "nautical": {
+      "file": "nautical_puzzles.json",
+      "count": 625,
+      "easy_count": 203,
+      "medium_count": 240,
+      "hard_count": 118,
+      "boss_count": 64
+    },
+    "culinary": {
+      "file": "culinary_puzzles.json",
+      "count": 625,
+      "easy_count": 197,
+      "medium_count": 234,
+      "hard_count": 133,
+      "boss_count": 61
+    },
+    "nature": {
+      "file": "nature_puzzles.json",
+      "count": 625,
+      "easy_count": 179,
+      "medium_count": 240,
+      "hard_count": 131,
+      "boss_count": 75
+    },
+    "household": {
+      "file": "household_puzzles.json",
+      "count": 625,
+      "easy_count": 181,
+      "medium_count": 246,
+      "hard_count": 138,
+      "boss_count": 60
+    },
+    "music": {
+      "file": "music_puzzles.json",
+      "count": 625,
+      "easy_count": 190,
+      "medium_count": 243,
+      "hard_count": 123,
+      "boss_count": 69
+    },
+    "arcade": {
+      "file": "arcade_puzzles.json",
+      "count": 625,
+      "easy_count": 172,
+      "medium_count": 262,
+      "hard_count": 135,
+      "boss_count": 56
+    },
+    "sports": {
+      "file": "sports_puzzles.json",
+      "count": 625,
+      "easy_count": 190,
+      "medium_count": 228,
+      "hard_count": 137,
+      "boss_count": 70
+    },
+    "vehicles": {
+      "file": "vehicles_puzzles.json",
+      "count": 625,
+      "easy_count": 178,
+      "medium_count": 268,
+      "hard_count": 119,
+      "boss_count": 60
+    },
+    "treasure": {
+      "file": "treasure_puzzles.json",
+      "count": 625,
+      "easy_count": 193,
+      "medium_count": 246,
+      "hard_count": 125,
+      "boss_count": 61
+    },
+    "alchemy": {
+      "file": "alchemy_puzzles.json",
+      "count": 625,
+      "easy_count": 179,
+      "medium_count": 257,
+      "hard_count": 127,
+      "boss_count": 62
+    },
+    "fantasy": {
+      "file": "fantasy_puzzles.json",
+      "count": 625,
+      "easy_count": 176,
+      "medium_count": 261,
+      "hard_count": 128,
+      "boss_count": 60
+    }
+  }
+}

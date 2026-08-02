@@ -4,7 +4,7 @@ const GameManagerClass = preload("res://scripts/GameManager.gd")
 const VoxelLogicScene = preload("res://scenes/VoxelLogic.tscn")
 
 var current_round: int = 1
-var max_rounds: int = 5 # 5 Valentine themed puzzles
+var max_rounds: int = 999999 # Endless mode essentially
 var time_left: float = 60.0
 var round_max_time: float = 60.0
 var max_mistakes: int = 3
@@ -34,31 +34,7 @@ func _ready() -> void:
 	_start_round()
 
 func _apply_theme() -> void:
-	if GameManagerClass.is_valentine_theme():
-		var env = $WorldEnvironment.environment
-		if env:
-						pass
-
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.98, 0.92, 0.93, 1)
-		style.corner_radius_top_left = 8
-		style.corner_radius_top_right = 8
-		style.corner_radius_bottom_left = 8
-		style.corner_radius_bottom_right = 8
-		confirm_dialog.add_theme_stylebox_override("panel", style)
-
-		var label = $CanvasLayer/UI/ConfirmDialog/VBoxContainer/Label
-		label.add_theme_color_override("font_color", Color(0.85, 0.15, 0.3, 1))
-
-		var btn_style = StyleBoxFlat.new()
-		btn_style.bg_color = Color(0.95, 0.45, 0.55, 1)
-		btn_style.corner_radius_top_left = 8
-		btn_style.corner_radius_top_right = 8
-		btn_style.corner_radius_bottom_left = 8
-		btn_style.corner_radius_bottom_right = 8
-
-		for btn in [quit_btn, yes_btn, no_btn]:
-			btn.add_theme_stylebox_override("normal", btn_style)
+	pass
 
 func _process(delta: float) -> void:
 	if time_left > 0:
@@ -68,13 +44,14 @@ func _process(delta: float) -> void:
 			_fail_gauntlet()
 
 func _start_round() -> void:
-
-	var bg_index = ((current_round - 1) % 5) + 1
-	var bg_tex = load("res://assets/textures/valentine/bg" + str(bg_index) + ".jpg")
-	if bg_tex:
-		var env = $WorldEnvironment.environment
-		if env and env.sky and env.sky.sky_material:
-			env.sky.sky_material.panorama = bg_tex
+	var pr = get_node("/root/PuzzleRegistry")
+	if pr and pr.manifest_data:
+		var themes = pr.manifest_data.keys()
+		if themes.size() > 0:
+			var rand_theme = themes[randi() % themes.size()]
+			# Add visual background/music randomized here based on theme
+			# (In a full implementation, you'd load theme-specific assets here)
+			pass
 
 	if is_instance_valid(active_puzzle):
 		active_puzzle.queue_free()
@@ -84,10 +61,7 @@ func _start_round() -> void:
 	var puzzle_data = get_next_puzzle_for_mode()
 	active_puzzle.custom_puzzle_data = puzzle_data
 
-	if current_round == max_rounds and get_node("/root/GameManager").selected_difficulty_mode != "endless":
-		round_label.text = "BOSS FIGHT"
-	else:
-		round_label.text = "Round: " + str(current_round)
+	round_label.text = "Round: " + str(current_round)
 
 	if "par_time_seconds" in puzzle_data:
 		time_left = float(puzzle_data["par_time_seconds"])
@@ -111,23 +85,32 @@ func get_next_puzzle_for_mode() -> Dictionary:
 	if mode == "endless":
 		return _get_endless_scaling_puzzle()
 
-	var pool = PuzzleRegistry.get_puzzles_by_tier(mode)
-	if pool.is_empty():
-		pool = PuzzleRegistry.get_all_puzzles()
-	return pool.pick_random()
+	var pr = get_node("/root/PuzzleRegistry")
+	if pr:
+		var pool = pr.get_puzzles_for_gauntlet(mode)
+		if pool.is_empty():
+			pool = pr.get_all_puzzles()
+		if not pool.is_empty():
+			return pool.pick_random()
+	return {}
 
 func _get_endless_scaling_puzzle() -> Dictionary:
 	var target_tier = "easy"
-	if current_round >= 12:
+	if current_round >= 18:
+		target_tier = "boss"
+	elif current_round >= 12:
 		target_tier = "hard"
 	elif current_round >= 6:
 		target_tier = "medium"
 
-	var pool = PuzzleRegistry.get_puzzles_by_tier(target_tier)
-	if pool.is_empty():
-		pool = PuzzleRegistry.get_all_puzzles()
-	return pool.pick_random()
-
+	var pr = get_node("/root/PuzzleRegistry")
+	if pr:
+		var pool = pr.get_puzzles_for_gauntlet(target_tier)
+		if pool.is_empty():
+			pool = pr.get_all_puzzles()
+		if not pool.is_empty():
+			return pool.pick_random()
+	return {}
 
 func _on_puzzle_solved() -> void:
 	var time_spent = round_max_time - time_left
@@ -145,12 +128,8 @@ func _on_puzzle_solved() -> void:
 	if bonus > 0:
 		print("[EscapeGauntlet] Fast solve! Time ratio: ", time_ratio, " Bonus Health: +", bonus, " Current Health: ", max_mistakes)
 
-	if current_round >= max_rounds:
-
-		_win_gauntlet()
-	else:
-		current_round += 1
-		_start_round()
+	current_round += 1
+	_start_round()
 
 func _on_mistake_made(total_mistakes: int) -> void:
 	if total_mistakes >= max_mistakes:
@@ -176,12 +155,12 @@ func _fail_gauntlet() -> void:
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
 
 func _win_gauntlet() -> void:
-	# Show Victory Label
+	# Unused in endless mode, but kept for compatibility just in case
 	var label = Label.new()
-	label.text = "VALENTINE GAUNTLET CLEARED!\nYOU UNLOCKED THE MYSTERY OF LOVE ❤️"
+	label.text = "GAUNTLET CLEARED!"
 	label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 48)
-	label.add_theme_color_override("font_color", Color(0.95, 0.15, 0.45))
+	label.add_theme_color_override("font_color", Color(0.15, 0.95, 0.45))
 	label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	label.position.x -= 400
 	label.position.y -= 100
@@ -190,5 +169,4 @@ func _win_gauntlet() -> void:
 	print("[EscapeGauntlet] Gauntlet Won!")
 	await get_tree().create_timer(5.0).timeout
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
-
 
