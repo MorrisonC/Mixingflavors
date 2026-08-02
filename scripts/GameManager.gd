@@ -31,6 +31,7 @@ var stats: Dictionary = {
 var active_voxel_template: Array = []
 var discovered_anchors: Array = []
 var current_mode: GameMode = GameMode.MAIN_MENU
+var selected_difficulty_mode: String = "medium"
 
 # Scene File Paths (Ensure case-sensitivity matches your project files)
 const MODE_SCENES: Dictionary = {
