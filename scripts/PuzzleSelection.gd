@@ -8,7 +8,7 @@ const GameManagerClass = preload("res://scripts/GameManager.gd")
 
 # Predefined collections matching nathsou's categories
 var collections: Dictionary = {
-	"Tutorials": ["res://assets/puzzles/tutorial/simple_hints.json"],
+	"Tutorials": ["res://data/puzzles/tutorial_star.json", "res://assets/puzzles/tutorial/simple_hints.json"],
 	"Animals": ["res://assets/puzzles/animals/horse.json", "res://assets/puzzles/animals/platypus.json", "res://assets/puzzles/animals/suzanne.json"],
 	"Furniture": ["res://assets/puzzles/furniture/chair.json", "res://assets/puzzles/furniture/computer.json"],
 	"Egypt": ["res://assets/puzzles/egypt/pyramid.json", "res://assets/puzzles/egypt/sphinx.json"],

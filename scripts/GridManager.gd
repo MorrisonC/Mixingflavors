@@ -28,6 +28,7 @@ signal history_updated(can_undo)
 signal game_over
 signal floor_cleared
 signal block_destroyed(grid_pos: Vector3i, is_player_action: bool)
+signal voxel_marked(grid_pos: Vector3i)
 
 var mistakes: int = 0
 var combo: int = 0
@@ -68,6 +69,9 @@ var hovered_block: VoxelBlock = null
 const GameManagerClass = preload("res://scripts/GameManager.gd")
 
 var has_custom_puzzle: bool = false
+var is_tutorial: bool = false
+var tutorial_manager: TutorialManager = null
+var tutorial_ui: CanvasLayer = null
 
 func _ready() -> void:
 	if is_instance_valid(GameManager) and GameManager.has_method("is_valentine_theme") and GameManager.is_valentine_theme():
@@ -161,6 +165,35 @@ func _ready() -> void:
 		_load_custom_puzzle(custom_puzzle_data)
 
 func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
+	if puzzle_data.get("theme") == "tutorial" or puzzle_data.get("id") == "tutorial_star":
+		is_tutorial = true
+
+		# Instantiate tutorial manager and UI
+		tutorial_manager = TutorialManager.new()
+		tutorial_manager.grid_manager = self
+		add_child(tutorial_manager)
+
+		var tutorial_ui_scene = load("res://scenes/TutorialUI.tscn")
+		if tutorial_ui_scene:
+			tutorial_ui = tutorial_ui_scene.instantiate()
+			add_child(tutorial_ui)
+			tutorial_ui.setup(tutorial_manager)
+
+			# Connect signals for tutorial
+			var touch_controls = get_node_or_null("CanvasLayer/Control")
+			if touch_controls and touch_controls is MobileTouchControls:
+				if touch_controls.has_signal("camera_rotated"):
+					touch_controls.camera_rotated.connect(tutorial_manager.on_camera_rotated)
+				if slice_slider_y:
+					slice_slider_y.value_changed.connect(func(val): tutorial_manager.on_layer_slider_changed("Y", val))
+
+			if self.has_signal("block_destroyed"):
+				self.block_destroyed.connect(func(pos, is_player): tutorial_manager.on_voxel_chiseled(pos, true))
+			if self.has_signal("voxel_marked"):
+				self.voxel_marked.connect(tutorial_manager.on_voxel_marked)
+			if self.has_signal("puzzle_solved"):
+				self.puzzle_solved.connect(tutorial_manager.on_puzzle_solved)
+
 	grid_size = Vector3i(puzzle_data["dims"][0], puzzle_data["dims"][1], puzzle_data["dims"][2])
 	slice_max = grid_size
 
@@ -174,6 +207,13 @@ func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
 
 	if puzzle_data.has("hints"):
 		target_solution = VoxelLogicSolver.solve(grid_size, puzzle_data["hints"])
+	elif puzzle_data.has("target_voxels"):
+		for z in range(grid_size.z):
+			for y in range(grid_size.y):
+				for x in range(grid_size.x):
+					target_solution[Vector3i(x, y, z)] = false
+		for v in puzzle_data["target_voxels"]:
+			target_solution[Vector3i(v[0], v[1], v[2])] = true
 	elif puzzle_data.has("cells"):
 		var cells = puzzle_data["cells"]
 		var index = 0
@@ -624,7 +664,18 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 			block.set_state(block.BlockState.MARKED)
 			if voxel_states.has(grid_pos):
 				voxel_states[grid_pos]["is_marked"] = true
-			_handle_mistake()
+
+			if is_tutorial:
+				if OS.has_feature("mobile"):
+					Input.vibrate_handheld(20)
+				if camera:
+					var pivot = camera.get_parent()
+					while pivot != null and not pivot.has_method("shake"):
+						pivot = pivot.get_parent()
+					if pivot and pivot.has_method("shake"):
+						pivot.shake(0.1, 0.1)
+			else:
+				_handle_mistake()
 		else:
 			if voxel_states.has(grid_pos):
 				voxel_states[grid_pos]["is_chiseled"] = true
@@ -632,7 +683,11 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 			if OS.has_feature("mobile"):
 				Input.vibrate_handheld(40) # Haptic feedback on valid move
 	elif block.current_state != block.BlockState.DESTROYED:
-		_handle_mistake()
+		if is_tutorial:
+			if OS.has_feature("mobile"):
+				Input.vibrate_handheld(20)
+		else:
+			_handle_mistake()
 
 func on_mark_requested(grid_pos: Vector3i) -> void:
 	if not blocks.has(grid_pos):
@@ -665,6 +720,7 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 					voxel_states[grid_pos]["is_marked"] = true
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(40)
+				emit_signal("voxel_marked", grid_pos)
 			elif block.current_state == block.BlockState.MARKED:
 				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.UNBROKEN)
@@ -673,7 +729,11 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 				if OS.has_feature("mobile"):
 					Input.vibrate_handheld(20)
 		else:
-			_handle_mistake()
+			if is_tutorial:
+				if OS.has_feature("mobile"):
+					Input.vibrate_handheld(20)
+			else:
+				_handle_mistake()
 
 func _export_puzzle() -> void:
 	var puzzle_data = {

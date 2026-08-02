@@ -1,0 +1,31 @@
+{
+  "id": "tutorial_star",
+  "name": "Magic Star (Tutorial)",
+  "theme": "tutorial",
+  "difficulty_tier": "easy",
+  "difficulty_score": 50,
+  "par_time_seconds": 60,
+  "dims": [3, 3, 3],
+  "voxel_count": 7,
+  "target_voxels": [
+    [1, 0, 1],
+    [0, 1, 1], [1, 1, 1], [2, 1, 1],
+    [1, 1, 0], [1, 1, 2],
+    [1, 2, 1]
+  ],
+  "clues": {
+    "x_axis": {
+      "0,0": {"total": 0, "blocks": []},
+      "0,1": {"total": 3, "blocks": [3]},
+      "0,2": {"total": 0, "blocks": []}
+    },
+    "y_axis": {
+      "1,1": {"total": 3, "blocks": [3]}
+    },
+    "z_axis": {
+      "1,1": {"total": 3, "blocks": [3]}
+    }
+  },
+  "matching_asset_id": "poly_pizza_magic_star",
+  "solvable": true
+}

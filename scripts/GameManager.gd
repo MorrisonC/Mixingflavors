@@ -43,7 +43,20 @@ const MODE_SCENES: Dictionary = {
 }
 
 func _ready() -> void:
+	load_settings()
 	print("[GameManager] Initialized successfully. Current Mode: MainMenu")
+
+func load_settings() -> void:
+	var config = ConfigFile.new()
+	var err = config.load("user://settings.cfg")
+	if err == OK:
+		tutorial_completed = config.get_value("Progress", "tutorial_completed", false)
+
+func save_settings() -> void:
+	var config = ConfigFile.new()
+	config.load("user://settings.cfg")
+	config.set_value("Progress", "tutorial_completed", tutorial_completed)
+	config.save("user://settings.cfg")
 
 func set_stat(stat_name: String, value: int) -> void:
 	if stats.has(stat_name):
@@ -68,6 +81,7 @@ func set_valentine_theme(active: bool) -> void:
 # Main Scene-Switching Logic
 func switch_mode(target_mode: GameMode, payload: Dictionary = {}) -> void:
 	current_mode = target_mode
+	mode_payload = payload
 
 	# Process cross-mechanic payload if passed
 	if payload.has("voxel_template"):
