@@ -5,7 +5,16 @@ on:
     - cron: '0 0 * * *' # Run nightly
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -21,11 +30,26 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.head_ref || github.ref_name }}
 
+      - name: Cache Godot Engine
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/bin/godot
+          key: ${{ runner.os }}-godot-4.3-stable-bin
+
       - name: Install Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
         run: |
+          mkdir -p ~/.local/bin
           wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
           unzip Godot_v4.3-stable_linux.x86_64.zip
-          sudo mv Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+          mv Godot_v4.3-stable_linux.x86_64 ~/.local/bin/godot
+          chmod +x ~/.local/bin/godot
+
+      - name: Ensure Godot is executable
+        run: |
+          chmod +x ~/.local/bin/godot
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Import Resources
         run: |

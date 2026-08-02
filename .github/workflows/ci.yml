@@ -1,27 +1,28 @@
-name: Build and Upload Artifacts
+name: CI Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  pull_request:
+    branches: [ main, develop ]
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - '.gitignore'
       - 'LICENSE'
 
-# Allow one concurrent deployment
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 jobs:
-  build_and_deploy:
+  build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -78,10 +79,8 @@ jobs:
           custom_template/debug=""
           custom_template/release=""
           variant/export_type=0
-          variant/thread_support=false
-          memory/initial_pages=32768
           vram_texture_compression/for_desktop=true
-          vram_texture_compression/for_mobile=true
+          vram_texture_compression/for_mobile=false
           html/export_icon=true
           html/custom_html_shell=""
           html/head_include=""
@@ -96,35 +95,6 @@ jobs:
           progressive_web_app/icon_180x180=""
           progressive_web_app/icon_512x512=""
           progressive_web_app/background_color=Color(0, 0, 0, 1)
-
-          [preset.1]
-          name="Android"
-          platform="Android"
-          runnable=true
-          dedicated_server=false
-          custom_features=""
-          export_filter="all_resources"
-          include_filter=""
-          exclude_filter=""
-          export_path="build/android/HybridTacticalPuzzleRPG.apk"
-          encryption_include_filters=""
-          encryption_exclude_filters=""
-          encrypt_pck=false
-          encrypt_directory=false
-
-          [preset.1.options]
-          custom_template/debug=""
-          custom_template/release=""
-          architectures/armeabi-v7a=true
-          architectures/arm64-v8a=true
-          architectures/x86=false
-          architectures/x86_64=true
-          keystore/debug="debug.keystore"
-          keystore/debug_user="androiddebugkey"
-          keystore/debug_password="android"
-          keystore/release=""
-          keystore/release_user=""
-          keystore/release_password=""
           PRESET_EOF
 
       - name: Build Web Export
@@ -132,11 +102,6 @@ jobs:
           mkdir -p build/web
           godot --headless --rendering-driver opengl3 --editor --quit || true
           godot --headless --rendering-driver opengl3 --export-release "Web" build/web/index.html
-
-      - name: Build Android Export
-        run: |
-          mkdir -p build/android
-          godot --headless --rendering-driver opengl3 --export-release "Android" build/android/HybridTacticalPuzzleRPG.apk
 
       - name: Inject COI Service Worker (for SharedArrayBuffer)
         run: |
@@ -146,8 +111,36 @@ jobs:
           # Inject the script into the exported HTML file
           sed -i 's|</head>|<script src="coi-serviceworker.js"></script></head>|' build/web/index.html
 
-      - name: Upload Android APK Artifact
-        uses: actions/upload-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: Android-APK
-          path: build/android/HybridTacticalPuzzleRPG.apk
+          node-version: '20'
+
+      - name: Cache npm Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Cache Playwright Browsers
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Playwright Browsers
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: npx playwright install chromium --with-deps
+
+      - name: Install Playwright OS Dependencies
+        if: steps.cache-playwright.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run Playwright E2E Tests
+        run: npx playwright test --project=chromium

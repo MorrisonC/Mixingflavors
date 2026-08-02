@@ -17,6 +17,8 @@ enum GameMode {
 signal theme_changed(is_valentine)
 
 var _valentine_theme_active: bool = false
+var tutorial_completed: bool = false
+var mode_payload: Dictionary = {}
 
 # Core RPG Stats
 var stats: Dictionary = {
