@@ -36,6 +36,8 @@ var player_hp: int = 3
 var boss_hp: float = 100.0
 var max_boss_hp: float = 100.0
 var current_floor: int = 1
+var custom_puzzle_data: Dictionary = {}
+
 var start_time: float = 0.0
 var time_elapsed: float = 0.0
 var is_puzzle_active: bool = true
@@ -80,7 +82,7 @@ func _ready() -> void:
 			env_node.environment.background_color = Color(1.0, 0.94, 0.96)
 
 	var game_manager = get_node_or_null("/root/GameManager")
-	var custom_puzzle_data = {}
+	# custom_puzzle_data handled at class level
 
 	if game_manager and game_manager.get("mode_payload"):
 		if game_manager.mode_payload.get("mode") == "editor":
