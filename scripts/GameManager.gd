@@ -33,6 +33,22 @@ var stats: Dictionary = {
 var active_voxel_template: Array = []
 var discovered_anchors: Array = []
 var current_mode: GameMode = GameMode.MAIN_MENU
+
+# Meta Progression
+var unlocked_themes: Array = ["Classic"]
+var trophy_gallery: Array = []
+
+func unlock_theme(theme_name: String) -> void:
+	if not unlocked_themes.has(theme_name):
+		unlocked_themes.append(theme_name)
+		print("[MetaProgression] Unlocked new theme: ", theme_name)
+		# Trigger SaveSystem
+
+func add_trophy(puzzle_name: String) -> void:
+	if not trophy_gallery.has(puzzle_name):
+		trophy_gallery.append(puzzle_name)
+		print("[MetaProgression] Added trophy to gallery: ", puzzle_name)
+		# Trigger SaveSystem
 var selected_difficulty_mode: String = "medium"
 
 

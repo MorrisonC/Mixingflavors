@@ -25,27 +25,28 @@ func test_chain_does_not_break_targets():
 	grid_manager.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
 	grid_manager.on_chisel_requested(Vector3i(0, 1, 0)) # Chisel non-target, might trigger chain
 
-	assert_true(grid_manager.blocks[Vector3i(0, 0, 0)].current_state == grid_manager.blocks[Vector3i(0,0,0)].BlockState.UNBROKEN, "Target block should remain unbroken")
+	assert_false(grid_manager.voxel_states[Vector3i(0, 0, 0)].get("is_chiseled", false), "Target block should remain unbroken")
 
 func test_chain_breaks_zero_clue_lines():
 	# Make all blocks non-targets
 	grid_manager.target_solution.clear()
 	grid_manager.target_shape.clear()
-	grid_manager.voxel_states.clear()
+	for pos in grid_manager.voxel_states.keys():
+		grid_manager.voxel_states[pos] = {"is_target": false, "is_chiseled": false, "is_marked": false}
 
-	# The line X=0, Y=0 (Z=0, Z=1) has no targets.
-	# If we chisel (0,0,0), it should chain and break (0,0,1)
 	grid_manager.on_chisel_requested(Vector3i(0, 0, 0))
 
-	assert_true(grid_manager.blocks[Vector3i(0, 0, 1)].current_state == grid_manager.blocks[Vector3i(0,0,1)].BlockState.DESTROYED, "Chain should break the rest of the zero-clue line")
+	assert_true(grid_manager.voxel_states[Vector3i(0, 0, 1)].get("is_chiseled", false), "Chain should break the rest of the zero-clue line")
 
 func test_undo_restores_chained_blocks():
 	grid_manager.target_solution.clear()
 	grid_manager.target_shape.clear()
-	grid_manager.voxel_states.clear()
+	for pos in grid_manager.voxel_states.keys():
+		grid_manager.voxel_states[pos] = {"is_target": false, "is_chiseled": false, "is_marked": false}
+
 	grid_manager.on_chisel_requested(Vector3i(0, 0, 0))
 
-	assert_true(grid_manager.blocks[Vector3i(0, 0, 1)].current_state == grid_manager.blocks[Vector3i(0,0,1)].BlockState.DESTROYED, "Chain should break the block")
+	assert_true(grid_manager.voxel_states[Vector3i(0, 0, 1)].get("is_chiseled", false), "Chain should break the block")
 
 	grid_manager.undo_last_move()
-	assert_true(grid_manager.blocks[Vector3i(0, 0, 1)].current_state == grid_manager.blocks[Vector3i(0,0,1)].BlockState.UNBROKEN, "Undo should restore chained blocks")
+	assert_false(grid_manager.voxel_states[Vector3i(0, 0, 1)].get("is_chiseled", false), "Undo should restore chained blocks")

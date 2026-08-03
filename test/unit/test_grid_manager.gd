@@ -15,9 +15,9 @@ func test_build_grid():
 	assert_eq(grid_manager.blocks.size(), 8, "Grid should have 8 blocks (2x2x2)")
 
 func test_slicing_hides_blocks():
-	assert_true(grid_manager.blocks[Vector3i(1, 1, 1)].visible, "Block should be visible initially")
+	assert_false(grid_manager.voxel_states[Vector3i(1, 1, 1)].get("is_hidden_by_slice", false), "Block should not be hidden initially")
 
 	grid_manager.slice_max = Vector3i(0, 0, 0)
 	grid_manager._update_slicing()
 
-	assert_false(grid_manager.blocks[Vector3i(1, 1, 1)].visible, "Block should be hidden after slice")
+	assert_true(grid_manager.voxel_states[Vector3i(1, 1, 1)].get("is_hidden_by_slice", false), "Block should be hidden after slice")
