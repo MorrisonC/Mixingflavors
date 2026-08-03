@@ -30,7 +30,15 @@ func _on_js_call(args):
     print("[TestBridge] _on_js_call action: ", action)
     var result = null
 
-    if action == "get_current_mode":
+    if action == "pause_engine":
+        get_tree().paused = true
+        result = true
+
+    elif action == "unpause_engine":
+        get_tree().paused = false
+        result = true
+
+    elif action == "get_current_mode":
         var main_loop = Engine.get_main_loop()
         if main_loop and main_loop.root:
             var gm = main_loop.root.get_node_or_null("GameManager")
