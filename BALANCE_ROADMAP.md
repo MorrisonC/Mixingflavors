@@ -108,16 +108,6 @@ If you are an agent responding to an automated issue triggered by this job, you 
 
 ## Telemetry Run Analytics: 2026-07-26 21:51:18
 
-### LoneWolfNarrative
-- **Time To Complete (TTC)**: 4.98 seconds
-- **Actions Per Minute (APM)**: 24.07
-- **Status**: Balanced. No immediate actions required.
-
-### MasqueradePainting
-- **Time To Complete (TTC)**: 5.01 seconds
-- **Actions Per Minute (APM)**: 47.91
-- **Status**: Balanced. No immediate actions required.
-
 ### Picross3D
 - **Time To Complete (TTC)**: 5.01 seconds
 - **Actions Per Minute (APM)**: 107.80
@@ -133,16 +123,6 @@ If you are an agent responding to an automated issue triggered by this job, you 
 ### Historical Reports
 
 ## Telemetry Run Analytics: 2026-07-26 20:59:34
-
-### LoneWolfNarrative
-- **Time To Complete (TTC)**: 4.99 seconds
-- **Actions Per Minute (APM)**: 24.07
-- **Status**: Balanced. No immediate actions required.
-
-### MasqueradePainting
-- **Time To Complete (TTC)**: 5.01 seconds
-- **Actions Per Minute (APM)**: 47.91
-- **Status**: Balanced. No immediate actions required.
 
 ### Picross3D
 - **Time To Complete (TTC)**: 5.01 seconds

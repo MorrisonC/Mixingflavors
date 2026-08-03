@@ -877,16 +877,7 @@ func _check_win_condition() -> void:
 	is_puzzle_active = false
 	print("Puzzle Solved! Revealing model...")
 
-	# Prepare payload for Masquerade Painting mode if supported
-	var payload = {
-		"target_shape": target_shape.duplicate(),
-		"grid_size": grid_size
-	}
-
-	if is_instance_valid(GameManager) and "MASQUERADE_PAINTING" in GameManager.GameMode:
-		GameManager.switch_mode(GameManager.GameMode.MASQUERADE_PAINTING, payload)
-	else:
-		_reveal_model()
+	_reveal_model()
 
 func _reveal_model() -> void:
 	# Hide all slice constraints

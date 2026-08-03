@@ -10,6 +10,10 @@ func before_each():
 	gm.name = "GameManager"
 	get_tree().root.add_child(gm)
 
+	var pr = PuzzleRegistryClass.new()
+	pr.name = "PuzzleRegistry"
+	get_tree().root.add_child(pr)
+
 	gauntlet = EscapeGauntletScene.instantiate()
 	add_child(gauntlet)
 
@@ -18,6 +22,10 @@ func after_each():
 	var gm = get_tree().root.get_node_or_null("GameManager")
 	if gm:
 		gm.queue_free()
+
+	var pr = get_tree().root.get_node_or_null("PuzzleRegistry")
+	if pr:
+		pr.queue_free()
 
 func test_initialization():
 	assert_not_null(gauntlet.active_puzzle, "Active puzzle should be created on initialization")

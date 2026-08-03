@@ -164,9 +164,6 @@ func apply_patches(adjustments: Array):
                 if "VoxelLogic" in adj.mode:
                     content = content.replace("var alchemy_discipline: int = 1", "var alchemy_discipline: int = 2")
                     modified = true
-                elif "MasqueradePainting" in adj.mode:
-                    content = content.replace("var perception_level: int = 1", "var perception_level: int = 2")
-                    modified = true
 
             elif adj.type == "increase_difficulty":
                 if "VoxelLogic" in adj.mode:
