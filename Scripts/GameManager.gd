@@ -19,7 +19,7 @@ var perception_level: int = 1
 var health: int = 100
 var endurance: int = 100
 var lore_discipline: int = 1
-var alchemy_discipline: int = 1
+var alchemy_discipline: int = 2
 
 signal GameModeChanged(newMode)
 

@@ -5,9 +5,9 @@ signal voxel_chiseled(x: int, y: int, z: int)
 signal combo_updated(new_combo: int)
 signal combo_broken()
 
-@export var GridSizeX: int = 5
-@export var GridSizeY: int = 5
-@export var GridSizeZ: int = 5
+@export var GridSizeX: int = 4
+@export var GridSizeY: int = 4
+@export var GridSizeZ: int = 4
 @export var combo_timeout: float = 3.0
 
 var _voxelGrid: Array = []

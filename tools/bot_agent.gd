@@ -50,34 +50,32 @@ func simulate_gameplay(delta: float):
                 perform_action("narrative_choice", {"choice": "option_1"})
 
         GameManager.GameMode.MasqueradePainting:
-            # Simulate drawing lines
-            if time_since_last_action > 1.0:
+            # Simulate very low APM (boring/low friction)
+            if time_since_last_action > 15.0:
                 var start = Vector2(randf_range(0, 800), randf_range(0, 600))
                 var end = Vector2(randf_range(0, 800), randf_range(0, 600))
                 perform_action("draw_line", {"start": start, "end": end})
-                # Simulate cursor position for heatmap
                 log_position(Vector3(end.x, end.y, 0))
 
         GameManager.GameMode.Picross3D:
-            # Simulate chiseling voxels
-            if time_since_last_action > 0.5:
-                # Assuming GridSizeX=5, etc.
+            # Simulate high friction (getting stuck constantly)
+            if time_since_last_action > 4.5:
                 var target_x = randi() % 5
                 var target_y = randi() % 5
                 var target_z = randi() % 5
 
-                # Introduce a chance to get "stuck" for testing purposes
-                if randf() > 0.9:
-                    # Do nothing to simulate getting stuck
-                    pass
-                else:
-                    perform_action("chisel_voxel", {"x": target_x, "y": target_y, "z": target_z})
-                    log_position(Vector3(target_x, target_y, target_z))
+                perform_action("chisel_voxel", {"x": target_x, "y": target_y, "z": target_z})
+                log_position(Vector3(target_x, target_y, target_z))
 
         GameManager.GameMode.EscapeGauntlet:
-            # Time pressured, faster actions
-            if time_since_last_action > 0.2:
+            # Time pressured, very fast actions to introduce a "dead mechanic"
+            # Here we ONLY do "chisel_voxel_fast" and never "use_item" or other verbs
+            if time_since_last_action > 0.1:
                 perform_action("chisel_voxel_fast", {})
+
+            # Intentionally underutilize use_item to trigger MDA "dead mechanic" flag
+            if time_in_current_state > 5.0 and time_in_current_state < 5.05:
+                perform_action("use_item", {})
 
 func perform_action(verb: String, details: Dictionary):
     time_since_last_action = 0.0

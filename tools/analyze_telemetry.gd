@@ -191,3 +191,38 @@ func apply_patches(adjustments: Array):
             write_file.store_string(content)
             write_file.close()
             print("[TelemetryAnalyzer] Patched ", vg_path, " to adjust puzzle grid size.")
+
+    var canvas_path = "res://Scripts/PaintingCanvas2D.gd"
+    var canvas_file = FileAccess.open(canvas_path, FileAccess.READ)
+    if canvas_file:
+        var content = canvas_file.get_as_text()
+        canvas_file.close()
+        var modified = false
+        for adj in adjustments:
+            if adj.type == "increase_difficulty" and "MasqueradePainting" in adj.mode:
+                content = content.replace("var max_ink: float = 100.0", "var max_ink: float = 80.0")
+                modified = true
+        if modified:
+            var write_file = FileAccess.open(canvas_path, FileAccess.WRITE)
+            write_file.store_string(content)
+            write_file.close()
+            print("[TelemetryAnalyzer] Patched ", canvas_path, " to adjust canvas difficulty.")
+
+    var mechanics_path = "res://Scripts/ExplosiveChainMechanic.gd"
+    var mechanics_file = FileAccess.open(mechanics_path, FileAccess.READ)
+    if mechanics_file:
+        var content = mechanics_file.get_as_text()
+        mechanics_file.close()
+        var modified = false
+        for adj in adjustments:
+            if adj.type == "decrease_difficulty" and "EscapeGauntlet" in adj.mode:
+                content = content.replace("var chain_radius: int = 1", "var chain_radius: int = 2")
+                modified = true
+            elif adj.type == "increase_difficulty" and "EscapeGauntlet" in adj.mode:
+                content = content.replace("var explosion_damage: int = 10", "var explosion_damage: int = 15")
+                modified = true
+        if modified:
+            var write_file = FileAccess.open(mechanics_path, FileAccess.WRITE)
+            write_file.store_string(content)
+            write_file.close()
+            print("[TelemetryAnalyzer] Patched ", mechanics_path, " to adjust mechanic parameters.")

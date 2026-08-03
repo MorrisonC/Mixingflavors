@@ -4,7 +4,7 @@ var telemetry_tracker: TelemetryTracker
 var bot_agent: BotAgent
 var game_manager_node: GameManager
 
-var test_duration: float = 20.0
+var test_duration: float = 80.0
 var time_elapsed: float = 0.0
 
 var modes_to_test = [
