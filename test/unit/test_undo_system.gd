@@ -17,6 +17,9 @@ func test_undo_multiple_moves():
 
 	# Clear target solution to avoid mistake penalties during test
 	grid_manager.target_solution = {}
+	grid_manager.voxel_states = {}
+	grid_manager.is_player_action = false
+	grid_manager.voxel_states = {}
 
 	grid_manager.on_chisel_requested(pos1)
 	assert_eq(grid_manager.blocks[pos1].current_state, 3, "Block 1 should be destroyed") # 3 = DESTROYED
