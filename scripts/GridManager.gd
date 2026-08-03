@@ -918,6 +918,13 @@ func destroy_block(block: VoxelBlock) -> void:
 		voxel_states[block.grid_position]["is_chiseled"] = true
 
 	if is_player_action:
+		if camera:
+			var pivot = camera.get_parent()
+			while pivot != null and not pivot.has_method("shake"):
+				pivot = pivot.get_parent()
+			if pivot and pivot.has_method("shake"):
+				var shake_intensity = min(0.05 + (combo * 0.005), 0.15)
+				pivot.shake(shake_intensity, 0.1)
 		combo += 1
 		_update_ui_state()
 		if get_node_or_null("/root/AudioManager"):
