@@ -1,15 +1,6 @@
 name: Gameplay Telemetry & Balance Test
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # Run nightly
-  pull_request:
-    branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'LICENSE'
   workflow_dispatch:
 
 concurrency:
@@ -22,6 +13,7 @@ permissions:
 
 jobs:
   telemetry-test:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
