@@ -10,11 +10,16 @@ signal start_next_nonogram_requested
 @onready var score_stat_label: Label = $Background/PanelContainer/VBoxContainer/StatsContainer/ScoreRow/Value
 @onready var stars_stat_label: Label = $Background/PanelContainer/VBoxContainer/StatsContainer/StarsRow/Value
 @onready var next_button: Button = $Background/PanelContainer/VBoxContainer/NextButton
+@onready var leave_button: Button = $Background/PanelContainer/VBoxContainer/LeaveButton
+signal leave_requested
 @onready var confetti_particles: CPUParticles2D = $ConfettiParticles
 
 const NonogramStatsClass = preload("res://scripts/stats.gd")
 
 func _ready() -> void:
+	if leave_button:
+		leave_button.pressed.connect(func(): emit_signal("leave_requested"))
+
 	if next_button:
 		next_button.pressed.connect(_on_next_pressed)
 	# Initially hide the card if we want to animate it in later, but for now we just show it.

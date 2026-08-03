@@ -79,7 +79,7 @@ func _ready() -> void:
 	if is_instance_valid(GameManager) and GameManager.has_method("is_valentine_theme") and GameManager.is_valentine_theme():
 		var env_node = get_node_or_null("WorldEnvironment")
 		if env_node and env_node.environment:
-			env_node.environment.background_color = Color(1.0, 0.94, 0.96)
+			pass
 
 	var game_manager = get_node_or_null("/root/GameManager")
 	# custom_puzzle_data handled at class level
@@ -118,6 +118,10 @@ func _ready() -> void:
 		hp_label = top_info.get_node_or_null("HPLabel")
 		combo_label = top_info.get_node_or_null("ComboLabel")
 		timer_label = top_info.get_node_or_null("TimerLabel")
+		var leave_btn = top_info.get_node_or_null("LeaveButton")
+		if leave_btn and not leave_btn.pressed.is_connected(_on_leave_requested):
+			leave_btn.pressed.connect(_on_leave_requested)
+
 		var boss_container = top_info.get_node_or_null("BossContainer")
 		if boss_container:
 			boss_name_label = boss_container.get_node_or_null("BossNameLabel")
@@ -328,6 +332,10 @@ func start_level() -> void:
 		hp_label = top_info.get_node_or_null("HPLabel")
 		combo_label = top_info.get_node_or_null("ComboLabel")
 		timer_label = top_info.get_node_or_null("TimerLabel")
+		var leave_btn = top_info.get_node_or_null("LeaveButton")
+		if leave_btn and not leave_btn.pressed.is_connected(_on_leave_requested):
+			leave_btn.pressed.connect(_on_leave_requested)
+
 		var boss_container = top_info.get_node_or_null("BossContainer")
 		if boss_container:
 			boss_name_label = boss_container.get_node_or_null("BossNameLabel")
@@ -905,7 +913,7 @@ func _reveal_model() -> void:
 	# Restyle background color dynamically to pastel pink
 	var env = get_node_or_null("WorldEnvironment")
 	if env and env.environment:
-		env.environment.background_color = Color(0.98, 0.88, 0.90, 1.0) # Pastel Valentine Pink
+		pass
 
 	# Smooth in-place wave scale transition
 	for pos in blocks.keys():
@@ -1012,6 +1020,17 @@ func _show_victory_screen(puzzle_name: String) -> void:
 		canvas_layer.add_child(victory_scene)
 		victory_scene.initialize(stats)
 		victory_scene.start_next_nonogram_requested.connect(_on_next_level_requested.bind(victory_scene))
+		victory_scene.leave_requested.connect(_on_leave_requested)
+
+func _on_leave_requested() -> void:
+	if get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet"):
+		var gauntlet = get_node("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet")
+		var confirm = gauntlet.get_node_or_null("CanvasLayer/UI/ConfirmDialog")
+		if confirm:
+			confirm.show()
+	else:
+		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
+
 
 func _on_next_level_requested(victory_scene: Node) -> void:
 	victory_scene.queue_free()
