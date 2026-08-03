@@ -1,5 +1,5 @@
 extends Node
-class_name PuzzleRegistry
+class_name PuzzleRegistryClass
 
 var manifest_data: Dictionary = {}
 var loaded_theme_puzzles: Dictionary = {}
@@ -25,8 +25,21 @@ func load_theme(theme_name: String) -> Array:
 		var file = FileAccess.open(full_path, FileAccess.READ)
 		var parsed = JSON.parse_string(file.get_as_text())
 		var puzzles = parsed.get("puzzles", [])
-		loaded_theme_puzzles[theme_name] = puzzles
-		return puzzles
+		var valid_puzzles = []
+
+		# Validator integration
+		var SolvabilityValidator = load("res://scripts/SolvabilityValidator.gd")
+		for puzzle in puzzles:
+			if SolvabilityValidator and SolvabilityValidator.has_method("is_puzzle_solvable"):
+				if SolvabilityValidator.is_puzzle_solvable(puzzle):
+					valid_puzzles.append(puzzle)
+				else:
+					print("[PuzzleRegistry] Puzzle failed solvability validation, skipping: ", puzzle.get("id", "Unknown"))
+			else:
+				valid_puzzles.append(puzzle)
+
+		loaded_theme_puzzles[theme_name] = valid_puzzles
+		return valid_puzzles
 	return []
 
 func get_puzzles_for_gauntlet(tier: String) -> Array:

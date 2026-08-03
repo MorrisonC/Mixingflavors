@@ -33,4 +33,6 @@ window/stretch/aspect="expand"
 
 [autoload]
 GameManager="*res://scripts/GameManager.gd"
+SaveSystem="*res://scripts/SaveSystem.gd"
+AudioManager="*res://scripts/AudioManager.gd"
 TestBridge="*res://scripts/test_bridge.gd"
