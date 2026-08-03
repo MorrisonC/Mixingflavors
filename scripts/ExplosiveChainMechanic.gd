@@ -40,6 +40,8 @@ func _on_block_destroyed(pos: Vector3i, is_player_action: bool):
 					if check_block.current_state == check_block.BlockState.UNBROKEN:
 						chained_moves.append({"pos": check_pos, "state": check_block.current_state})
 						grid_manager.is_player_action = false
+						if grid_manager.voxel_states.has(check_pos):
+							grid_manager.voxel_states[check_pos]["is_chiseled"] = true
 						grid_manager.destroy_block(check_block)
 						grid_manager.is_player_action = true
 

@@ -38,21 +38,35 @@ func play_sfx(stream: AudioStream) -> void:
 	player.play()
 	next_sfx_index = (next_sfx_index + 1) % pool_size
 
-func play_chisel_sfx() -> void:
-	# Mock loading since actual files are not guaranteed to exist
-	# var stream = load("res://assets/audio/chisel.ogg")
-	# play_sfx(stream)
+func play_chisel_sfx(combo: int = 0) -> void:
 	trigger_haptic_light()
 
+	var player = sfx_pool[next_sfx_index]
+	# Simulated chisel sound (pitch bends upward based on combo)
+	# Since there's no actual file loaded by default, we just modulate pitch of whatever is there,
+	# or if we had a synth, we'd play it. We will just ensure the pitch scales up.
+	# We cap the pitch scale at 2.0 to avoid ear-piercing frequencies
+	var pitch = 1.0 + min(combo * 0.05, 1.0)
+	player.pitch_scale = pitch
+	# player.stream = load("res://assets/audio/chisel.ogg")
+	# player.play()
+
+	next_sfx_index = (next_sfx_index + 1) % pool_size
+
 func play_error_sfx() -> void:
-	# var stream = load("res://assets/audio/error.ogg")
-	# play_sfx(stream)
 	trigger_haptic_heavy()
 
+	var player = sfx_pool[next_sfx_index]
+	player.pitch_scale = 0.5 # Deep error sound
+	# player.stream = load("res://assets/audio/error.ogg")
+	# player.play()
+
+	next_sfx_index = (next_sfx_index + 1) % pool_size
+
 func trigger_haptic_light() -> void:
-	if is_haptics_enabled and (OS.get_name() == "Android" or OS.get_name() == "iOS"):
-		Input.vibrate_handheld(50)
+	if is_haptics_enabled and OS.has_feature("mobile"):
+		Input.vibrate_handheld(40)
 
 func trigger_haptic_heavy() -> void:
-	if is_haptics_enabled and (OS.get_name() == "Android" or OS.get_name() == "iOS"):
-		Input.vibrate_handheld(200)
+	if is_haptics_enabled and OS.has_feature("mobile"):
+		Input.vibrate_handheld(120)

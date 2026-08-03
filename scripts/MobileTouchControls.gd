@@ -27,6 +27,19 @@ var affected_blocks: Array = []
 var hovered_voxel_pos: Vector3i = Vector3i(-1, -1, -1)
 var is_hovering: bool = false
 
+var last_tap_time: float = 0.0
+const DOUBLE_TAP_THRESHOLD: float = 300.0 # ms
+
+var press_start_time: float = 0.0
+const LONG_PRESS_THRESHOLD: float = 500.0 # ms
+var has_triggered_long_press: bool = false
+
+func _process(_delta: float) -> void:
+	if not touch_dragged and (dragging_block or dragging_camera) and press_start_time > 0:
+		var current_time = Time.get_ticks_msec()
+		if current_time - press_start_time > LONG_PRESS_THRESHOLD and not has_triggered_long_press:
+			_handle_long_press()
+
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_PASS
@@ -92,22 +105,52 @@ func _gui_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 
 func _on_press_start(screen_pos: Vector2) -> void:
+	press_start_time = Time.get_ticks_msec()
+	has_triggered_long_press = false
+
 	var hit_pos = _raycast_block(screen_pos)
 	if hit_pos != Vector3i(-1, -1, -1) and current_mode != TouchMode.ROTATE:
 		dragging_block = true
 		start_block_pos = hit_pos
 		drag_locked_axis = -1
 		affected_blocks = [start_block_pos]
-		_apply_tool_action(start_block_pos)
+		# Action applied on release for tap, or on drag for multi-block
 	else:
 		dragging_camera = true
 
 func _on_press_end() -> void:
+	var current_time = Time.get_ticks_msec()
+
+	if dragging_block and not touch_dragged and not has_triggered_long_press:
+		# Rapid taps should work immediately
+		_apply_tool_action(start_block_pos)
+
 	dragging_camera = false
 	dragging_block = false
 	affected_blocks.clear()
+	press_start_time = 0.0
 	if camera_pivot and camera_pivot.has_method("end_orbit"):
 		camera_pivot.end_orbit()
+
+func _handle_double_tap() -> void:
+	var new_mode = TouchMode.MARK if current_mode == TouchMode.CHISEL else TouchMode.CHISEL
+	_trigger_ui_mode_switch(new_mode)
+	if OS.has_feature("mobile"): Input.vibrate_handheld(20)
+
+func _handle_long_press() -> void:
+	has_triggered_long_press = true
+	_handle_double_tap()
+
+func _trigger_ui_mode_switch(mode: TouchMode) -> void:
+	# Trigger grid manager to switch mode so UI updates
+	var grid = get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/GridManager")
+	if not grid: grid = get_parent().get_parent()
+
+	if grid and grid.has_method("_on_chisel_mode_selected"):
+		if mode == TouchMode.CHISEL:
+			grid._on_chisel_mode_selected()
+		elif mode == TouchMode.MARK:
+			grid._on_mark_mode_selected()
 
 func _handle_block_drag(screen_pos: Vector2) -> void:
 	var hit_pos = _raycast_block(screen_pos)
@@ -118,6 +161,7 @@ func _handle_block_drag(screen_pos: Vector2) -> void:
 			var abs_y = abs(diff.y)
 			var abs_z = abs(diff.z)
 			if abs_x > 0 or abs_y > 0 or abs_z > 0:
+				_apply_tool_action(start_block_pos)
 				if abs_x >= abs_y and abs_x >= abs_z:
 					drag_locked_axis = 0
 				elif abs_y >= abs_x and abs_y >= abs_z:
@@ -159,17 +203,50 @@ func _apply_tool_action(grid_pos: Vector3i) -> void:
 
 func _raycast_block(screen_pos: Vector2) -> Vector3i:
 	if not camera: return Vector3i(-1, -1, -1)
-	var ray_origin = camera.project_ray_origin(screen_pos)
-	var ray_dir = camera.project_ray_normal(screen_pos) * 100.0
-	var space_state = camera.get_world_3d().direct_space_state
-	var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_dir)
-	query.collision_mask = 1
-	var result = space_state.intersect_ray(query)
 
-	if result:
-		var hit_node = result.collider
-		if hit_node.has_meta("grid_pos"):
-			return hit_node.get_meta("grid_pos")
+	# Math-based raycast against grid size
+	var grid_manager = get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/GridManager")
+	if not grid_manager:
+		grid_manager = get_parent().get_parent() # Fallback if we are a child
+
+	if not grid_manager or not grid_manager.has_method("get"):
+		return Vector3i(-1, -1, -1)
+
+	var grid_size = grid_manager.grid_size
+	var voxel_states = grid_manager.voxel_states
+
+	var ray_origin = camera.project_ray_origin(screen_pos)
+	var ray_dir = camera.project_ray_normal(screen_pos)
+
+	# AABB intersection
+	# Grid bounds are from (0,0,0) to (grid_size.x, grid_size.y, grid_size.z) theoretically
+	# Actual block positions are Vector3(x, y, z) - Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+
+	var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+
+	var t = 0.0
+	var step = 0.1
+	var max_dist = 100.0
+
+	while t < max_dist:
+		var pos = ray_origin + ray_dir * t
+		var local_pos = pos - offset
+		var grid_pos = Vector3i(round(local_pos.x), round(local_pos.y), round(local_pos.z))
+
+		if grid_pos.x >= 0 and grid_pos.x < grid_size.x and \
+		   grid_pos.y >= 0 and grid_pos.y < grid_size.y and \
+		   grid_pos.z >= 0 and grid_pos.z < grid_size.z:
+
+			if voxel_states.has(grid_pos):
+				var state = voxel_states[grid_pos]
+				if not state.get("is_chiseled", false) and not state.get("is_hidden_by_slice", false):
+					# Check exact block AABB
+					var block_center = Vector3(grid_pos) + offset
+					var diff = pos - block_center
+					if abs(diff.x) <= 0.5 and abs(diff.y) <= 0.5 and abs(diff.z) <= 0.5:
+						return grid_pos
+		t += step
+
 	return Vector3i(-1, -1, -1)
 
 func _handle_camera_orbit(relative: Vector2) -> void:

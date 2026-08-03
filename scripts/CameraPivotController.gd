@@ -172,3 +172,16 @@ func shake(duration: float = 0.2, magnitude: float = 0.1) -> void:
 		)
 		tween.tween_property(self, "position", original_pos + offset, duration / 10.0)
 	tween.tween_property(self, "position", original_pos, duration / 10.0)
+
+
+func snap_to_top() -> void:
+	target_pitch = deg_to_rad(-90.0)
+	target_yaw = 0.0
+
+func snap_to_front() -> void:
+	target_pitch = 0.0
+	target_yaw = 0.0
+
+func snap_to_side() -> void:
+	target_pitch = 0.0
+	target_yaw = deg_to_rad(90.0)

@@ -6,6 +6,8 @@ const VoxelLogicScene = preload("res://scenes/VoxelLogic.tscn")
 var current_round: int = 1
 var max_rounds: int = 999999 # Endless mode essentially
 var time_left: float = 60.0
+var current_wave_type: String = "normal"
+var score: int = 0
 var round_max_time: float = 60.0
 var max_mistakes: int = 3
 
@@ -58,17 +60,34 @@ func _start_round() -> void:
 
 	active_puzzle = VoxelLogicScene.instantiate()
 
+	# Determine wave modifier
+	if current_round % 10 == 0:
+		current_wave_type = "boss"
+	elif current_round % 4 == 0:
+		current_wave_type = "blitz"
+	elif current_round % 5 == 0:
+		current_wave_type = "fog"
+	else:
+		current_wave_type = "normal"
+
 	var puzzle_data = get_next_puzzle_for_mode()
 	active_puzzle.custom_puzzle_data = puzzle_data
 
-	round_label.text = "Round: " + str(current_round)
+	var round_text = "Round: " + str(current_round)
+	if current_wave_type == "blitz": round_text += " [BLITZ!]"
+	elif current_wave_type == "fog": round_text += " [FOG!]"
+	elif current_wave_type == "boss": round_text += " [BOSS!]"
+	round_label.text = round_text
 
 	if "par_time_seconds" in puzzle_data:
 		time_left = float(puzzle_data["par_time_seconds"])
-		round_max_time = time_left
 	else:
 		time_left = 120.0
-		round_max_time = 120.0
+
+	if current_wave_type == "blitz":
+		time_left *= 0.5 # Blitz is half time!
+
+	round_max_time = time_left
 
 	add_child(active_puzzle)
 
@@ -96,11 +115,13 @@ func get_next_puzzle_for_mode() -> Dictionary:
 
 func _get_endless_scaling_puzzle() -> Dictionary:
 	var target_tier = "easy"
-	if current_round >= 18:
+
+	# Dynamic difficulty scaling based on score/speed metrics
+	if score > 5000:
 		target_tier = "boss"
-	elif current_round >= 12:
+	elif score > 2500:
 		target_tier = "hard"
-	elif current_round >= 6:
+	elif score > 1000:
 		target_tier = "medium"
 
 	var pr = get_node("/root/PuzzleRegistry")
@@ -124,6 +145,21 @@ func _on_puzzle_solved() -> void:
 		bonus = 1
 
 	max_mistakes += bonus
+
+	# Meta Progression Unlocks
+	if current_round == 10:
+		get_node("/root/GameManager").unlock_theme("Wood")
+	elif current_round == 20:
+		get_node("/root/GameManager").unlock_theme("Marble")
+	elif current_round == 30:
+		get_node("/root/GameManager").unlock_theme("Neon Sci-Fi")
+
+	# Score calculation
+	var round_score = 100
+	if current_wave_type == "blitz": round_score *= 2
+	if current_wave_type == "boss": round_score *= 5
+	score += round_score + int(time_left) * 10
+	print("[EscapeGauntlet] Current Score: ", score)
 
 	if bonus > 0:
 		print("[EscapeGauntlet] Fast solve! Time ratio: ", time_ratio, " Bonus Health: +", bonus, " Current Health: ", max_mistakes)
