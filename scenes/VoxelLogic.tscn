@@ -1,6 +1,7 @@
 [gd_scene load_steps=8 format=3]
 [ext_resource type="Script" path="res://scripts/GridManager.gd" id="1_grid"]
 [ext_resource type="Script" path="res://scripts/TimeBombMechanic.gd" id="2_bomb"]
+[ext_resource type="Script" path="res://scripts/BonusCrystalMechanic.gd" id="3_crystal"]
 [ext_resource type="Script" path="res://scripts/ExplosiveChainMechanic.gd" id="1_chain"]
 [ext_resource type="Script" path="res://scripts/ComboHealMechanic.gd" id="2_combo"]
 [ext_resource type="PackedScene" path="res://scenes/Block.tscn" id="2_1kbjf"]
@@ -228,3 +229,6 @@ script = ExtResource("1_hint")
 
 [node name="ComboHealMechanic" type="Node" parent="."]
 script = ExtResource("2_combo")
+
+[node name="BonusCrystalMechanic" type="Node" parent="."]
+script = ExtResource("3_crystal")
