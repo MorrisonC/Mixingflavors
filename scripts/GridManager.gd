@@ -920,6 +920,15 @@ func destroy_block(block: VoxelBlock) -> void:
 	if is_player_action:
 		combo += 1
 		_update_ui_state()
+
+		# Visual juice: subtle camera bump on successful break
+		if camera:
+			var pivot = camera.get_parent()
+			while pivot != null and not pivot.has_method("shake"):
+				pivot = pivot.get_parent()
+			if pivot and pivot.has_method("shake"):
+				pivot.shake(0.05, 0.1)
+
 		if get_node_or_null("/root/AudioManager"):
 			get_node("/root/AudioManager").play_chisel_sfx(combo)
 		if combo_label:
