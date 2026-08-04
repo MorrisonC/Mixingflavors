@@ -1,7 +1,7 @@
 extends Node
 class_name TimeBombMechanic
 
-@export var is_enabled: bool = true
+@export var is_enabled: bool = false
 @export var bomb_duration: float = 10.0
 @export var bomb_spawn_interval: float = 15.0
 @export var bomb_color: Color = Color(1.0, 0.2, 0.2)

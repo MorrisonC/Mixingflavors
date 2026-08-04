@@ -1,7 +1,7 @@
 extends Node
 class_name ExplosiveChainMechanic
 
-@export var is_enabled: bool = true
+@export var is_enabled: bool = false
 @export var max_chain_distance: int = 100
 
 var grid_manager: Node3D

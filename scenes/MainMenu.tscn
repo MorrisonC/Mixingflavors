@@ -198,7 +198,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "Close"
 
-[node name="DifficultyModal" type="ColorRect" parent="."]
+[node name="DifficultyModal" type="Control" parent="."]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -206,50 +206,88 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.7)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="DifficultyModal"]
+[node name="Panel" type="Panel" parent="DifficultyModal"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -150.0
-offset_right = 150.0
-offset_bottom = 150.0
+offset_left = -180.0
+offset_top = -220.0
+offset_right = 180.0
+offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="Label" type="Label" parent="DifficultyModal/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="DifficultyModal/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="Label" type="Label" parent="DifficultyModal/Panel/VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.15, 0.3, 1)
 theme_override_font_sizes/font_size = 32
 text = "Select Difficulty"
 horizontal_alignment = 1
 
-[node name="EasyButton" type="Button" parent="DifficultyModal/VBoxContainer"]
+[node name="EasyButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "Easy"
 
-[node name="MediumButton" type="Button" parent="DifficultyModal/VBoxContainer"]
+[node name="MediumButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "Medium"
 
-[node name="HardButton" type="Button" parent="DifficultyModal/VBoxContainer"]
+[node name="HardButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "Hard"
 
-[node name="EndlessButton" type="Button" parent="DifficultyModal/VBoxContainer"]
+[node name="EndlessButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "Endless"
 
-[node name="CloseDifficultyButton" type="Button" parent="DifficultyModal/VBoxContainer"]
+[node name="CloseDifficultyButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "Cancel"

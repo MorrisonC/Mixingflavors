@@ -46,15 +46,6 @@ func _process(delta: float) -> void:
 			_fail_gauntlet()
 
 func _start_round() -> void:
-	var pr = get_node("/root/PuzzleRegistry")
-	if pr and pr.manifest_data:
-		var themes = pr.manifest_data.keys()
-		if themes.size() > 0:
-			var rand_theme = themes[randi() % themes.size()]
-			# Add visual background/music randomized here based on theme
-			# (In a full implementation, you'd load theme-specific assets here)
-			pass
-
 	if is_instance_valid(active_puzzle):
 		active_puzzle.queue_free()
 
@@ -72,6 +63,27 @@ func _start_round() -> void:
 
 	var puzzle_data = get_next_puzzle_for_mode()
 	active_puzzle.custom_puzzle_data = puzzle_data
+
+	# Determine theme
+	var theme_name = puzzle_data.get("theme", "")
+	if theme_name == "" and "id" in puzzle_data:
+		if puzzle_data["id"].begins_with("valentine"):
+			theme_name = "valentine"
+
+	if theme_name.to_lower() == "valentine" or GameManagerClass.is_valentine_theme():
+		var bg_index = ((current_round - 1) % 8) + 1
+		var bg_tex = load("res://assets/textures/valentine/bg" + str(bg_index) + ".jpg")
+		if bg_tex:
+			var env = get_node_or_null("WorldEnvironment")
+			if env and env.environment and env.environment.sky and env.environment.sky.sky_material:
+				env.environment.sky.sky_material.panorama = bg_tex
+	else:
+		# Restore default abstract background
+		var bg_tex = load("res://assets/textures/abstract_bg.png")
+		if bg_tex:
+			var env = get_node_or_null("WorldEnvironment")
+			if env and env.environment and env.environment.sky and env.environment.sky.sky_material:
+				env.environment.sky.sky_material.panorama = bg_tex
 
 	var round_text = "Round: " + str(current_round)
 	if current_wave_type == "blitz": round_text += " [BLITZ!]"

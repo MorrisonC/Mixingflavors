@@ -243,7 +243,7 @@ func _raycast_block(screen_pos: Vector2) -> Vector3i:
 					# Check exact block AABB
 					var block_center = Vector3(grid_pos) + offset
 					var diff = pos - block_center
-					if abs(diff.x) <= 0.5 and abs(diff.y) <= 0.5 and abs(diff.z) <= 0.5:
+					if abs(diff.x) <= 0.45 and abs(diff.y) <= 0.45 and abs(diff.z) <= 0.45:
 						return grid_pos
 		t += step
 

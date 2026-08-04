@@ -21,7 +21,7 @@ background_mode = 2
 sky = SubResource("Sky_m43ds")
 background_color = Color(0.97, 0.91, 0.59, 1)
 ambient_light_source = 3
-ambient_light_color = Color(0.5, 0.5, 0.5, 1)
+ambient_light_color = Color(1, 1, 1, 1)
 tonemap_mode = 2
 tonemap_exposure = 1.1
 glow_enabled = true
@@ -50,7 +50,7 @@ script = ExtResource("1_chain")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 5, 0)
-shadow_enabled = true
+shadow_enabled = false
 
 [node name="CameraPivotYaw" type="Node3D" parent="."]
 script = ExtResource("2_camera")

@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "build:web": "powershell -ExecutionPolicy Bypass -Command \"Copy-Item export_presets.cfg export_presets.cfg.bak -ErrorAction SilentlyContinue; Copy-Item export_presets_web.cfg export_presets.cfg -Force; & 'C:\\Users\\cyber\\Downloads\\Godot\\Godot_v4.3-stable_win64_console.exe' --headless --rendering-driver opengl3 --editor --quit; & 'C:\\Users\\cyber\\Downloads\\Godot\\Godot_v4.3-stable_win64_console.exe' --headless --rendering-driver opengl3 --export-debug Web build/web/index.html; If (Test-Path export_presets.cfg.bak) { Move-Item export_presets.cfg.bak export_presets.cfg -Force }\"",
+    "serve:web": "node server.js",
+    "run:web": "npm run build:web && npm run serve:web"
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
