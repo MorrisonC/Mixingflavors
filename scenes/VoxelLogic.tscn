@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
 [ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="4_twcvd"]
 [ext_resource type="Script" path="res://scripts/CooldownHintMechanic.gd" id="1_hint"]
+[ext_resource type="Script" path="res://scripts/ComboTimeBonusMechanic.gd" id="1_time_bonus"]
 
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_bcnql"]
@@ -225,6 +226,9 @@ environment = SubResource("Environment_6b0qt")
 
 [node name="CooldownHintMechanic" type="Node" parent="."]
 script = ExtResource("1_hint")
+
+[node name="ComboTimeBonusMechanic" type="Node" parent="."]
+script = ExtResource("1_time_bonus")
 
 [node name="ComboHealMechanic" type="Node" parent="."]
 script = ExtResource("2_combo")
