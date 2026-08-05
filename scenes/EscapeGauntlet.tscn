@@ -13,13 +13,13 @@ sky_material = SubResource("PanoramaSkyMaterial_6skyl")
 background_mode = 2
 sky = SubResource("Sky_wtn17")
 background_color = Color(0.97, 0.91, 0.59, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.901961, 0.901961, 0.901961, 1)
+ambient_light_energy = 0.6
 
 [node name="EscapeGauntlet" type="Node3D"]
 script = ExtResource("1_escape")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 5, 0)
-shadow_enabled = false
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 10

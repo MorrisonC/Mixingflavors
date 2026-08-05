@@ -22,9 +22,6 @@ script = ExtResource("1_editor")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_c1")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.8, -0.4, 0.4, 0, 0.7, 0.7, -0.6, -0.5, 0.5, 0, 5, 0)
-shadow_enabled = true
 
 [node name="CameraPivotYaw" type="Node3D" parent="."]
 script = ExtResource("4_camera")
@@ -37,6 +34,11 @@ zoom_speed = 0.5
 spring_length = 8.0
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivotYaw/PitchNode/SpringArm3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="CameraPivotYaw/PitchNode/SpringArm3D/Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0)
+light_energy = 0.9
+shadow_enabled = false
 
 [node name="GridManager" type="Node3D" parent="."]
 script = ExtResource("2_grid")
