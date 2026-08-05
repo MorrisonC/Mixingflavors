@@ -25,26 +25,39 @@ func _ready() -> void:
 		tween.tween_property(title, "scale", Vector2(1.05, 1.05), 1.0).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(title, "scale", Vector2(1.0, 1.0), 1.0).set_trans(Tween.TRANS_SINE)
 
-	var easy_btn = get_node_or_null("DifficultyModal/VBoxContainer/EasyButton")
+	var easy_btn = find_child("EasyButton", true, false)
 	if easy_btn:
 		easy_btn.pressed.connect(func(): _on_difficulty_selected("easy"))
-	var medium_btn = get_node_or_null("DifficultyModal/VBoxContainer/MediumButton")
+	var medium_btn = find_child("MediumButton", true, false)
 	if medium_btn:
 		medium_btn.pressed.connect(func(): _on_difficulty_selected("medium"))
-	var hard_btn = get_node_or_null("DifficultyModal/VBoxContainer/HardButton")
+	var hard_btn = find_child("HardButton", true, false)
 	if hard_btn:
 		hard_btn.pressed.connect(func(): _on_difficulty_selected("hard"))
-	var endless_btn = get_node_or_null("DifficultyModal/VBoxContainer/EndlessButton")
+	var endless_btn = find_child("EndlessButton", true, false)
 	if endless_btn:
 		endless_btn.pressed.connect(func(): _on_difficulty_selected("endless"))
-	var cancel_btn = get_node_or_null("DifficultyModal/VBoxContainer/CloseDifficultyButton")
+	var cancel_btn = find_child("CloseDifficultyButton", true, false)
 	if cancel_btn:
-		cancel_btn.pressed.connect(func(): get_node("DifficultyModal").visible = false)
+		cancel_btn.pressed.connect(_hide_difficulty_modal)
+
+func _hide_difficulty_modal() -> void:
+	var difficulty_modal = get_node_or_null("DifficultyModal")
+	if difficulty_modal:
+		difficulty_modal.visible = false
+	var title = get_node_or_null("Title")
+	if title: title.visible = true
+	var vbox = get_node_or_null("VBoxContainer")
+	if vbox: vbox.visible = true
 
 func _on_play_pressed() -> void:
 	var difficulty_modal = get_node_or_null("DifficultyModal")
 	if difficulty_modal:
 		difficulty_modal.visible = true
+		var title = get_node_or_null("Title")
+		if title: title.visible = false
+		var vbox = get_node_or_null("VBoxContainer")
+		if vbox: vbox.visible = false
 	else:
 		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)
 
@@ -61,8 +74,6 @@ func _on_settings_pressed() -> void:
 		settings_menu.show()
 
 func _on_difficulty_selected(mode: String) -> void:
-	var difficulty_modal = get_node_or_null("DifficultyModal")
-	if difficulty_modal:
-		difficulty_modal.visible = false
+	_hide_difficulty_modal()
 	get_node("/root/GameManager").selected_difficulty_mode = mode
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)

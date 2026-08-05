@@ -82,12 +82,12 @@ func _ready() -> void:
 
 func _create_face_labels() -> void:
 	var directions = [
-		{"dir": Vector3i(1, 0, 0), "pos": Vector3(0.501, 0, 0), "rot": Vector3(0, 90, 0)},
-		{"dir": Vector3i(-1, 0, 0), "pos": Vector3(-0.501, 0, 0), "rot": Vector3(0, -90, 0)},
-		{"dir": Vector3i(0, 1, 0), "pos": Vector3(0, 0.501, 0), "rot": Vector3(-90, 0, 0)},
-		{"dir": Vector3i(0, -1, 0), "pos": Vector3(0, -0.501, 0), "rot": Vector3(90, 0, 0)},
-		{"dir": Vector3i(0, 0, 1), "pos": Vector3(0, 0, 0.501), "rot": Vector3(0, 0, 0)},
-		{"dir": Vector3i(0, 0, -1), "pos": Vector3(0, 0, -0.501), "rot": Vector3(0, 180, 0)}
+		{"dir": Vector3i(1, 0, 0), "pos": Vector3(0.453, 0, 0), "rot": Vector3(0, 90, 0)},
+		{"dir": Vector3i(-1, 0, 0), "pos": Vector3(-0.453, 0, 0), "rot": Vector3(0, -90, 0)},
+		{"dir": Vector3i(0, 1, 0), "pos": Vector3(0, 0.453, 0), "rot": Vector3(-90, 0, 0)},
+		{"dir": Vector3i(0, -1, 0), "pos": Vector3(0, -0.453, 0), "rot": Vector3(90, 0, 0)},
+		{"dir": Vector3i(0, 0, 1), "pos": Vector3(0, 0, 0.453), "rot": Vector3(0, 0, 0)},
+		{"dir": Vector3i(0, 0, -1), "pos": Vector3(0, 0, -0.453), "rot": Vector3(0, 180, 0)}
 	]
 
 	for d in directions:
@@ -95,7 +95,7 @@ func _create_face_labels() -> void:
 		var sprite = Sprite3D.new()
 		sprite.position = d["pos"]
 		sprite.rotation = Vector3(deg_to_rad(d["rot"].x), deg_to_rad(d["rot"].y), deg_to_rad(d["rot"].z))
-		sprite.pixel_size = 0.007
+		sprite.pixel_size = 0.0075
 		sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		sprite.double_sided = false
 		sprite.visible = false
@@ -106,11 +106,12 @@ func _create_face_labels() -> void:
 		var label = Label3D.new()
 		label.text = ""
 		# Position slightly in front of the sprite to avoid z-fighting
-		label.position = d["pos"] + d["dir"] * 0.002
+		label.position = d["pos"] + Vector3(d["dir"]) * 0.002
 		label.rotation = Vector3(deg_to_rad(d["rot"].x), deg_to_rad(d["rot"].y), deg_to_rad(d["rot"].z))
-		label.pixel_size = 0.007
-		label.font_size = 72
-		label.outline_size = 0 # No outlines for clean bold nathsou look
+		label.pixel_size = 0.008
+		label.font_size = 90
+		label.outline_size = 10
+		label.outline_modulate = Color(1.0, 1.0, 1.0, 1.0) # Crisp white contrast outline for ADA compliance
 		label.modulate = Color(0, 0, 0) # Pitch black text
 		label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		label.double_sided = false

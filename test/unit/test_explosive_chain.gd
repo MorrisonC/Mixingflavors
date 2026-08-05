@@ -17,9 +17,10 @@ func after_each():
 
 func test_mechanic_initialization():
 	assert_not_null(chain_mechanic, "ExplosiveChainMechanic node should be instantiated")
-	assert_true(chain_mechanic.is_enabled, "Mechanic should be enabled by default")
+	assert_false(chain_mechanic.is_enabled, "Mechanic should be disabled by default")
 
 func test_chain_does_not_break_targets():
+	chain_mechanic.is_enabled = true
 	grid_manager.target_solution[Vector3i(0, 0, 0)] = true
 	grid_manager.target_shape.append(Vector3i(0, 0, 0))
 	grid_manager.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
@@ -28,6 +29,7 @@ func test_chain_does_not_break_targets():
 	assert_false(grid_manager.voxel_states[Vector3i(0, 0, 0)].get("is_chiseled", false), "Target block should remain unbroken")
 
 func test_chain_breaks_zero_clue_lines():
+	chain_mechanic.is_enabled = true
 	# Make all blocks non-targets
 	grid_manager.target_solution.clear()
 	grid_manager.target_shape.clear()
@@ -39,6 +41,7 @@ func test_chain_breaks_zero_clue_lines():
 	assert_true(grid_manager.voxel_states[Vector3i(0, 0, 1)].get("is_chiseled", false), "Chain should break the rest of the zero-clue line")
 
 func test_undo_restores_chained_blocks():
+	chain_mechanic.is_enabled = true
 	grid_manager.target_solution.clear()
 	grid_manager.target_shape.clear()
 	for pos in grid_manager.voxel_states.keys():

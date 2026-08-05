@@ -10,6 +10,7 @@ const VoxelLogicSolver = preload("res://scripts/VoxelLogicSolver.gd")
 @export var camera: Camera3D
 
 # MultiMesh Integration
+var multimesh_outline: MultiMeshInstance3D
 var multimesh_unbroken: MultiMeshInstance3D
 var multimesh_marked: MultiMeshInstance3D
 var multimesh_highlight: MultiMeshInstance3D
@@ -86,10 +87,13 @@ var tutorial_manager: TutorialManager = null
 var tutorial_ui: CanvasLayer = null
 
 func _ready() -> void:
-	if is_instance_valid(GameManager) and GameManager.has_method("is_valentine_theme") and GameManager.is_valentine_theme():
-		var env_node = get_node_or_null("WorldEnvironment")
-		if env_node and env_node.environment:
-			pass
+	var env_node = get_node_or_null("WorldEnvironment")
+	if env_node and env_node.environment and env_node.environment.sky and env_node.environment.sky.sky_material:
+		var bg_index = (randi() % 8) + 1
+		var bg_path = "res://assets/textures/valentine/bg" + str(bg_index) + ".jpg"
+		var bg_tex = load(bg_path)
+		if bg_tex:
+			env_node.environment.sky.sky_material.panorama = bg_tex
 
 
 	# Initialize MultiMesh batching
@@ -315,17 +319,17 @@ func start_level() -> void:
 	# Dynamically set max_zoom based on grid size and adjust camera
 	if camera:
 		var max_dim = max(grid_size.x, max(grid_size.y, grid_size.z))
-		var target_zoom = float(max_dim) * 2.5
+		var target_zoom = float(max_dim) * 2.0
 		var pivot = camera.get_parent()
 		while pivot != null and not pivot is CameraPivotController and not "max_zoom" in pivot:
 			pivot = pivot.get_parent()
 
 		if pivot and "max_zoom" in pivot:
-			pivot.max_zoom = target_zoom * 2.0
-			pivot.min_zoom = target_zoom * 0.5
+			pivot.max_zoom = target_zoom * 2.5
+			pivot.min_zoom = max(2.0, target_zoom * 0.25)
 		elif pivot and "max_distance" in pivot:
-			pivot.max_distance = target_zoom * 2.0
-			pivot.min_distance = target_zoom * 0.5
+			pivot.max_distance = target_zoom * 2.5
+			pivot.min_distance = max(2.0, target_zoom * 0.25)
 
 		if pivot and "target_distance" in pivot:
 			pivot.target_distance = target_zoom
@@ -392,17 +396,17 @@ func start_level() -> void:
 	# Dynamically set max_zoom based on grid size and adjust camera
 	if camera:
 		var max_dim = max(grid_size.x, max(grid_size.y, grid_size.z))
-		var target_zoom = float(max_dim) * 2.5
+		var target_zoom = float(max_dim) * 2.0
 		var pivot = camera.get_parent()
 		while pivot != null and not pivot is CameraPivotController and not "max_zoom" in pivot:
 			pivot = pivot.get_parent()
 
 		if pivot and "max_zoom" in pivot:
-			pivot.max_zoom = target_zoom * 2.0
-			pivot.min_zoom = target_zoom * 0.5
+			pivot.max_zoom = target_zoom * 2.5
+			pivot.min_zoom = max(2.0, target_zoom * 0.25)
 		elif pivot and "max_distance" in pivot:
-			pivot.max_distance = target_zoom * 2.0
-			pivot.min_distance = target_zoom * 0.5
+			pivot.max_distance = target_zoom * 2.5
+			pivot.min_distance = max(2.0, target_zoom * 0.25)
 
 		if pivot and "target_distance" in pivot:
 			pivot.target_distance = target_zoom
@@ -625,10 +629,11 @@ func _update_clues() -> void:
 				var visible_blocks = []
 				for x in range(grid_size.x):
 					var pos = Vector3i(x, y, z)
-					if blocks.has(pos):
-						var block = blocks[pos]
-						if block.current_state != block.BlockState.DESTROYED and block.current_state != block.BlockState.HIDDEN_BY_SLICE:
-							visible_blocks.append(block)
+					if voxel_states.has(pos):
+						var state = voxel_states[pos]
+						if not state.get("is_chiseled", false) and not state.get("is_marked", false) and not state.get("is_painted", false) and not state.get("is_hidden_by_slice", false):
+							if blocks.has(pos):
+								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
 					visible_blocks[0].set_face_hint(Vector3i(-1, 0, 0), hint_text)
 					visible_blocks[-1].set_face_hint(Vector3i(1, 0, 0), hint_text)
@@ -642,10 +647,11 @@ func _update_clues() -> void:
 				var visible_blocks = []
 				for y in range(grid_size.y):
 					var pos = Vector3i(x, y, z)
-					if blocks.has(pos):
-						var block = blocks[pos]
-						if block.current_state != block.BlockState.DESTROYED and block.current_state != block.BlockState.HIDDEN_BY_SLICE:
-							visible_blocks.append(block)
+					if voxel_states.has(pos):
+						var state = voxel_states[pos]
+						if not state.get("is_chiseled", false) and not state.get("is_marked", false) and not state.get("is_painted", false) and not state.get("is_hidden_by_slice", false):
+							if blocks.has(pos):
+								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
 					visible_blocks[0].set_face_hint(Vector3i(0, -1, 0), hint_text)
 					visible_blocks[-1].set_face_hint(Vector3i(0, 1, 0), hint_text)
@@ -659,10 +665,11 @@ func _update_clues() -> void:
 				var visible_blocks = []
 				for z in range(grid_size.z):
 					var pos = Vector3i(x, y, z)
-					if blocks.has(pos):
-						var block = blocks[pos]
-						if block.current_state != block.BlockState.DESTROYED and block.current_state != block.BlockState.HIDDEN_BY_SLICE:
-							visible_blocks.append(block)
+					if voxel_states.has(pos):
+						var state = voxel_states[pos]
+						if not state.get("is_chiseled", false) and not state.get("is_marked", false) and not state.get("is_painted", false) and not state.get("is_hidden_by_slice", false):
+							if blocks.has(pos):
+								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
 					visible_blocks[0].set_face_hint(Vector3i(0, 0, -1), hint_text)
 					visible_blocks[-1].set_face_hint(Vector3i(0, 0, 1), hint_text)
@@ -716,7 +723,7 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 
 		if state.get("is_target", false):
 			state["is_marked"] = true
-			if block: block.current_state = block.BlockState.MARKED
+			if block: block.set_state(block.BlockState.MARKED)
 
 			if is_tutorial:
 				if OS.has_feature("mobile"):
@@ -730,6 +737,7 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 			else:
 				_handle_mistake()
 			_update_multimesh()
+			_update_clues()
 		else:
 			state["is_chiseled"] = true
 			if block: destroy_block(block)
@@ -1136,39 +1144,54 @@ func _setup_multimesh() -> void:
 	if is_instance_valid(multimesh_unbroken):
 		return # Already initialized
 
+	# Outer Black Frame / Outline MultiMesh
+	multimesh_outline = MultiMeshInstance3D.new()
+	var mm_o = MultiMesh.new()
+	mm_o.transform_format = MultiMesh.TRANSFORM_3D
+	mm_o.mesh = BoxMesh.new()
+	mm_o.mesh.size = Vector3(0.9, 0.9, 0.9)
+	var mat_o = StandardMaterial3D.new()
+	mat_o.albedo_color = Color(0.0, 0.0, 0.0) # Pitch black frame
+	mat_o.roughness = 1.0
+	mm_o.mesh.surface_set_material(0, mat_o)
+	multimesh_outline.multimesh = mm_o
+	add_child(multimesh_outline)
+
+	# Inner Unbroken White Face MultiMesh
 	multimesh_unbroken = MultiMeshInstance3D.new()
 	var mm_u = MultiMesh.new()
 	mm_u.transform_format = MultiMesh.TRANSFORM_3D
 	mm_u.mesh = BoxMesh.new()
-	mm_u.mesh.size = Vector3(1, 1, 1)
+	mm_u.mesh.size = Vector3(0.86, 0.86, 0.86)
 	var mat_u = StandardMaterial3D.new()
-	mat_u.albedo_color = Color(1.0, 1.0, 1.0)
-	mat_u.roughness = 0.8
+	mat_u.albedo_color = Color(1.0, 1.0, 1.0) # Solid crisp white
+	mat_u.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mm_u.mesh.surface_set_material(0, mat_u)
 	multimesh_unbroken.multimesh = mm_u
 	add_child(multimesh_unbroken)
 
+	# Inner Marked Blue Face MultiMesh
 	multimesh_marked = MultiMeshInstance3D.new()
 	var mm_m = MultiMesh.new()
 	mm_m.transform_format = MultiMesh.TRANSFORM_3D
 	mm_m.mesh = BoxMesh.new()
-	mm_m.mesh.size = Vector3(1, 1, 1)
+	mm_m.mesh.size = Vector3(0.86, 0.86, 0.86)
 	var mat_m = StandardMaterial3D.new()
-	mat_m.albedo_color = Color(0.18, 0.85, 0.55) # Greenish for marked
-	mat_m.roughness = 0.8
+	mat_m.albedo_color = Color(0.6, 0.7, 0.95) # Soft blue like reference image
+	mat_m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mm_m.mesh.surface_set_material(0, mat_m)
 	multimesh_marked.multimesh = mm_m
 	add_child(multimesh_marked)
 
+	# Hover Highlight MultiMesh
 	multimesh_highlight = MultiMeshInstance3D.new()
 	var mm_h = MultiMesh.new()
 	mm_h.transform_format = MultiMesh.TRANSFORM_3D
 	mm_h.mesh = BoxMesh.new()
-	mm_h.mesh.size = Vector3(1.1, 1.1, 1.1)
-	var mat_h = ShaderMaterial.new()
-	mat_h.shader = load("res://scenes/VoxelOutline.gdshader")
-	mat_h.set_shader_parameter("outline_color", Color(1.0, 0.7, 0.1, 1.0))
-	mat_h.set_shader_parameter("outline_width", 0.05)
+	mm_h.mesh.size = Vector3(0.93, 0.93, 0.93)
+	var mat_h = StandardMaterial3D.new()
+	mat_h.albedo_color = Color(1.0, 0.7, 0.1) # Gold highlight
+	mat_h.roughness = 0.5
 	mm_h.mesh.surface_set_material(0, mat_h)
 	multimesh_highlight.multimesh = mm_h
 	add_child(multimesh_highlight)
@@ -1177,7 +1200,7 @@ func _setup_multimesh() -> void:
 	var mm_g = MultiMesh.new()
 	mm_g.transform_format = MultiMesh.TRANSFORM_3D
 	mm_g.mesh = BoxMesh.new()
-	mm_g.mesh.size = Vector3(0.9, 0.9, 0.9)
+	mm_g.mesh.size = Vector3(0.8, 0.8, 0.8)
 	var mat_g = StandardMaterial3D.new()
 	mat_g.albedo_color = Color(0.5, 0.5, 0.5, 0.2) # Ghost layer
 	mat_g.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -1187,34 +1210,42 @@ func _setup_multimesh() -> void:
 	add_child(multimesh_ghost)
 
 func _update_multimesh() -> void:
-	if not is_instance_valid(multimesh_unbroken) or not is_instance_valid(multimesh_marked):
+	if not is_instance_valid(multimesh_unbroken) or not is_instance_valid(multimesh_marked) or not is_instance_valid(multimesh_outline):
 		return
 
 	var unbroken_count = 0
 	var marked_count = 0
+	var total_active = 0
 
 	for pos in voxel_states.keys():
 		var state = voxel_states[pos]
 		if state.get("is_chiseled", false) or state.get("is_hidden_by_slice", false):
 			continue
+		total_active += 1
 		if state.get("is_marked", false) or state.get("is_painted", false):
 			marked_count += 1
 		else:
 			unbroken_count += 1
 
+	multimesh_outline.multimesh.instance_count = total_active
 	multimesh_unbroken.multimesh.instance_count = unbroken_count
 	multimesh_marked.multimesh.instance_count = marked_count
 	multimesh_highlight.multimesh.instance_count = 1 if hovered_pos != Vector3i(-1, -1, -1) else 0
 
+	var o_idx = 0
 	var u_idx = 0
 	var m_idx = 0
+	var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
 
 	for pos in voxel_states.keys():
 		var state = voxel_states[pos]
 		if state.get("is_chiseled", false) or state.get("is_hidden_by_slice", false):
 			continue
 
-		var transform = Transform3D(Basis(), Vector3(pos.x, pos.y, pos.z))
+		var transform = Transform3D(Basis(), Vector3(pos.x, pos.y, pos.z) + offset)
+		multimesh_outline.multimesh.set_instance_transform(o_idx, transform)
+		o_idx += 1
+
 		if state.get("is_marked", false) or state.get("is_painted", false):
 			multimesh_marked.multimesh.set_instance_transform(m_idx, transform)
 			m_idx += 1
@@ -1223,11 +1254,11 @@ func _update_multimesh() -> void:
 			u_idx += 1
 
 	if hovered_pos != Vector3i(-1, -1, -1):
-		multimesh_highlight.multimesh.set_instance_transform(0, Transform3D(Basis(), Vector3(hovered_pos.x, hovered_pos.y, hovered_pos.z)))
+		multimesh_highlight.multimesh.set_instance_transform(0, Transform3D(Basis(), Vector3(hovered_pos.x, hovered_pos.y, hovered_pos.z) + offset))
 
 
 func _check_and_auto_clear_lines(last_pos: Vector3i) -> void:
-	if not is_puzzle_active: return
+	return # Automatically exploding tiles feature disabled per user request
 
 	# Check X axis
 	var x_targets = 0
