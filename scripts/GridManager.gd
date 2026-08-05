@@ -631,7 +631,7 @@ func _update_clues() -> void:
 					var pos = Vector3i(x, y, z)
 					if voxel_states.has(pos):
 						var state = voxel_states[pos]
-						if not state.get("is_chiseled", false) and not state.get("is_marked", false) and not state.get("is_painted", false) and not state.get("is_hidden_by_slice", false):
+						if not state.get("is_chiseled", false) and not state.get("is_hidden_by_slice", false):
 							if blocks.has(pos):
 								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
@@ -649,7 +649,7 @@ func _update_clues() -> void:
 					var pos = Vector3i(x, y, z)
 					if voxel_states.has(pos):
 						var state = voxel_states[pos]
-						if not state.get("is_chiseled", false) and not state.get("is_marked", false) and not state.get("is_painted", false) and not state.get("is_hidden_by_slice", false):
+						if not state.get("is_chiseled", false) and not state.get("is_hidden_by_slice", false):
 							if blocks.has(pos):
 								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
@@ -667,7 +667,7 @@ func _update_clues() -> void:
 					var pos = Vector3i(x, y, z)
 					if voxel_states.has(pos):
 						var state = voxel_states[pos]
-						if not state.get("is_chiseled", false) and not state.get("is_marked", false) and not state.get("is_painted", false) and not state.get("is_hidden_by_slice", false):
+						if not state.get("is_chiseled", false) and not state.get("is_hidden_by_slice", false):
 							if blocks.has(pos):
 								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
@@ -783,6 +783,8 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 					voxel_states[grid_pos]["is_marked"] = true
 				if OS.has_feature("mobile"):
 					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
+				if get_node_or_null("/root/AudioManager") and get_node("/root/AudioManager").has_method("play_paint_sfx"):
+					get_node("/root/AudioManager").play_paint_sfx()
 				emit_signal("voxel_marked", grid_pos)
 			elif block.current_state == block.BlockState.MARKED:
 				record_move(grid_pos, block.current_state)
@@ -791,6 +793,8 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 					voxel_states[grid_pos]["is_marked"] = false
 				if OS.has_feature("mobile"):
 					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
+				if get_node_or_null("/root/AudioManager") and get_node("/root/AudioManager").has_method("play_paint_sfx"):
+					get_node("/root/AudioManager").play_paint_sfx()
 		else:
 			if is_tutorial:
 				if OS.has_feature("mobile"):
@@ -922,6 +926,25 @@ func destroy_block(block: VoxelBlock) -> void:
 		if block.break_particles:
 			block.break_particles.restart()
 
+		# Spawn dummy scale-down block
+		var dummy = MeshInstance3D.new()
+		dummy.mesh = BoxMesh.new()
+		dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = Color("#F0EAD6")
+		mat.roughness = 0.8
+		dummy.material_override = mat
+
+		# Offset calculated the same way as multimesh instances
+		var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+		dummy.position = Vector3(block.grid_position) + offset
+		add_child(dummy)
+
+		var tween = create_tween()
+		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
+		tween.tween_callback(dummy.queue_free)
+
 	if voxel_states.has(block.grid_position):
 		voxel_states[block.grid_position]["is_chiseled"] = true
 
@@ -941,6 +964,7 @@ func destroy_block(block: VoxelBlock) -> void:
 	_check_win_condition()
 	emit_signal("block_destroyed", block.grid_position, is_player_action)
 	_update_multimesh()
+	_update_clues()
 	if is_player_action:
 		_check_and_auto_clear_lines(block.grid_position)
 
@@ -1149,7 +1173,7 @@ func _setup_multimesh() -> void:
 	var mm_o = MultiMesh.new()
 	mm_o.transform_format = MultiMesh.TRANSFORM_3D
 	mm_o.mesh = BoxMesh.new()
-	mm_o.mesh.size = Vector3(0.9, 0.9, 0.9)
+	mm_o.mesh.size = Vector3(0.90, 0.90, 0.90)
 	var mat_o = StandardMaterial3D.new()
 	mat_o.albedo_color = Color(0.0, 0.0, 0.0) # Pitch black frame
 	mat_o.roughness = 1.0
@@ -1162,10 +1186,12 @@ func _setup_multimesh() -> void:
 	var mm_u = MultiMesh.new()
 	mm_u.transform_format = MultiMesh.TRANSFORM_3D
 	mm_u.mesh = BoxMesh.new()
-	mm_u.mesh.size = Vector3(0.86, 0.86, 0.86)
+	mm_u.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_u = StandardMaterial3D.new()
-	mat_u.albedo_color = Color(1.0, 1.0, 1.0) # Solid crisp white
-	mat_u.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat_u.albedo_color = Color("#F0EAD6") # Light cream wood-like
+	mat_u.roughness = 0.8
+	mat_u.metallic = 0.0
+	mat_u.specular = 0.2
 	mm_u.mesh.surface_set_material(0, mat_u)
 	multimesh_unbroken.multimesh = mm_u
 	add_child(multimesh_unbroken)
@@ -1175,10 +1201,12 @@ func _setup_multimesh() -> void:
 	var mm_m = MultiMesh.new()
 	mm_m.transform_format = MultiMesh.TRANSFORM_3D
 	mm_m.mesh = BoxMesh.new()
-	mm_m.mesh.size = Vector3(0.86, 0.86, 0.86)
+	mm_m.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_m = StandardMaterial3D.new()
-	mat_m.albedo_color = Color(0.6, 0.7, 0.95) # Soft blue like reference image
-	mat_m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat_m.albedo_color = Color("#2B82C9") # Vibrant blue/teal
+	mat_m.roughness = 0.8
+	mat_m.metallic = 0.0
+	mat_m.specular = 0.2
 	mm_m.mesh.surface_set_material(0, mat_m)
 	multimesh_marked.multimesh = mm_m
 	add_child(multimesh_marked)

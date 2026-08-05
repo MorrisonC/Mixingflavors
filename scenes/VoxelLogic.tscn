@@ -48,9 +48,6 @@ script = ExtResource("2_bomb")
 [node name="ExplosiveChainMechanic" type="Node" parent="."]
 script = ExtResource("1_chain")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 5, 0)
-shadow_enabled = false
 
 [node name="CameraPivotYaw" type="Node3D" parent="."]
 script = ExtResource("2_camera")
@@ -64,6 +61,11 @@ margin = 0.5
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivotYaw/PitchNode/SpringArm3D"]
 current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="CameraPivotYaw/PitchNode/SpringArm3D/Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0)
+light_energy = 0.9
+shadow_enabled = false
 
 [node name="LabelsContainer" type="Node3D" parent="."]
 

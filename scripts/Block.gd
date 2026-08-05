@@ -110,9 +110,12 @@ func _create_face_labels() -> void:
 		label.rotation = Vector3(deg_to_rad(d["rot"].x), deg_to_rad(d["rot"].y), deg_to_rad(d["rot"].z))
 		label.pixel_size = 0.008
 		label.font_size = 90
-		label.outline_size = 10
-		label.outline_modulate = Color(1.0, 1.0, 1.0, 1.0) # Crisp white contrast outline for ADA compliance
-		label.modulate = Color(0, 0, 0) # Pitch black text
+		label.shaded = false
+		label.render_priority = 1
+		label.outline_render_priority = 0
+		label.outline_size = 8
+		label.outline_modulate = Color(1.0, 1.0, 1.0, 1.0) # Crisp white contrast outline
+		label.modulate = Color("#1A1A1A") # Pitch black text
 		label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		label.double_sided = false
 		label.visible = false
@@ -196,10 +199,13 @@ func _update_visuals() -> void:
 			outline_material.set_shader_parameter("outline_color", outline_default_color)
 			outline_material.set_shader_parameter("outline_width", 0.02)
 			for dir in face_labels.keys():
-				if face_labels[dir].text != "":
-					face_labels[dir].visible = true
+				var label = face_labels[dir] as Label3D
+				label.modulate = Color("#1A1A1A")
+				label.outline_modulate = Color(1.0, 1.0, 1.0, 1.0)
+				if label.text != "":
+					label.visible = true
 					# Only show circular/squared backdrops if correct type
-					var label_text = face_labels[dir].text
+					var label_text = label.text
 					var sprite = face_sprites[dir]
 					if sprite.texture != null:
 						sprite.visible = true
@@ -219,8 +225,11 @@ func _update_visuals() -> void:
 				scale_tween.tween_property(self, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
 
 			for dir in face_labels.keys():
-				if face_labels[dir].text != "":
-					face_labels[dir].visible = true
+				var label = face_labels[dir] as Label3D
+				label.modulate = Color(1.0, 1.0, 1.0, 1.0) # White text for marked
+				label.outline_modulate = Color(0.0, 0.0, 0.0, 1.0) # Black outline for marked
+				if label.text != "":
+					label.visible = true
 					var sprite = face_sprites[dir]
 					if sprite.texture != null:
 						sprite.visible = true

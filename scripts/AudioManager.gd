@@ -53,6 +53,13 @@ func play_chisel_sfx(combo: int = 0) -> void:
 
 	next_sfx_index = (next_sfx_index + 1) % pool_size
 
+func play_paint_sfx() -> void:
+	var player = sfx_pool[next_sfx_index]
+	player.pitch_scale = 1.2
+	# player.stream = load("res://assets/audio/paint.ogg")
+	# player.play()
+	next_sfx_index = (next_sfx_index + 1) % pool_size
+
 func play_error_sfx() -> void:
 	trigger_haptic_heavy()
 
