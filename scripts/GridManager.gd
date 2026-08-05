@@ -785,6 +785,22 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
 				if get_node_or_null("/root/AudioManager") and get_node("/root/AudioManager").has_method("play_paint_sfx"):
 					get_node("/root/AudioManager").play_paint_sfx()
+
+				var dummy = MeshInstance3D.new()
+				dummy.mesh = BoxMesh.new()
+				dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+				var mat = StandardMaterial3D.new()
+				mat.albedo_color = Color("#2B82C9")
+				mat.roughness = 0.8
+				dummy.material_override = mat
+				var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+				dummy.position = Vector3(grid_pos) + offset
+				add_child(dummy)
+				var tween = create_tween()
+				tween.tween_property(dummy, "scale", Vector3(1.2, 1.2, 1.2), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+				tween.tween_property(dummy, "scale", Vector3(1.0, 1.0, 1.0), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+				tween.tween_callback(dummy.queue_free)
+
 				emit_signal("voxel_marked", grid_pos)
 			elif block.current_state == block.BlockState.MARKED:
 				record_move(grid_pos, block.current_state)
