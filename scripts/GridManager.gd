@@ -272,6 +272,7 @@ func start_level() -> void:
 	start_time = Time.get_ticks_msec()
 	mistakes = 0
 	combo = 0
+	emit_signal("combo_updated", combo)
 	player_hp = 3
 	move_history.clear()
 
@@ -745,6 +746,7 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 				state["is_chiseled"] = true
 				if is_player_action:
 					combo += 1
+					emit_signal("combo_updated", combo)
 					_update_ui_state()
 				_check_win_condition()
 				emit_signal("block_destroyed", grid_pos, is_player_action)
@@ -888,6 +890,7 @@ func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
 func _handle_mistake() -> void:
 	mistakes += 1
 	combo = 0
+	emit_signal("combo_updated", combo)
 	player_hp -= 1
 	_update_ui_state()
 	emit_signal("mistake_made", mistakes)
@@ -950,6 +953,7 @@ func destroy_block(block: VoxelBlock) -> void:
 
 	if is_player_action:
 		combo += 1
+		emit_signal("combo_updated", combo)
 		_update_ui_state()
 		if get_node_or_null("/root/AudioManager"):
 			get_node("/root/AudioManager").play_chisel_sfx(combo)
@@ -1095,6 +1099,7 @@ func _reveal_model() -> void:
 # Deal damage to Boss (if in endless gauntlet mode)
 	var time_bonus = max(0.0, 60.0 - time_elapsed) * 2.0
 	var combo_bonus = combo * 5.0
+	combo_bonus *= combo_multiplier
 	var damage = 50.0 + time_bonus + combo_bonus
 	boss_hp -= damage
 	_update_ui_state()
@@ -1344,3 +1349,8 @@ func _check_and_auto_clear_lines(last_pos: Vector3i) -> void:
 			var pos = Vector3i(last_pos.x, last_pos.y, z)
 			if voxel_states.has(pos) and not voxel_states[pos].get("is_chiseled", false) and not voxel_states[pos].get("is_target", false):
 				on_chisel_requested(pos)
+
+var combo_multiplier: float = 1.0
+
+func set_combo_multiplier(multiplier: float) -> void:
+	combo_multiplier = multiplier
