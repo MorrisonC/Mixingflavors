@@ -59,6 +59,19 @@ func _on_js_call(args):
                     gm.switch_mode(target)
                     result = true
 
+    elif action == "load_tutorial_puzzle":
+        var main_loop = Engine.get_main_loop()
+        if main_loop and main_loop.root:
+            var gm = main_loop.root.get_node_or_null("GameManager")
+            if gm:
+                var file_path = "res://data/puzzles/tutorial_star.json"
+                if FileAccess.file_exists(file_path):
+                    var file = FileAccess.open(file_path, FileAccess.READ)
+                    var puzzle_dict = JSON.parse_string(file.get_as_text())
+                    gm.mode_payload = {"custom_puzzle": puzzle_dict}
+                    gm.switch_mode(gm.GameMode.ESCAPE_GAUNTLET)
+                    result = true
+
     elif action == "get_puzzle_state":
         var main_loop = Engine.get_main_loop()
         if main_loop and main_loop.root:
@@ -134,6 +147,14 @@ func _on_js_call(args):
                 if grid_mgr and grid_mgr.has_method("on_chisel_requested"):
                     grid_mgr.on_chisel_requested(Vector3i(js_obj[1], js_obj[2], js_obj[3]))
                     result = true
+
+    elif action == "is_cell_chiseled":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 3:
+            var main_loop = Engine.get_main_loop()
+            if main_loop and main_loop.root:
+                var grid_mgr = _find_grid_manager(main_loop.root)
+                if grid_mgr and grid_mgr.has_method("is_cell_chiseled"):
+                    result = grid_mgr.is_cell_chiseled(Vector3i(js_obj[1], js_obj[2], js_obj[3]))
 
     elif action == "set_edit_mode":
         if typeof(js_obj) != TYPE_STRING and js_obj.length > 1:

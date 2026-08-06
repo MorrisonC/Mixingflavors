@@ -20,11 +20,11 @@ var grid_position: Vector3i
 # Visual properties
 var base_material: StandardMaterial3D
 var outline_material: ShaderMaterial
-var marked_color: Color = Color(0.18, 0.85, 0.55) # Greenish for marked
-var painted_color: Color = Color(0.18, 0.55, 0.85) # Keep simple: marked and painted both show as blue/kept block
-var highlight_color: Color = Color(1.0, 0.7, 0.1) # Bold orange highlight for hovered outlines
-var outline_default_color: Color = Color(0.0, 0.0, 0.0) # Bold black outlines by default
-var default_color: Color = Color(1.0, 1.0, 1.0) # Solid clean white blocks (nathsou's style)
+var marked_color: Color = Color("#FF7700") # Solid saturated glowing orange (opaque matte ceramic)
+var painted_color: Color = Color("#FF7700") # Solid saturated glowing orange
+var highlight_color: Color = Color("#FFAA00") # Bright orange hover highlight
+var outline_default_color: Color = Color(0.75, 0.88, 0.98, 0.4) # Soft translucent glass edge
+var default_color: Color = Color(0.88, 0.93, 0.98, 0.85) # Pale pastel translucent blue-white (frosted glass)
 var scale_tween: Tween
 
 # Face elements mapped by direction Vector3i
@@ -39,7 +39,7 @@ static func _init_textures() -> void:
 	if circle_texture != null:
 		return
 	
-	# Generate Circle Texture
+	# Generate Circle Texture (Glowing cyan-blue outline)
 	var c_img = Image.create(128, 128, false, Image.FORMAT_RGBA8)
 	c_img.fill(Color(0, 0, 0, 0))
 	var center = Vector2(64, 64)
@@ -48,10 +48,10 @@ static func _init_textures() -> void:
 		for x in range(128):
 			var dist = center.distance_to(Vector2(x, y))
 			if abs(dist - radius) < 3.0:
-				c_img.set_pixel(x, y, Color(0, 0, 0, 1)) # Bold black outline
+				c_img.set_pixel(x, y, Color(0.18, 0.70, 0.93, 0.9)) # Cyan-blue outline
 	circle_texture = ImageTexture.create_from_image(c_img)
 	
-	# Generate Square Texture
+	# Generate Square Texture (Glowing cyan-blue outline)
 	var s_img = Image.create(128, 128, false, Image.FORMAT_RGBA8)
 	s_img.fill(Color(0, 0, 0, 0))
 	var border = 16
@@ -59,22 +59,24 @@ static func _init_textures() -> void:
 		for x in range(128):
 			if x >= border and x <= 128 - border and y >= border and y <= 128 - border:
 				if x < border + 6 or x > 128 - border - 6 or y < border + 6 or y > 128 - border - 6:
-					s_img.set_pixel(x, y, Color(0, 0, 0, 1))
+					s_img.set_pixel(x, y, Color(0.18, 0.70, 0.93, 0.9))
 	square_texture = ImageTexture.create_from_image(s_img)
 
 func _ready() -> void:
 	_init_textures()
 
 	base_material = StandardMaterial3D.new()
+	base_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	base_material.albedo_color = default_color
-	base_material.roughness = 0.8 # Less shiny, more clay-like
+	base_material.roughness = 0.3 # Frosted glass
+	base_material.metallic = 0.0
 
 	outline_material = ShaderMaterial.new()
 	var shader = load("res://scenes/VoxelOutline.gdshader")
 	if shader:
 		outline_material.shader = shader
 		outline_material.set_shader_parameter("outline_color", outline_default_color)
-		outline_material.set_shader_parameter("outline_width", 0.02) # Bold crisp outlines
+		outline_material.set_shader_parameter("outline_width", 0.02)
 	
 	base_material.next_pass = outline_material
 	mesh_instance.material_override = base_material
@@ -82,12 +84,12 @@ func _ready() -> void:
 
 func _create_face_labels() -> void:
 	var directions = [
-		{"dir": Vector3i(1, 0, 0), "pos": Vector3(0.453, 0, 0), "rot": Vector3(0, 90, 0)},
-		{"dir": Vector3i(-1, 0, 0), "pos": Vector3(-0.453, 0, 0), "rot": Vector3(0, -90, 0)},
-		{"dir": Vector3i(0, 1, 0), "pos": Vector3(0, 0.453, 0), "rot": Vector3(-90, 0, 0)},
-		{"dir": Vector3i(0, -1, 0), "pos": Vector3(0, -0.453, 0), "rot": Vector3(90, 0, 0)},
-		{"dir": Vector3i(0, 0, 1), "pos": Vector3(0, 0, 0.453), "rot": Vector3(0, 0, 0)},
-		{"dir": Vector3i(0, 0, -1), "pos": Vector3(0, 0, -0.453), "rot": Vector3(0, 180, 0)}
+		{"dir": Vector3i(1, 0, 0), "pos": Vector3(0.492, 0, 0), "rot": Vector3(0, 90, 0)},
+		{"dir": Vector3i(-1, 0, 0), "pos": Vector3(-0.492, 0, 0), "rot": Vector3(0, -90, 0)},
+		{"dir": Vector3i(0, 1, 0), "pos": Vector3(0, 0.492, 0), "rot": Vector3(-90, 0, 0)},
+		{"dir": Vector3i(0, -1, 0), "pos": Vector3(0, -0.492, 0), "rot": Vector3(90, 0, 0)},
+		{"dir": Vector3i(0, 0, 1), "pos": Vector3(0, 0, 0.492), "rot": Vector3(0, 0, 0)},
+		{"dir": Vector3i(0, 0, -1), "pos": Vector3(0, 0, -0.492), "rot": Vector3(0, 180, 0)}
 	]
 
 	for d in directions:
@@ -96,6 +98,7 @@ func _create_face_labels() -> void:
 		sprite.position = d["pos"]
 		sprite.rotation = Vector3(deg_to_rad(d["rot"].x), deg_to_rad(d["rot"].y), deg_to_rad(d["rot"].z))
 		sprite.pixel_size = 0.0075
+		sprite.render_priority = 1
 		sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		sprite.double_sided = false
 		sprite.visible = false
@@ -106,16 +109,16 @@ func _create_face_labels() -> void:
 		var label = Label3D.new()
 		label.text = ""
 		# Position slightly in front of the sprite to avoid z-fighting
-		label.position = d["pos"] + Vector3(d["dir"]) * 0.002
+		label.position = d["pos"] + Vector3(d["dir"]) * 0.004
 		label.rotation = Vector3(deg_to_rad(d["rot"].x), deg_to_rad(d["rot"].y), deg_to_rad(d["rot"].z))
 		label.pixel_size = 0.008
 		label.font_size = 90
 		label.shaded = false
-		label.render_priority = 1
-		label.outline_render_priority = 0
-		label.outline_size = 8
-		label.outline_modulate = Color(1.0, 1.0, 1.0, 1.0) # Crisp white contrast outline
-		label.modulate = Color("#1A1A1A") # Pitch black text
+		label.render_priority = 2
+		label.outline_render_priority = 1
+		label.outline_size = 6
+		label.outline_modulate = Color(1.0, 1.0, 1.0, 0.8) # Soft glowing white contrast outline
+		label.modulate = Color("#2DB2ED") # Sleek glowing cyan-blue numeral text
 		label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		label.double_sided = false
 		label.visible = false
@@ -195,17 +198,17 @@ func _update_visuals() -> void:
 			show()
 			mesh_instance.show()
 			collision_layer = 1
+			base_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 			base_material.albedo_color = default_color
+			base_material.roughness = 0.3
 			outline_material.set_shader_parameter("outline_color", outline_default_color)
 			outline_material.set_shader_parameter("outline_width", 0.02)
 			for dir in face_labels.keys():
 				var label = face_labels[dir] as Label3D
-				label.modulate = Color("#1A1A1A")
-				label.outline_modulate = Color(1.0, 1.0, 1.0, 1.0)
+				label.modulate = Color("#2DB2ED")
+				label.outline_modulate = Color(1.0, 1.0, 1.0, 0.8)
 				if label.text != "":
 					label.visible = true
-					# Only show circular/squared backdrops if correct type
-					var label_text = label.text
 					var sprite = face_sprites[dir]
 					if sprite.texture != null:
 						sprite.visible = true
@@ -213,8 +216,10 @@ func _update_visuals() -> void:
 			show()
 			mesh_instance.show()
 			collision_layer = 1
+			base_material.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 			base_material.albedo_color = marked_color
-			outline_material.set_shader_parameter("outline_color", Color(1.0, 1.0, 1.0)) # White outline for marked
+			base_material.roughness = 0.4
+			outline_material.set_shader_parameter("outline_color", Color(1.0, 0.8, 0.5, 0.8)) # Soft warm glow outline
 			outline_material.set_shader_parameter("outline_width", 0.03)
 
 			if is_inside_tree():
@@ -226,8 +231,8 @@ func _update_visuals() -> void:
 
 			for dir in face_labels.keys():
 				var label = face_labels[dir] as Label3D
-				label.modulate = Color(1.0, 1.0, 1.0, 1.0) # White text for marked
-				label.outline_modulate = Color(0.0, 0.0, 0.0, 1.0) # Black outline for marked
+				label.modulate = Color(1.0, 1.0, 1.0, 1.0) # Crisp white text for marked
+				label.outline_modulate = Color("#CC5500") # Warm orange shadow outline
 				if label.text != "":
 					label.visible = true
 					var sprite = face_sprites[dir]

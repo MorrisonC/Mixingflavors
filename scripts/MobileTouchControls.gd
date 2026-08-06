@@ -239,7 +239,7 @@ func _raycast_block(screen_pos: Vector2) -> Vector3i:
 
 			if voxel_states.has(grid_pos):
 				var state = voxel_states[grid_pos]
-				if not state.get("is_chiseled", false) and not state.get("is_hidden_by_slice", false):
+				if not grid_manager.is_cell_chiseled(grid_pos) and not state.get("is_hidden_by_slice", false):
 					# Check exact block AABB
 					var block_center = Vector3(grid_pos) + offset
 					var diff = pos - block_center

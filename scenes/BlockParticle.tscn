@@ -2,24 +2,28 @@
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_j1m5d"]
 direction = Vector3(0, 1, 0)
-initial_velocity_min = 3.0
-initial_velocity_max = 8.0
-gravity = Vector3(0, -9.8, 0)
-scale_min = 0.05
-scale_max = 0.2
-color = Color(0.8, 0.8, 0.8, 1)
+spread = 180.0
+initial_velocity_min = 2.0
+initial_velocity_max = 5.0
+gravity = Vector3(0, 0.5, 0)
+scale_min = 0.04
+scale_max = 0.12
+color = Color(0.4, 0.84, 1.0, 0.9)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g5r0u"]
+transparency = 1
+shading_mode = 0
 vertex_color_use_as_albedo = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_i2p7v"]
 material = SubResource("StandardMaterial3D_g5r0u")
+size = Vector3(0.15, 0.15, 0.15)
 
 [node name="BlockParticle" type="GPUParticles3D"]
 emitting = false
 amount = 32
-lifetime = 0.5
+lifetime = 0.4
 one_shot = true
-explosiveness = 1.0
+explosiveness = 0.9
 process_material = SubResource("ParticleProcessMaterial_j1m5d")
 draw_pass_1 = SubResource("BoxMesh_i2p7v")

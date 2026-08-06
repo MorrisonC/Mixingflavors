@@ -20,6 +20,13 @@ var hovered_block: Node3D = null # We'll replace this with hovered_pos
 var hovered_pos: Vector3i = Vector3i(-1, -1, -1)
 
 
+# Cell state enum (Single source of truth)
+enum CellState {
+	UNBROKEN,
+	MARKED,
+	DESTROYED
+}
+
 # Internal storage
 var blocks: Dictionary = {}
 var target_solution: Dictionary = {}
@@ -41,6 +48,7 @@ signal game_over
 signal floor_cleared
 signal block_destroyed(grid_pos: Vector3i, is_player_action: bool)
 signal voxel_marked(grid_pos: Vector3i)
+signal cell_state_changed(pos: Vector3i, new_state: CellState)
 
 var mistakes: int = 0
 var combo: int = 0
@@ -49,6 +57,75 @@ var boss_hp: float = 100.0
 var max_boss_hp: float = 100.0
 var current_floor: int = 1
 var custom_puzzle_data: Dictionary = {}
+
+func is_target_cell(pos: Vector3i) -> bool:
+	return target_solution.get(pos, false)
+
+func is_cell_correct(pos: Vector3i) -> bool:
+	if not voxel_states.has(pos):
+		return false
+	var is_target: bool = is_target_cell(pos)
+	var state: CellState = voxel_states[pos].get("cell_state", CellState.UNBROKEN)
+
+	if is_target:
+		# Filled target voxel: MUST NOT be destroyed
+		return state != CellState.DESTROYED
+	else:
+		# Empty space voxel: MUST be destroyed (chiseled away)
+		return state == CellState.DESTROYED
+
+func is_cell_chiseled(pos: Vector3i) -> bool:
+	return voxel_states.has(pos) and voxel_states[pos].get("cell_state", CellState.UNBROKEN) == CellState.DESTROYED
+
+func is_cell_marked(pos: Vector3i) -> bool:
+	return voxel_states.has(pos) and voxel_states[pos].get("cell_state", CellState.UNBROKEN) == CellState.MARKED
+
+func is_cell_unbroken(pos: Vector3i) -> bool:
+	return voxel_states.has(pos) and voxel_states[pos].get("cell_state", CellState.UNBROKEN) == CellState.UNBROKEN
+
+func mark_cell(pos: Vector3i) -> bool:
+	if not voxel_states.has(pos):
+		return false
+	var state = voxel_states[pos]
+	if state.get("is_hidden_by_slice", false):
+		return false
+
+	var current: CellState = state.get("cell_state", CellState.UNBROKEN)
+	if current == CellState.DESTROYED:
+		return false
+
+	var new_state: CellState = CellState.MARKED if current != CellState.MARKED else CellState.UNBROKEN
+	state["cell_state"] = new_state
+
+	var block = blocks.get(pos)
+	if block:
+		if new_state == CellState.MARKED:
+			block.set_state(block.BlockState.MARKED)
+		elif new_state == CellState.UNBROKEN:
+			block.set_state(block.BlockState.UNBROKEN)
+
+	cell_state_changed.emit(pos, new_state)
+	_update_multimesh()
+	_check_win_condition()
+	return true
+
+func hammer_cell(pos: Vector3i) -> bool:
+	if not voxel_states.has(pos):
+		return false
+	var state = voxel_states[pos]
+	if state.get("is_hidden_by_slice", false):
+		return false
+
+	state["cell_state"] = CellState.DESTROYED
+
+	var block = blocks.get(pos)
+	if block:
+		block.set_state(block.BlockState.DESTROYED)
+
+	cell_state_changed.emit(pos, CellState.DESTROYED)
+	_update_multimesh()
+	_check_win_condition()
+	return true
 
 var start_time: float = 0.0
 var time_elapsed: float = 0.0
@@ -308,8 +385,9 @@ func start_level() -> void:
 			target_shape.append(pos)
 		voxel_states[pos] = {
 			"is_target": is_target,
-			"is_chiseled": false,
-			"is_marked": false
+			"cell_state": CellState.UNBROKEN,
+			"is_painted": false,
+			"is_hidden_by_slice": false
 		}
 
 	_update_slicing()
@@ -561,8 +639,8 @@ func _build_grid() -> void:
 				# Initialize state
 				voxel_states[pos] = {
 					"is_target": target_solution.get(pos, false),
-					"is_chiseled": false,
-					"is_marked": false,
+					"cell_state": CellState.UNBROKEN,
+					"is_painted": false,
 					"is_hidden_by_slice": false
 				}
 
@@ -605,7 +683,7 @@ func _update_slicing() -> void:
 		var block = blocks.get(pos)
 
 		if pos.x > slice_max.x or pos.y > slice_max.y or pos.z > slice_max.z:
-			if not state["is_chiseled"]:
+			if not is_cell_chiseled(pos):
 				state["is_hidden_by_slice"] = true
 				if block: block.current_state = block.BlockState.HIDDEN_BY_SLICE
 		else:
@@ -630,8 +708,7 @@ func _update_clues() -> void:
 				for x in range(grid_size.x):
 					var pos = Vector3i(x, y, z)
 					if voxel_states.has(pos):
-						var state = voxel_states[pos]
-						if not state.get("is_chiseled", false) and not state.get("is_hidden_by_slice", false):
+						if not is_cell_chiseled(pos) and not voxel_states[pos].get("is_hidden_by_slice", false):
 							if blocks.has(pos):
 								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
@@ -648,8 +725,7 @@ func _update_clues() -> void:
 				for y in range(grid_size.y):
 					var pos = Vector3i(x, y, z)
 					if voxel_states.has(pos):
-						var state = voxel_states[pos]
-						if not state.get("is_chiseled", false) and not state.get("is_hidden_by_slice", false):
+						if not is_cell_chiseled(pos) and not voxel_states[pos].get("is_hidden_by_slice", false):
 							if blocks.has(pos):
 								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
@@ -666,8 +742,7 @@ func _update_clues() -> void:
 				for z in range(grid_size.z):
 					var pos = Vector3i(x, y, z)
 					if voxel_states.has(pos):
-						var state = voxel_states[pos]
-						if not state.get("is_chiseled", false) and not state.get("is_hidden_by_slice", false):
+						if not is_cell_chiseled(pos) and not voxel_states[pos].get("is_hidden_by_slice", false):
 							if blocks.has(pos):
 								visible_blocks.append(blocks[pos])
 				if visible_blocks.size() > 0:
@@ -707,23 +782,16 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 	var state = voxel_states[grid_pos]
 	var block = blocks.get(grid_pos)
 
-	if state.get("is_marked", false) or state.get("is_painted", false):
+	if is_cell_marked(grid_pos) or state.get("is_painted", false):
 		if OS.has_feature("mobile"):
 			if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
 		return
 
-	if not state.get("is_chiseled", false):
-		var prev_state = 0 # 0 for unbroken
-		if state.get("is_marked", false): prev_state = 1
-		elif state.get("is_painted", false): prev_state = 2
-		elif state.get("is_chiseled", false): prev_state = 3
-		elif state.get("is_hidden_by_slice", false): prev_state = 4
+	if not is_cell_chiseled(grid_pos):
+		record_move(grid_pos, state.get("cell_state", CellState.UNBROKEN))
 
-		record_move(grid_pos, prev_state)
-
-		if state.get("is_target", false):
-			state["is_marked"] = true
-			if block: block.set_state(block.BlockState.MARKED)
+		if is_target_cell(grid_pos):
+			mark_cell(grid_pos)
 
 			if is_tutorial:
 				if OS.has_feature("mobile"):
@@ -739,62 +807,58 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 			_update_multimesh()
 			_update_clues()
 		else:
-			state["is_chiseled"] = true
-			if block: destroy_block(block)
-			else:
-				state["is_chiseled"] = true
-				if is_player_action:
-					combo += 1
-					_update_ui_state()
-				_check_win_condition()
-				emit_signal("block_destroyed", grid_pos, is_player_action)
+			hammer_cell(grid_pos)
+			if is_player_action:
+				combo += 1
+				_update_ui_state()
+				if get_node_or_null("/root/AudioManager"):
+					get_node("/root/AudioManager").play_chisel_sfx(combo)
+				if combo_label:
+					combo_label.pivot_offset = combo_label.size / 2
+					var tween = create_tween()
+					tween.set_parallel(true)
+					tween.tween_property(combo_label, "scale", Vector2(1.5, 1.5), 0.1)
+					tween.tween_property(combo_label, "modulate", Color(1.0, 0.84, 0.0, 1.0), 0.1)
+					tween.chain().tween_property(combo_label, "scale", Vector2(1, 1), 0.2)
+					tween.parallel().tween_property(combo_label, "modulate", Color(1, 1, 1, 1), 0.2)
+			emit_signal("block_destroyed", grid_pos, is_player_action)
 			if OS.has_feature("mobile"):
 				if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
 			_update_multimesh()
+			_update_clues()
 
 func on_mark_requested(grid_pos: Vector3i) -> void:
-	if not blocks.has(grid_pos):
+	if not voxel_states.has(grid_pos):
 		return
-	var block = blocks[grid_pos] as VoxelBlock
+	var block = blocks.get(grid_pos) as VoxelBlock
 
 	if is_editor_mode:
-		if block.current_state == block.BlockState.DESTROYED:
+		if block and block.current_state == block.BlockState.DESTROYED:
 			record_move(grid_pos, block.current_state)
 			block.set_state(block.BlockState.UNBROKEN)
 			target_solution[grid_pos] = true
 			_update_clues()
 	else:
 		if current_mode == EditMode.PAINT:
-			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED:
+			if block and (block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED):
 				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.PAINTED)
 				if OS.has_feature("mobile"):
 					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-			elif block.current_state == block.BlockState.PAINTED:
+			elif block and block.current_state == block.BlockState.PAINTED:
 				record_move(grid_pos, block.current_state)
 				block.set_state(block.BlockState.UNBROKEN)
 				if OS.has_feature("mobile"):
 					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
 		elif current_mode == EditMode.MARK:
-			if block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.PAINTED:
-				record_move(grid_pos, block.current_state)
-				block.set_state(block.BlockState.MARKED)
-				if voxel_states.has(grid_pos):
-					voxel_states[grid_pos]["is_marked"] = true
-				if OS.has_feature("mobile"):
-					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-				if get_node_or_null("/root/AudioManager") and get_node("/root/AudioManager").has_method("play_paint_sfx"):
-					get_node("/root/AudioManager").play_paint_sfx()
-				emit_signal("voxel_marked", grid_pos)
-			elif block.current_state == block.BlockState.MARKED:
-				record_move(grid_pos, block.current_state)
-				block.set_state(block.BlockState.UNBROKEN)
-				if voxel_states.has(grid_pos):
-					voxel_states[grid_pos]["is_marked"] = false
-				if OS.has_feature("mobile"):
-					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-				if get_node_or_null("/root/AudioManager") and get_node("/root/AudioManager").has_method("play_paint_sfx"):
-					get_node("/root/AudioManager").play_paint_sfx()
+			var current_st = voxel_states[grid_pos].get("cell_state", CellState.UNBROKEN)
+			record_move(grid_pos, current_st)
+			mark_cell(grid_pos)
+			if OS.has_feature("mobile"):
+				if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
+			if get_node_or_null("/root/AudioManager") and get_node("/root/AudioManager").has_method("play_paint_sfx"):
+				get_node("/root/AudioManager").play_paint_sfx()
+			emit_signal("voxel_marked", grid_pos)
 		else:
 			if is_tutorial:
 				if OS.has_feature("mobile"):
@@ -848,32 +912,20 @@ func _apply_undo_move(move: Dictionary) -> void:
 	var prev_state = move["state"]
 	if voxel_states.has(pos):
 		var state = voxel_states[pos]
-		if prev_state == 0: # UNBROKEN
-			state["is_marked"] = false
-			state["is_painted"] = false
-			state["is_chiseled"] = false
-			state["is_hidden_by_slice"] = false
-		elif prev_state == 1: # MARKED
-			state["is_marked"] = true
-			state["is_painted"] = false
-			state["is_chiseled"] = false
-			state["is_hidden_by_slice"] = false
-		elif prev_state == 2: # PAINTED
-			state["is_marked"] = false
-			state["is_painted"] = true
-			state["is_chiseled"] = false
-			state["is_hidden_by_slice"] = false
-		elif prev_state == 3: # DESTROYED
-			state["is_chiseled"] = true
-		elif prev_state == 4: # HIDDEN_BY_SLICE
-			state["is_hidden_by_slice"] = true
-
 		var block = blocks.get(pos)
+
+		var target_cell_st: CellState = CellState.UNBROKEN
+		if prev_state == 1 or prev_state == CellState.MARKED:
+			target_cell_st = CellState.MARKED
+		elif prev_state == 3 or prev_state == CellState.DESTROYED:
+			target_cell_st = CellState.DESTROYED
+
+		state["cell_state"] = target_cell_st
 		if block:
-			block.current_state = prev_state
+			block.set_state(prev_state)
 
 func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
-	if not voxel_states.has(grid_pos):
+	if not voxel_states.has(grid_pos) or is_cell_chiseled(grid_pos):
 		hovered_pos = Vector3i(-1, -1, -1)
 		_update_multimesh()
 		return
@@ -931,8 +983,9 @@ func destroy_block(block: VoxelBlock) -> void:
 		dummy.mesh = BoxMesh.new()
 		dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
 		var mat = StandardMaterial3D.new()
-		mat.albedo_color = Color("#F0EAD6")
-		mat.roughness = 0.8
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.albedo_color = Color("#70D6FF") # Glowing light-blue light motes
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		dummy.material_override = mat
 
 		# Offset calculated the same way as multimesh instances
@@ -946,7 +999,7 @@ func destroy_block(block: VoxelBlock) -> void:
 		tween.tween_callback(dummy.queue_free)
 
 	if voxel_states.has(block.grid_position):
-		voxel_states[block.grid_position]["is_chiseled"] = true
+		hammer_cell(block.grid_position)
 
 	if is_player_action:
 		combo += 1
@@ -968,30 +1021,23 @@ func destroy_block(block: VoxelBlock) -> void:
 	if is_player_action:
 		_check_and_auto_clear_lines(block.grid_position)
 
-func _check_win_condition() -> void:
-	if not is_puzzle_active: return
+func check_puzzle_complete() -> bool:
+	if player_hp <= 0 or voxel_states.is_empty():
+		return false
 
-	if player_hp <= 0:
-		return
-
-	var non_target_remaining = 0
-
-	# Win condition: All non-target blocks are chiseled (destroyed)
+	# Direct ground-truth state comparison for every voxel in grid bounds
 	for pos in voxel_states.keys():
-		var state = voxel_states[pos]
-		if not state["is_target"] and not state["is_chiseled"]:
-			# Ensure it actually isn't destroyed in the block state just in case
-			if blocks.has(pos) and blocks[pos].current_state != blocks[pos].BlockState.DESTROYED:
-				non_target_remaining += 1
+		if not is_cell_correct(pos):
+			return false
 
-	if non_target_remaining > 0:
-		return
+	return true
 
-	# Puzzle Solved!
-	is_puzzle_active = false
-	print("Puzzle Solved! Revealing model...")
-
-	_reveal_model()
+func _check_win_condition() -> void:
+	if check_puzzle_complete():
+		is_puzzle_active = false
+		print("Puzzle Solved! Revealing model...")
+		emit_signal("puzzle_solved")
+		_reveal_model()
 
 func _reveal_model() -> void:
 	# Hide all slice constraints
@@ -1168,45 +1214,45 @@ func _setup_multimesh() -> void:
 	if is_instance_valid(multimesh_unbroken):
 		return # Already initialized
 
-	# Outer Black Frame / Outline MultiMesh
+	# Outer Frame MultiMesh (Subtle Translucent Glass Bevel)
 	multimesh_outline = MultiMeshInstance3D.new()
 	var mm_o = MultiMesh.new()
 	mm_o.transform_format = MultiMesh.TRANSFORM_3D
 	mm_o.mesh = BoxMesh.new()
 	mm_o.mesh.size = Vector3(0.90, 0.90, 0.90)
 	var mat_o = StandardMaterial3D.new()
-	mat_o.albedo_color = Color(0.0, 0.0, 0.0) # Pitch black frame
-	mat_o.roughness = 1.0
+	mat_o.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_o.albedo_color = Color(0.75, 0.88, 0.98, 0.35)
+	mat_o.roughness = 0.3
 	mm_o.mesh.surface_set_material(0, mat_o)
 	multimesh_outline.multimesh = mm_o
 	add_child(multimesh_outline)
 
-	# Inner Unbroken White Face MultiMesh
+	# Inner Unbroken Translucent Glass Face MultiMesh
 	multimesh_unbroken = MultiMeshInstance3D.new()
 	var mm_u = MultiMesh.new()
 	mm_u.transform_format = MultiMesh.TRANSFORM_3D
 	mm_u.mesh = BoxMesh.new()
 	mm_u.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_u = StandardMaterial3D.new()
-	mat_u.albedo_color = Color("#F0EAD6") # Light cream wood-like
-	mat_u.roughness = 0.8
+	mat_u.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_u.albedo_color = Color(0.88, 0.93, 0.98, 0.85) # Translucent pale pastel blue-white
+	mat_u.roughness = 0.3
 	mat_u.metallic = 0.0
-	mat_u.specular = 0.2
 	mm_u.mesh.surface_set_material(0, mat_u)
 	multimesh_unbroken.multimesh = mm_u
 	add_child(multimesh_unbroken)
 
-	# Inner Marked Blue Face MultiMesh
+	# Inner Marked Solid Orange MultiMesh
 	multimesh_marked = MultiMeshInstance3D.new()
 	var mm_m = MultiMesh.new()
 	mm_m.transform_format = MultiMesh.TRANSFORM_3D
 	mm_m.mesh = BoxMesh.new()
 	mm_m.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_m = StandardMaterial3D.new()
-	mat_m.albedo_color = Color("#2B82C9") # Vibrant blue/teal
-	mat_m.roughness = 0.8
+	mat_m.albedo_color = Color("#FF7700") # Solid saturated glowing orange (opaque matte ceramic)
+	mat_m.roughness = 0.4
 	mat_m.metallic = 0.0
-	mat_m.specular = 0.2
 	mm_m.mesh.surface_set_material(0, mat_m)
 	multimesh_marked.multimesh = mm_m
 	add_child(multimesh_marked)
@@ -1218,8 +1264,8 @@ func _setup_multimesh() -> void:
 	mm_h.mesh = BoxMesh.new()
 	mm_h.mesh.size = Vector3(0.93, 0.93, 0.93)
 	var mat_h = StandardMaterial3D.new()
-	mat_h.albedo_color = Color(1.0, 0.7, 0.1) # Gold highlight
-	mat_h.roughness = 0.5
+	mat_h.albedo_color = Color("#FFAA00") # Warm orange highlight
+	mat_h.roughness = 0.4
 	mm_h.mesh.surface_set_material(0, mat_h)
 	multimesh_highlight.multimesh = mm_h
 	add_child(multimesh_highlight)
@@ -1247,18 +1293,18 @@ func _update_multimesh() -> void:
 
 	for pos in voxel_states.keys():
 		var state = voxel_states[pos]
-		if state.get("is_chiseled", false) or state.get("is_hidden_by_slice", false):
+		if is_cell_chiseled(pos) or state.get("is_hidden_by_slice", false):
 			continue
 		total_active += 1
-		if state.get("is_marked", false) or state.get("is_painted", false):
+		if is_cell_marked(pos) or state.get("is_painted", false) or (not is_puzzle_active and is_target_cell(pos)):
 			marked_count += 1
 		else:
 			unbroken_count += 1
 
-	multimesh_outline.multimesh.instance_count = total_active
+	multimesh_outline.multimesh.instance_count = total_active if is_puzzle_active else 0
 	multimesh_unbroken.multimesh.instance_count = unbroken_count
 	multimesh_marked.multimesh.instance_count = marked_count
-	multimesh_highlight.multimesh.instance_count = 1 if hovered_pos != Vector3i(-1, -1, -1) else 0
+	multimesh_highlight.multimesh.instance_count = 1 if (hovered_pos != Vector3i(-1, -1, -1) and not is_cell_chiseled(hovered_pos) and is_puzzle_active) else 0
 
 	var o_idx = 0
 	var u_idx = 0
@@ -1267,21 +1313,22 @@ func _update_multimesh() -> void:
 
 	for pos in voxel_states.keys():
 		var state = voxel_states[pos]
-		if state.get("is_chiseled", false) or state.get("is_hidden_by_slice", false):
+		if is_cell_chiseled(pos) or state.get("is_hidden_by_slice", false):
 			continue
 
 		var transform = Transform3D(Basis(), Vector3(pos.x, pos.y, pos.z) + offset)
-		multimesh_outline.multimesh.set_instance_transform(o_idx, transform)
-		o_idx += 1
+		if is_puzzle_active:
+			multimesh_outline.multimesh.set_instance_transform(o_idx, transform)
+			o_idx += 1
 
-		if state.get("is_marked", false) or state.get("is_painted", false):
+		if is_cell_marked(pos) or state.get("is_painted", false) or (not is_puzzle_active and is_target_cell(pos)):
 			multimesh_marked.multimesh.set_instance_transform(m_idx, transform)
 			m_idx += 1
 		else:
 			multimesh_unbroken.multimesh.set_instance_transform(u_idx, transform)
 			u_idx += 1
 
-	if hovered_pos != Vector3i(-1, -1, -1):
+	if hovered_pos != Vector3i(-1, -1, -1) and not is_cell_chiseled(hovered_pos) and is_puzzle_active:
 		multimesh_highlight.multimesh.set_instance_transform(0, Transform3D(Basis(), Vector3(hovered_pos.x, hovered_pos.y, hovered_pos.z) + offset))
 
 

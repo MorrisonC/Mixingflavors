@@ -24,23 +24,23 @@ func after_each():
 func test_chisel_non_target_destroys_block():
 	grid.start_level()
 	var test_pos = Vector3i(0, 0, 0)
-	grid.voxel_states[test_pos]["is_target"] = false
+	grid.target_solution[test_pos] = false
 
 	grid.on_chisel_requested(test_pos)
 
-	assert_true(grid.voxel_states[test_pos]["is_chiseled"], "Non-target block should be chiseled")
+	assert_true(grid.is_cell_chiseled(test_pos), "Non-target block should be chiseled")
 	assert_eq(grid.blocks[test_pos].current_state, BlockClass.BlockState.DESTROYED, "Block state should be DESTROYED")
 
 func test_chisel_target_triggers_mistake_and_marks():
 	grid.start_level()
 	var test_pos = Vector3i(0, 0, 0)
-	grid.voxel_states[test_pos]["is_target"] = true
+	grid.target_solution[test_pos] = true
 	var initial_hp = grid.player_hp
 
 	grid.on_chisel_requested(test_pos)
 
 	assert_eq(grid.player_hp, initial_hp - 1, "Chiseling target block should cost 1 HP")
-	assert_true(grid.voxel_states[test_pos]["is_marked"], "Chiseling target block should mark it to preserve puzzle structure")
+	assert_true(grid.is_cell_marked(test_pos), "Chiseling target block should mark it to preserve puzzle structure")
 	assert_eq(grid.blocks[test_pos].current_state, BlockClass.BlockState.MARKED, "Block state should be MARKED")
 
 func test_mark_toggle_unbroken_and_marked():
@@ -49,11 +49,11 @@ func test_mark_toggle_unbroken_and_marked():
 	var test_pos = Vector3i(0, 0, 0)
 
 	grid.on_mark_requested(test_pos)
-	assert_true(grid.voxel_states[test_pos]["is_marked"], "Marking unbroken block should mark it")
+	assert_true(grid.is_cell_marked(test_pos), "Marking unbroken block should mark it")
 	assert_eq(grid.blocks[test_pos].current_state, BlockClass.BlockState.MARKED, "Block state should be MARKED")
 
 	grid.on_mark_requested(test_pos)
-	assert_false(grid.voxel_states[test_pos]["is_marked"], "Marking already marked block should unmark it")
+	assert_false(grid.is_cell_marked(test_pos), "Marking already marked block should unmark it")
 	assert_eq(grid.blocks[test_pos].current_state, BlockClass.BlockState.UNBROKEN, "Block state should return to UNBROKEN")
 
 func test_slicing_hides_outer_blocks():
