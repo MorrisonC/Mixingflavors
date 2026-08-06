@@ -21,55 +21,58 @@ static func solve(dims: Vector3i, hints: Array) -> Dictionary:
 		# Solve X lines (fixed y, z)
 		for y in range(dims.y):
 			for z in range(dims.z):
-				var line_hints = hints[0][y][z]
-				if line_hints != null and line_hints.size() > 0 and line_hints[0] != null:
-					var hint = line_hints[0]
-					var current_line = []
-					for x in range(dims.x):
-						current_line.append(grid[Vector3i(x, y, z)])
-					var solved = _solve_line(current_line, int(hint["num"]), int(hint["type"]))
-					if solved.size() > 0:
+				if y < hints[0].size() and z < hints[0][y].size() and hints[0][y][z] != null:
+					var line_hints = hints[0][y][z]
+					if line_hints is Array and line_hints.size() > 0 and line_hints[0] != null:
+						var hint = line_hints[0]
+						var current_line = []
 						for x in range(dims.x):
-							if grid[Vector3i(x, y, z)] != solved[x]:
-								grid[Vector3i(x, y, z)] = solved[x]
-								changed = true
+							current_line.append(grid[Vector3i(x, y, z)])
+						var solved = _solve_line(current_line, int(hint["num"]), int(hint["type"]))
+						if solved.size() > 0:
+							for x in range(dims.x):
+								if grid[Vector3i(x, y, z)] != solved[x]:
+									grid[Vector3i(x, y, z)] = solved[x]
+									changed = true
 
 		# Solve Y lines (fixed x, z)
 		for x in range(dims.x):
 			for z in range(dims.z):
-				var line_hints = hints[1][x][z]
-				if line_hints != null and line_hints.size() > 0 and line_hints[0] != null:
-					var hint = line_hints[0]
-					var current_line = []
-					for y in range(dims.y):
-						current_line.append(grid[Vector3i(x, y, z)])
-					var solved = _solve_line(current_line, int(hint["num"]), int(hint["type"]))
-					if solved.size() > 0:
+				if x < hints[1].size() and z < hints[1][x].size() and hints[1][x][z] != null:
+					var line_hints = hints[1][x][z]
+					if line_hints is Array and line_hints.size() > 0 and line_hints[0] != null:
+						var hint = line_hints[0]
+						var current_line = []
 						for y in range(dims.y):
-							if grid[Vector3i(x, y, z)] != solved[y]:
-								grid[Vector3i(x, y, z)] = solved[y]
-								changed = true
+							current_line.append(grid[Vector3i(x, y, z)])
+						var solved = _solve_line(current_line, int(hint["num"]), int(hint["type"]))
+						if solved.size() > 0:
+							for y in range(dims.y):
+								if grid[Vector3i(x, y, z)] != solved[y]:
+									grid[Vector3i(x, y, z)] = solved[y]
+									changed = true
 
 		# Solve Z lines (fixed x, y)
 		for x in range(dims.x):
 			for y in range(dims.y):
-				var line_hints = hints[2][x][y]
-				if line_hints != null and line_hints.size() > 0 and line_hints[0] != null:
-					var hint = line_hints[0]
-					var current_line = []
-					for z in range(dims.z):
-						current_line.append(grid[Vector3i(x, y, z)])
-					var solved = _solve_line(current_line, int(hint["num"]), int(hint["type"]))
-					if solved.size() > 0:
+				if x < hints[2].size() and y < hints[2][x].size() and hints[2][x][y] != null:
+					var line_hints = hints[2][x][y]
+					if line_hints is Array and line_hints.size() > 0 and line_hints[0] != null:
+						var hint = line_hints[0]
+						var current_line = []
 						for z in range(dims.z):
-							if grid[Vector3i(x, y, z)] != solved[z]:
-								grid[Vector3i(x, y, z)] = solved[z]
-								changed = true
+							current_line.append(grid[Vector3i(x, y, z)])
+						var solved = _solve_line(current_line, int(hint["num"]), int(hint["type"]))
+						if solved.size() > 0:
+							for z in range(dims.z):
+								if grid[Vector3i(x, y, z)] != solved[z]:
+									grid[Vector3i(x, y, z)] = solved[z]
+									changed = true
 
-	# Any remaining UNKNOWN cells are treated as BLANK
+	# Treat PAINTED and candidate UNKNOWN cells as targets
 	var solution = {}
 	for pos in grid.keys():
-		solution[pos] = (grid[pos] == CellState.PAINTED)
+		solution[pos] = (grid[pos] != CellState.BLANK)
 	return solution
 
 # Solve a single line using configuration filtering

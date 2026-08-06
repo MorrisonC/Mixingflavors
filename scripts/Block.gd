@@ -196,7 +196,7 @@ func _update_visuals() -> void:
 	match current_state:
 		BlockState.UNBROKEN:
 			show()
-			mesh_instance.show()
+			mesh_instance.hide()
 			collision_layer = 1
 			base_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 			base_material.albedo_color = default_color
@@ -214,7 +214,7 @@ func _update_visuals() -> void:
 						sprite.visible = true
 		BlockState.MARKED:
 			show()
-			mesh_instance.show()
+			mesh_instance.hide()
 			collision_layer = 1
 			base_material.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 			base_material.albedo_color = marked_color
@@ -240,7 +240,7 @@ func _update_visuals() -> void:
 						sprite.visible = true
 		BlockState.PAINTED:
 			show()
-			mesh_instance.show()
+			mesh_instance.hide()
 			collision_layer = 1
 			base_material.albedo_color = painted_color
 			outline_material.set_shader_parameter("outline_color", Color(1.0, 1.0, 1.0)) # White outline for marked

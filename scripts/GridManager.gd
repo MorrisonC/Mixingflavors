@@ -150,6 +150,7 @@ var base_grid_size: int = 3
 @onready var timer_label: Label = null
 @onready var boss_name_label: Label = null
 @onready var boss_hp_bar: ProgressBar = null
+@onready var leave_btn: Button = null
 
 enum EditMode { DESTROY, MARK, ROTATE, BUILD, PAINT }
 var current_mode: EditMode = EditMode.DESTROY
@@ -208,15 +209,22 @@ func _ready() -> void:
 		mark_btn.modulate = Color(0.2, 1.0, 0.2)
 		export_btn.visible = true
 
-	var top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer")
+	leave_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/TopRowContainer/LeaveButton")
+	if not leave_btn:
+		leave_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer/LeaveButton")
+
+	if leave_btn and not leave_btn.pressed.is_connected(_on_leave_requested):
+		leave_btn.pressed.connect(_on_leave_requested)
+
+	var top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer")
+	if not top_info:
+		top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer")
+
 	if top_info:
 		round_label = top_info.get_node_or_null("RoundLabel")
 		hp_label = top_info.get_node_or_null("HPLabel")
 		combo_label = top_info.get_node_or_null("ComboLabel")
 		timer_label = top_info.get_node_or_null("TimerLabel")
-		var leave_btn = top_info.get_node_or_null("LeaveButton")
-		if leave_btn and not leave_btn.pressed.is_connected(_on_leave_requested):
-			leave_btn.pressed.connect(_on_leave_requested)
 
 		var boss_container = top_info.get_node_or_null("BossContainer")
 		if boss_container:
@@ -260,11 +268,19 @@ func _ready() -> void:
 		slice_toggle_btn.pressed.connect(_on_slice_toggle_pressed)
 	if undo_btn and not undo_btn.pressed.is_connected(undo_last_move):
 		undo_btn.pressed.connect(undo_last_move)
+	var hint_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/HintButton")
+	if hint_btn and not hint_btn.pressed.is_connected(_on_hint_pressed):
+		hint_btn.pressed.connect(_on_hint_pressed)
 	if export_btn and not export_btn.pressed.is_connected(_export_puzzle):
 		export_btn.pressed.connect(_export_puzzle)
 
 	if has_custom_puzzle:
 		_load_custom_puzzle(custom_puzzle_data)
+
+func _on_hint_pressed() -> void:
+	var mechanic = get_node_or_null("CooldownHintMechanic")
+	if mechanic and mechanic.has_method("use_hint"):
+		mechanic.use_hint()
 
 func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
 	if puzzle_data.get("theme") == "tutorial" or puzzle_data.get("id") == "tutorial_star":
@@ -296,16 +312,16 @@ func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
 			if self.has_signal("puzzle_solved"):
 				self.puzzle_solved.connect(tutorial_manager.on_puzzle_solved)
 
-	grid_size = Vector3i(puzzle_data["dims"][0], puzzle_data["dims"][1], puzzle_data["dims"][2])
-	slice_max = grid_size
+	var dims_arr = puzzle_data.get("dims", puzzle_data.get("grid_size", [5, 5, 5]))
+	grid_size = Vector3i(int(dims_arr[0]), int(dims_arr[1]), int(dims_arr[2]))
+	slice_max = grid_size - Vector3i(1, 1, 1)
 
 	target_solution.clear()
 	for pos in blocks.keys():
-		blocks[pos].queue_free()
+		if blocks[pos] and is_instance_valid(blocks[pos]):
+			blocks[pos].queue_free()
 	blocks.clear()
 	move_history.clear()
-
-	_build_grid()
 
 	if puzzle_data.has("hints"):
 		target_solution = VoxelLogicSolver.solve(grid_size, puzzle_data["hints"])
@@ -315,7 +331,7 @@ func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
 				for x in range(grid_size.x):
 					target_solution[Vector3i(x, y, z)] = false
 		for v in puzzle_data["target_voxels"]:
-			target_solution[Vector3i(v[0], v[1], v[2])] = true
+			target_solution[Vector3i(int(v[0]), int(v[1]), int(v[2]))] = true
 	elif puzzle_data.has("cells"):
 		var cells = puzzle_data["cells"]
 		var index = 0
@@ -337,10 +353,13 @@ func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
 			target_shape.append(pos)
 		voxel_states[pos] = {
 			"is_target": is_target,
-			"is_chiseled": false,
-			"is_marked": false
+			"cell_state": CellState.UNBROKEN,
+			"is_painted": false,
+			"is_hidden_by_slice": false
 		}
 
+	_build_grid()
+	_update_multimesh()
 	_update_clues()
 
 
@@ -428,15 +447,21 @@ func start_level() -> void:
 	undo_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/UndoButton")
 	export_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ExportButton")
 
-	var top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer")
+	var top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer")
+	if not top_info:
+		top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopInfoBar/HBoxContainer")
+
+	var leave_b = get_node_or_null("CanvasLayer/Control/MarginContainer/TopRowContainer/LeaveButton")
+	if not leave_b and top_info:
+		leave_b = top_info.get_node_or_null("LeaveButton")
+	if leave_b and not leave_b.pressed.is_connected(_on_leave_requested):
+		leave_b.pressed.connect(_on_leave_requested)
+
 	if top_info:
 		round_label = top_info.get_node_or_null("RoundLabel")
 		hp_label = top_info.get_node_or_null("HPLabel")
 		combo_label = top_info.get_node_or_null("ComboLabel")
 		timer_label = top_info.get_node_or_null("TimerLabel")
-		var leave_btn = top_info.get_node_or_null("LeaveButton")
-		if leave_btn and not leave_btn.pressed.is_connected(_on_leave_requested):
-			leave_btn.pressed.connect(_on_leave_requested)
 
 		var boss_container = top_info.get_node_or_null("BossContainer")
 		if boss_container:
@@ -1183,11 +1208,29 @@ func _show_victory_screen(puzzle_name: String) -> void:
 		victory_scene.leave_requested.connect(_on_leave_requested)
 
 func _on_leave_requested() -> void:
-	if get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet"):
+	var local_confirm = get_node_or_null("CanvasLayer/Control/ConfirmDialog")
+	if local_confirm:
+		local_confirm.show()
+		var yes_btn = local_confirm.get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer/YesButton")
+		var no_btn = local_confirm.get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer/NoButton")
+		if yes_btn and not yes_btn.pressed.is_connected(_confirm_leave):
+			yes_btn.pressed.connect(_confirm_leave)
+		if no_btn and not no_btn.pressed.is_connected(func(): local_confirm.hide()):
+			no_btn.pressed.connect(func(): local_confirm.hide())
+		return
+
+	_confirm_leave()
+
+func _confirm_leave() -> void:
+	if has_custom_puzzle:
+		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PUZZLE_SELECTION)
+	elif get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet"):
 		var gauntlet = get_node("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet")
 		var confirm = gauntlet.get_node_or_null("CanvasLayer/UI/ConfirmDialog")
 		if confirm:
 			confirm.show()
+		else:
+			get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
 	else:
 		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
 
@@ -1236,9 +1279,12 @@ func _setup_multimesh() -> void:
 	mm_u.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_u = StandardMaterial3D.new()
 	mat_u.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat_u.albedo_color = Color(0.88, 0.93, 0.98, 0.85) # Translucent pale pastel blue-white
-	mat_u.roughness = 0.3
-	mat_u.metallic = 0.0
+	mat_u.albedo_color = Color(0.85, 0.93, 0.98, 0.70) # Frosted glass pastel blue-white
+	mat_u.roughness = 0.25
+	mat_u.metallic = 0.05
+	mat_u.emission_enabled = true
+	mat_u.emission = Color(0.2, 0.45, 0.7, 1.0)
+	mat_u.emission_energy_multiplier = 0.35 # Soft internal light source
 	mm_u.mesh.surface_set_material(0, mat_u)
 	multimesh_unbroken.multimesh = mm_u
 	add_child(multimesh_unbroken)
@@ -1250,9 +1296,12 @@ func _setup_multimesh() -> void:
 	mm_m.mesh = BoxMesh.new()
 	mm_m.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_m = StandardMaterial3D.new()
-	mat_m.albedo_color = Color("#FF7700") # Solid saturated glowing orange (opaque matte ceramic)
-	mat_m.roughness = 0.4
+	mat_m.albedo_color = Color(1.0, 0.45, 0.0, 1.0) # Solid high-intensity glowing warm orange
+	mat_m.roughness = 0.3
 	mat_m.metallic = 0.0
+	mat_m.emission_enabled = true
+	mat_m.emission = Color(1.0, 0.35, 0.0, 1.0)
+	mat_m.emission_energy_multiplier = 1.0 # High contrast glowing warm orange light
 	mm_m.mesh.surface_set_material(0, mat_m)
 	multimesh_marked.multimesh = mm_m
 	add_child(multimesh_marked)
@@ -1264,8 +1313,11 @@ func _setup_multimesh() -> void:
 	mm_h.mesh = BoxMesh.new()
 	mm_h.mesh.size = Vector3(0.93, 0.93, 0.93)
 	var mat_h = StandardMaterial3D.new()
-	mat_h.albedo_color = Color("#FFAA00") # Warm orange highlight
-	mat_h.roughness = 0.4
+	mat_h.albedo_color = Color(1.0, 0.7, 0.1, 0.9)
+	mat_h.roughness = 0.3
+	mat_h.emission_enabled = true
+	mat_h.emission = Color(1.0, 0.6, 0.0, 1.0)
+	mat_h.emission_energy_multiplier = 0.8
 	mm_h.mesh.surface_set_material(0, mat_h)
 	multimesh_highlight.multimesh = mm_h
 	add_child(multimesh_highlight)

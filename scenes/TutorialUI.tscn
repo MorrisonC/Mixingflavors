@@ -1,18 +1,47 @@
-[gd_scene load_steps=3 format=3 uid="uid://cx60u6b2j3t7"]
+[gd_scene load_steps=5 format=3 uid="uid://cx60u6b2j3t7"]
 
 [ext_resource type="Script" path="res://scripts/TutorialUI.gd" id="1_tui"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
-bg_color = Color(0.15, 0.15, 0.2, 0.85)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.8, 0.7, 0.3, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+bg_color = Color(1, 1, 1, 0.18)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.55)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.15)
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_GlassBtnNormal"]
+bg_color = Color(1, 1, 1, 0.18)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.5)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.1)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_GlassBtnHover"]
+bg_color = Color(1, 1, 1, 0.32)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.8)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
 [node name="TutorialUI" type="CanvasLayer"]
 layer = 10
@@ -40,22 +69,31 @@ mouse_filter = 2
 alignment = 2
 
 [node name="SkipButton" type="Button" parent="MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(130, 44)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
 text = "Skip Tutorial"
 
 [node name="BannerPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/BannerPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
 
 [node name="BannerLabel" type="Label" parent="MarginContainer/VBoxContainer/BannerPanel/MarginContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
 text = "Instruction text goes here."
 horizontal_alignment = 1
 autowrap_mode = 2

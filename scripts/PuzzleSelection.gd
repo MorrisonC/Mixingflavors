@@ -72,35 +72,51 @@ func _load_category(category_name: String) -> void:
 	for child in puzzle_grid.get_children():
 		child.queue_free()
 
+	var puzzles_to_show: Array = []
+
 	var file_paths = collections.get(category_name, [])
 	for path in file_paths:
-		var file = FileAccess.open(path, FileAccess.READ)
-		if file:
-			var json_text = file.get_as_text()
-			file.close()
-			var puzzle_data = JSON.parse_string(json_text)
-			if puzzle_data:
-				var btn = Button.new()
-				var btn_text = puzzle_data.get("name", "Untitled")
+		if FileAccess.file_exists(path):
+			var file = FileAccess.open(path, FileAccess.READ)
+			if file:
+				var json_text = file.get_as_text()
+				file.close()
+				var pdata = JSON.parse_string(json_text)
+				if pdata:
+					puzzles_to_show.append(pdata)
 
-				var tier = puzzle_data.get("difficulty_tier", "medium")
-				var stars = "★★☆"
-				if tier == "easy":
-					stars = "★☆☆"
-				elif tier == "hard":
-					stars = "★★★"
+	# If no file paths matched (e.g. Fantasy), load from PuzzleRegistry
+	if puzzles_to_show.is_empty():
+		var pr_script = load("res://scripts/PuzzleRegistry.gd")
+		if pr_script:
+			var pr = pr_script.new()
+			pr.load_manifest()
+			var theme_puzzles = pr.load_theme(category_name.to_lower())
+			for i in range(min(18, theme_puzzles.size())):
+				puzzles_to_show.append(theme_puzzles[i])
 
-				var time_sec = puzzle_data.get("par_time_seconds", 120)
-				btn_text += "\n" + stars + " | " + str(time_sec) + "s"
+	for puzzle_data in puzzles_to_show:
+		var btn = Button.new()
+		var btn_text = puzzle_data.get("name", "Untitled")
 
-				btn.text = btn_text
-				btn.custom_minimum_size = Vector2(180, 80)
-				btn.add_theme_font_size_override("font_size", 18)
-				btn.add_theme_stylebox_override("normal", btn_normal)
-				btn.add_theme_stylebox_override("hover", btn_hover)
-				btn.add_theme_stylebox_override("pressed", btn_hover)
-				btn.pressed.connect(func(): _on_puzzle_selected(puzzle_data))
-				puzzle_grid.add_child(btn)
+		var tier = puzzle_data.get("difficulty_tier", "medium")
+		var stars = "★★☆"
+		if tier == "easy":
+			stars = "★☆☆"
+		elif tier == "hard":
+			stars = "★★★"
+
+		var time_sec = puzzle_data.get("par_time_seconds", 120)
+		btn_text += "\n" + stars + " | " + str(time_sec) + "s"
+
+		btn.text = btn_text
+		btn.custom_minimum_size = Vector2(180, 80)
+		btn.add_theme_font_size_override("font_size", 18)
+		btn.add_theme_stylebox_override("normal", btn_normal)
+		btn.add_theme_stylebox_override("hover", btn_hover)
+		btn.add_theme_stylebox_override("pressed", btn_hover)
+		btn.pressed.connect(func(): _on_puzzle_selected(puzzle_data))
+		puzzle_grid.add_child(btn)
 
 func _on_puzzle_selected(puzzle_data: Dictionary) -> void:
 	# Start custom puzzle play mode
