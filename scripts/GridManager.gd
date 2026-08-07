@@ -177,6 +177,10 @@ func _ready() -> void:
 	# Initialize MultiMesh batching
 	_setup_multimesh()
 
+	# Dynamically inject corruption mechanic
+	var corruption_mechanic = preload("res://scripts/VoxelCorruptionMechanic.gd").new()
+	add_child(corruption_mechanic)
+
 	var game_manager = get_node_or_null("/root/GameManager")
 
 	# custom_puzzle_data handled at class level
@@ -1275,9 +1279,11 @@ func _setup_multimesh() -> void:
 	multimesh_unbroken = MultiMeshInstance3D.new()
 	var mm_u = MultiMesh.new()
 	mm_u.transform_format = MultiMesh.TRANSFORM_3D
+	mm_u.use_colors = true
 	mm_u.mesh = BoxMesh.new()
 	mm_u.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_u = StandardMaterial3D.new()
+	mat_u.vertex_color_use_as_albedo = true
 	mat_u.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat_u.albedo_color = Color(0.85, 0.93, 0.98, 0.70) # Frosted glass pastel blue-white
 	mat_u.roughness = 0.25
@@ -1378,6 +1384,10 @@ func _update_multimesh() -> void:
 			m_idx += 1
 		else:
 			multimesh_unbroken.multimesh.set_instance_transform(u_idx, transform)
+			if state.get("is_corrupted", false):
+				multimesh_unbroken.multimesh.set_instance_color(u_idx, Color(1.0, 0.2, 0.2, 0.9)) # Corrupted red color
+			else:
+				multimesh_unbroken.multimesh.set_instance_color(u_idx, Color(1, 1, 1, 1)) # Default white multiplier
 			u_idx += 1
 
 	if hovered_pos != Vector3i(-1, -1, -1) and not is_cell_chiseled(hovered_pos) and is_puzzle_active:
