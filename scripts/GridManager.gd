@@ -879,6 +879,8 @@ func on_mark_requested(grid_pos: Vector3i) -> void:
 			var current_st = voxel_states[grid_pos].get("cell_state", CellState.UNBROKEN)
 			record_move(grid_pos, current_st)
 			mark_cell(grid_pos)
+			if block and block.has_method("_play_juice_tween"):
+				block._play_juice_tween()
 			if OS.has_feature("mobile"):
 				if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
 			if get_node_or_null("/root/AudioManager") and get_node("/root/AudioManager").has_method("play_paint_sfx"):
