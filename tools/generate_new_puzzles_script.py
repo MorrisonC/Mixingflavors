@@ -246,8 +246,17 @@ if __name__ == "__main__":
     existing_normalized_shapes = set(normalize_shape([tuple(v) for v in p["target_voxels"]]) for p in existing_puzzles)
 
     new_puzzles = []
-    animals_names = ["Wolf", "Bear", "Lion", "Eagle", "Shark", "Tiger", "Fox", "Owl", "Rhino", "Hippo", "Bat", "Frog", "Toad", "Snake", "Fish"]
-    name_adjectives = ["Cosmic", "Luminous", "Iron", "Shadow", "Crystal", "Astral", "Mystic", "Solar", "Lunar", "Neon"]
+
+    themes_nouns = {
+        "animals": ["Wolf", "Bear", "Lion", "Eagle", "Shark", "Tiger", "Fox", "Owl", "Rhino", "Hippo", "Bat", "Frog", "Toad", "Snake", "Fish"],
+        "mythical": ["Dragon", "Unicorn", "Phoenix", "Griffin", "Chimera", "Hydra", "Kraken", "Minotaur", "Sphinx", "Pegasus", "Cerberus", "Basilisk", "Wyvern", "Golem", "Troll"],
+        "cyberpunk": ["Deck", "Jack", "Neuro", "Synapse", "Chrome", "Neon", "Wire", "Grid", "Data", "Proxy", "Core", "Byte", "Chip", "Glitch", "Pulse"],
+        "scifi": ["Star", "Galaxy", "Nebula", "Quasar", "Pulsar", "Nova", "Comet", "Meteor", "Asteroid", "Planet", "Moon", "Orbit", "Rocket", "Drone", "Laser"],
+        "alchemy": ["Potion", "Elixir", "Flask", "Vial", "Crystal", "Gem", "Stone", "Metal", "Gold", "Silver", "Copper", "Iron", "Lead", "Mercury", "Salt"],
+    }
+
+    animals_names = themes_nouns.get(THEME, ["Shape", "Block", "Structure", "Object", "Form", "Item", "Element", "Entity", "Thing", "Construct"])
+    name_adjectives = ["Cosmic", "Luminous", "Iron", "Shadow", "Crystal", "Astral", "Mystic", "Solar", "Lunar", "Neon", "Quantum", "Cyber", "Void", "Chrono", "Aether"]
 
     print(f"Generating {NUM_NEW_PUZZLES} new puzzles for {THEME} theme...")
 
