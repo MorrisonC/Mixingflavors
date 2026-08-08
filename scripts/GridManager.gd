@@ -101,6 +101,14 @@ func mark_cell(pos: Vector3i) -> bool:
 	if block:
 		if new_state == CellState.MARKED:
 			block.set_state(block.BlockState.MARKED)
+			# Visual juice: squash and stretch when marking
+			if block.mesh_instance:
+				var tween = create_tween()
+				tween.set_trans(Tween.TRANS_SPRING)
+				tween.set_ease(Tween.EASE_OUT)
+				tween.tween_property(block.mesh_instance, "scale", Vector3(1.2, 0.8, 1.2), 0.05)
+				tween.tween_property(block.mesh_instance, "scale", Vector3(0.9, 1.1, 0.9), 0.1)
+				tween.tween_property(block.mesh_instance, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
 		elif new_state == CellState.UNBROKEN:
 			block.set_state(block.BlockState.UNBROKEN)
 
@@ -986,7 +994,7 @@ func _handle_mistake() -> void:
 		while pivot != null and not pivot.has_method("shake"):
 			pivot = pivot.get_parent()
 		if pivot and pivot.has_method("shake"):
-			pivot.shake(0.3, 0.2)
+			pivot.shake(0.2, 0.2)
 
 	if player_hp <= 0:
 		is_puzzle_active = false
