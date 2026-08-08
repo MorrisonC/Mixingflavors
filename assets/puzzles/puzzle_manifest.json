@@ -1,12 +1,12 @@
 {
-  "total_puzzles": 10030,
+  "total_puzzles": 11030,
   "themes": {
     "mythical": {
       "file": "mythical_puzzles.json",
-      "count": 625,
-      "easy_count": 203,
-      "medium_count": 245,
-      "hard_count": 127,
+      "count": 801,
+      "easy_count": 268,
+      "medium_count": 327,
+      "hard_count": 156,
       "boss_count": 50
     },
     "animals": {
@@ -35,10 +35,10 @@
     },
     "medieval": {
       "file": "medieval_puzzles.json",
-      "count": 625,
-      "easy_count": 188,
-      "medium_count": 256,
-      "hard_count": 117,
+      "count": 769,
+      "easy_count": 237,
+      "medium_count": 316,
+      "hard_count": 152,
       "boss_count": 64
     },
     "nautical": {
@@ -107,26 +107,26 @@
     },
     "treasure": {
       "file": "treasure_puzzles.json",
-      "count": 625,
-      "easy_count": 193,
-      "medium_count": 246,
-      "hard_count": 125,
+      "count": 910,
+      "easy_count": 286,
+      "medium_count": 364,
+      "hard_count": 199,
       "boss_count": 61
     },
     "alchemy": {
       "file": "alchemy_puzzles.json",
-      "count": 625,
-      "easy_count": 179,
-      "medium_count": 257,
-      "hard_count": 127,
+      "count": 796,
+      "easy_count": 234,
+      "medium_count": 335,
+      "hard_count": 165,
       "boss_count": 62
     },
     "fantasy": {
       "file": "fantasy_puzzles.json",
-      "count": 625,
-      "easy_count": 176,
-      "medium_count": 261,
-      "hard_count": 128,
+      "count": 849,
+      "easy_count": 247,
+      "medium_count": 373,
+      "hard_count": 169,
       "boss_count": 60
     }
   }
