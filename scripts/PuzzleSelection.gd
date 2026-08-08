@@ -14,7 +14,11 @@ var collections: Dictionary = {
 	"Egypt": ["res://assets/puzzles/egypt/pyramid.json", "res://assets/puzzles/egypt/sphinx.json"],
 	"Nature": ["res://assets/puzzles/nature/strange_tree.json"],
 	"Valentine": ["res://assets/puzzles/valentine/heart.json", "res://assets/puzzles/valentine/love_letter.json", "res://assets/puzzles/valentine/diamond_ring.json", "res://assets/puzzles/valentine/rose.json", "res://assets/puzzles/valentine/bow_and_arrow.json"],
-	"Fantasy": ["res://assets/puzzles/fantasy/vampire_fangs.json", "res://assets/puzzles/fantasy/werewolf_head.json", "res://assets/puzzles/fantasy/witch_hat.json", "res://assets/puzzles/fantasy/witch_house.json", "res://assets/puzzles/fantasy/wyvern.json", "res://assets/puzzles/fantasy/cthulhu.json"]
+	"Fantasy": [],
+	"Treasure": [],
+	"Mythical": [],
+	"Alchemy": [],
+	"Medieval": []
 }
 
 var btn_normal: StyleBoxFlat
