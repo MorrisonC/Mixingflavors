@@ -104,6 +104,31 @@ func mark_cell(pos: Vector3i) -> bool:
 		elif new_state == CellState.UNBROKEN:
 			block.set_state(block.BlockState.UNBROKEN)
 
+	if new_state == CellState.MARKED:
+		# Spawn dummy scale-up juice block
+		var dummy = MeshInstance3D.new()
+		dummy.mesh = BoxMesh.new()
+		dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+		var mat = StandardMaterial3D.new()
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.albedo_color = Color(1.0, 0.45, 0.0, 1.0) # Match MARKED orange
+		mat.roughness = 0.3
+		mat.emission_enabled = true
+		mat.emission = Color(1.0, 0.35, 0.0, 1.0)
+		dummy.material_override = mat
+
+		# Offset calculated the same way as multimesh instances
+		var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+		dummy.position = Vector3(pos) + offset
+		add_child(dummy)
+
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(dummy, "scale", Vector3(1.3, 1.3, 1.3), 0.2)
+		tween.tween_property(mat, "albedo_color:a", 0.0, 0.2)
+		tween.chain().tween_callback(dummy.queue_free)
+
 	cell_state_changed.emit(pos, new_state)
 	_update_multimesh()
 	_check_win_condition()
