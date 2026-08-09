@@ -1,5 +1,5 @@
 {
-  "total_puzzles": 12030,
+  "total_puzzles": 12050,
   "themes": {
     "mythical": {
       "file": "mythical_puzzles.json",
@@ -11,11 +11,11 @@
     },
     "animals": {
       "file": "animals_puzzles.json",
-      "count": 655,
-      "easy_count": 193,
-      "medium_count": 254,
-      "hard_count": 139,
-      "boss_count": 69
+      "count": 675,
+      "easy_count": 197,
+      "medium_count": 258,
+      "hard_count": 146,
+      "boss_count": 74
     },
     "scifi": {
       "file": "scifi_puzzles.json",
