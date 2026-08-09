@@ -7,6 +7,13 @@
 [ext_resource type="PackedScene" path="res://scenes/Block.tscn" id="2_1kbjf"]
 [ext_resource type="Script" path="res://scripts/CameraPivotController.gd" id="2_camera"]
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
+[ext_resource type="Texture2D" uid="uid://dp64j71887e41" path="res://assets/ui/icons/icon_hp_heart.jpg" id="icon_hp_heart"]
+[ext_resource type="Texture2D" uid="uid://bvk7320011h4k" path="res://assets/ui/icons/icon_star_score.jpg" id="icon_star_score"]
+[ext_resource type="Texture2D" uid="uid://cx6t185200m1j" path="res://assets/ui/icons/icon_timer.jpg" id="icon_timer"]
+[ext_resource type="Texture2D" uid="uid://dm1q230491p1a" path="res://assets/ui/icons/icon_tool_hammer.jpg" id="icon_tool_hammer"]
+[ext_resource type="Texture2D" uid="uid://dn2r526430q3h" path="res://assets/ui/icons/icon_tool_brush.jpg" id="icon_tool_brush"]
+[ext_resource type="Texture2D" uid="uid://do4w820491v1j" path="res://assets/ui/icons/icon_tool_slice.jpg" id="icon_tool_slice"]
+[ext_resource type="Texture2D" uid="uid://c6s1090123k4a" path="res://assets/ui/icons/icon_undo.jpg" id="icon_undo"]
 [ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="4_twcvd"]
 [ext_resource type="Script" path="res://scripts/CooldownHintMechanic.gd" id="1_hint"]
 
@@ -176,25 +183,58 @@ theme_override_font_sizes/font_size = 18
 text = "Floor 1"
 horizontal_alignment = 1
 
-[node name="HPLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
+[node name="HPContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer/HPContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("icon_hp_heart")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HPLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer/HPContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "HP: 3/3"
+text = "3/3"
 horizontal_alignment = 1
 
-[node name="ComboLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
+[node name="ComboContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer/ComboContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("icon_star_score")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ComboLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer/ComboContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "Combo: x0"
+text = "x0"
 horizontal_alignment = 1
 
-[node name="TimerLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
+[node name="TimerContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer/TimerContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("icon_timer")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TimerLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer/TimerContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "Time: 00:00"
+text = "00:00"
 horizontal_alignment = 1
 
 [node name="BossContainer" type="VBoxContainer" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
@@ -259,7 +299,7 @@ theme_override_constants/separation = 16
 mouse_filter = 2
 
 [node name="ChiselButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(110, 52)
+custom_minimum_size = Vector2(110, 64)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
@@ -267,9 +307,11 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Hammer"
+icon = ExtResource("icon_tool_hammer")
+expand_icon = true
 
 [node name="MarkButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 52)
+custom_minimum_size = Vector2(100, 64)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
@@ -277,9 +319,11 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Mark"
+icon = ExtResource("icon_tool_brush")
+expand_icon = true
 
 [node name="SliceToggleButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 52)
+custom_minimum_size = Vector2(100, 64)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
@@ -287,9 +331,11 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Slice"
+icon = ExtResource("icon_tool_slice")
+expand_icon = true
 
 [node name="UndoButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 52)
+custom_minimum_size = Vector2(100, 64)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
@@ -297,6 +343,8 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Undo"
+icon = ExtResource("icon_undo")
+expand_icon = true
 
 [node name="HintButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(100, 52)

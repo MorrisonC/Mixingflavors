@@ -31,3 +31,6 @@ Godot_v4.3-stable_linux.x86_64.zip
 *.log
 godot_v4.3-stable_linux.x86_64.zip
 node_modules/
+node_modules/
+test-results/
+playwright-report/

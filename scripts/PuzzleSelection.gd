@@ -128,3 +128,6 @@ func _on_puzzle_selected(puzzle_data: Dictionary) -> void:
 
 func _on_back_pressed() -> void:
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
+
+# TODO: Wire up `icon_key.png` for unlock currency if applicable.
+# TODO: Wire up `icon_globe_worldselect.png` and `icon_compass.png` for level selection navigation when designed.
