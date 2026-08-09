@@ -14,6 +14,8 @@ var multimesh_outline: MultiMeshInstance3D
 var multimesh_unbroken: MultiMeshInstance3D
 var multimesh_marked: MultiMeshInstance3D
 var multimesh_highlight: MultiMeshInstance3D
+var multimesh_drag: MultiMeshInstance3D # TODO: Update this drag-select highlight properly in multi-select mode
+
 var multimesh_ghost: MultiMeshInstance3D
 
 var hovered_block: Node3D = null # We'll replace this with hovered_pos
