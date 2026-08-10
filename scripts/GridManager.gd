@@ -103,6 +103,27 @@ func mark_cell(pos: Vector3i) -> bool:
 	if block:
 		if new_state == CellState.MARKED:
 			block.set_state(block.BlockState.MARKED)
+
+			# Add visual juice for marking
+			var dummy = MeshInstance3D.new()
+			dummy.mesh = BoxMesh.new()
+			dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+			var mat = StandardMaterial3D.new()
+			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			mat.albedo_color = Color(0, 1, 0, 0.5) # Semi-transparent green
+			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			dummy.material_override = mat
+
+			var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+			dummy.position = Vector3(block.grid_position) + offset
+			add_child(dummy)
+
+			var tween = create_tween()
+			tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tween.tween_property(dummy, "scale", Vector3(1.2, 1.2, 1.2), 0.1)
+			tween.chain().tween_property(dummy, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+			tween.tween_callback(dummy.queue_free)
+
 		elif new_state == CellState.UNBROKEN:
 			block.set_state(block.BlockState.UNBROKEN)
 
