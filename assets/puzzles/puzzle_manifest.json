@@ -1,5 +1,5 @@
 {
-  "total_puzzles": 12050,
+  "total_puzzles": 12100,
   "themes": {
     "mythical": {
       "file": "mythical_puzzles.json",
@@ -128,6 +128,14 @@
       "medium_count": 373,
       "hard_count": 169,
       "boss_count": 60
+    },
+    "egypt": {
+      "file": "egypt_puzzles.json",
+      "count": 50,
+      "easy_count": 12,
+      "medium_count": 6,
+      "hard_count": 15,
+      "boss_count": 17
     }
   }
 }
