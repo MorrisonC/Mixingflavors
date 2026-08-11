@@ -34,6 +34,9 @@ func _ready() -> void:
 	var hard_btn = find_child("HardButton", true, false)
 	if hard_btn:
 		hard_btn.pressed.connect(func(): _on_difficulty_selected("hard"))
+	var boss_btn = find_child("BossButton", true, false)
+	if boss_btn:
+		boss_btn.pressed.connect(func(): _on_difficulty_selected("boss"))
 	var endless_btn = find_child("EndlessButton", true, false)
 	if endless_btn:
 		endless_btn.pressed.connect(func(): _on_difficulty_selected("endless"))

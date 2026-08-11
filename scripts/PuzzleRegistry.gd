@@ -46,19 +46,27 @@ func get_puzzles_for_gauntlet(tier: String) -> Array:
 	var matching_puzzles: Array = []
 	var themes = manifest_data.keys()
 	if themes.size() > 0:
-		# Just load a random theme rather than ALL 16 to save memory
-		var rand_theme = themes[randi() % themes.size()]
-		var puzzles = load_theme(rand_theme)
-		for puzzle in puzzles:
-			if puzzle.get("difficulty_tier", "") == tier:
-				matching_puzzles.append(puzzle)
-
-		# If somehow we didn't find any for this tier, fallback to checking loaded ones
-		if matching_puzzles.is_empty():
-			for loaded_theme in loaded_theme_puzzles.keys():
-				for puzzle in loaded_theme_puzzles[loaded_theme]:
+		if tier == "boss":
+			# For boss tier, we must scan all themes to find enough boss puzzles
+			for theme in themes:
+				var puzzles = load_theme(theme)
+				for puzzle in puzzles:
 					if puzzle.get("difficulty_tier", "") == tier:
 						matching_puzzles.append(puzzle)
+		else:
+			# Just load a random theme rather than ALL 16 to save memory
+			var rand_theme = themes[randi() % themes.size()]
+			var puzzles = load_theme(rand_theme)
+			for puzzle in puzzles:
+				if puzzle.get("difficulty_tier", "") == tier:
+					matching_puzzles.append(puzzle)
+
+			# If somehow we didn't find any for this tier, fallback to checking loaded ones
+			if matching_puzzles.is_empty():
+				for loaded_theme in loaded_theme_puzzles.keys():
+					for puzzle in loaded_theme_puzzles[loaded_theme]:
+						if puzzle.get("difficulty_tier", "") == tier:
+							matching_puzzles.append(puzzle)
 	return matching_puzzles
 
 func get_all_puzzles() -> Array:
