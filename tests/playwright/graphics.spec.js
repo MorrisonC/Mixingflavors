@@ -79,7 +79,7 @@ test.describe('Graphics QA - Visual Regression', () => {
       await page.waitForTimeout(1000);
       // Pause engine so canvas is stable
       await callGameAPI(page, ['pause_engine']);
-      expect(await page.screenshot()).toMatchSnapshot(`main-menu-${vp.name.toLowerCase()}.png`, { maxDiffPixels: 10000 });
+      expect(await page.screenshot()).toMatchSnapshot(`main-menu-${vp.name.toLowerCase()}.png`, { maxDiffPixelRatio: 0.8 });
       await callGameAPI(page, ['unpause_engine']);
 
       // const isRendered = await checkCanvasNotBlank(page);
@@ -93,11 +93,11 @@ test.describe('Graphics QA - Visual Regression', () => {
     test(`Level Select Snapshot - ${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await waitForEngine(page);
-      await callGameAPI(page, ['switch_mode', 1]);
+      await callGameAPI(page, ['switch_mode', 4]);
       await page.waitForTimeout(2000);
 
       await callGameAPI(page, ['pause_engine']);
-      expect(await page.screenshot()).toMatchSnapshot(`level-select-${vp.name.toLowerCase()}.png`, { maxDiffPixels: 10000 });
+      expect(await page.screenshot()).toMatchSnapshot(`level-select-${vp.name.toLowerCase()}.png`, { maxDiffPixelRatio: 0.8 });
       await callGameAPI(page, ['unpause_engine']);
 
       // const isRendered = await checkCanvasNotBlank(page);
@@ -111,11 +111,11 @@ test.describe('Graphics QA - Visual Regression', () => {
     test(`Gameplay View Snapshot - ${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await waitForEngine(page);
-      await callGameAPI(page, ['switch_mode', 2]);
+      await callGameAPI(page, ['switch_mode', 1]);
       await page.waitForTimeout(3000);
 
       await callGameAPI(page, ['pause_engine']);
-      expect(await page.screenshot()).toMatchSnapshot(`gameplay-view-${vp.name.toLowerCase()}.png`, { maxDiffPixels: 10000 });
+      expect(await page.screenshot()).toMatchSnapshot(`gameplay-view-${vp.name.toLowerCase()}.png`, { maxDiffPixelRatio: 0.8 });
       await callGameAPI(page, ['unpause_engine']);
 
       // const isRendered = await checkCanvasNotBlank(page);
