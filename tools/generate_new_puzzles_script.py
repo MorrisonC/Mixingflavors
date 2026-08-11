@@ -253,6 +253,7 @@ if __name__ == "__main__":
         "cyberpunk": ["Deck", "Jack", "Neuro", "Synapse", "Chrome", "Neon", "Wire", "Grid", "Data", "Proxy", "Core", "Byte", "Chip", "Glitch", "Pulse"],
         "scifi": ["Star", "Galaxy", "Nebula", "Quasar", "Pulsar", "Nova", "Comet", "Meteor", "Asteroid", "Planet", "Moon", "Orbit", "Rocket", "Drone", "Laser"],
         "alchemy": ["Potion", "Elixir", "Flask", "Vial", "Crystal", "Gem", "Stone", "Metal", "Gold", "Silver", "Copper", "Iron", "Lead", "Mercury", "Salt"],
+        "egypt": ["Pyramid", "Sphinx", "Pharaoh", "Scarab", "Ankh", "Mummy", "Obelisk", "Temple", "Tomb", "Camel", "Papyrus", "Chariot", "Oasis", "Nile", "Hieroglyph"],
     }
 
     animals_names = themes_nouns.get(THEME, ["Shape", "Block", "Structure", "Object", "Form", "Item", "Element", "Entity", "Thing", "Construct"])
