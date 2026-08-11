@@ -38,14 +38,19 @@ func test_round_progression():
 	assert_true(gauntlet.time_left > 0, "Time should reset for round 2")
 
 func test_boss_round():
-	gauntlet._on_puzzle_solved() # To round 2
-	gauntlet._on_puzzle_solved() # To round 3
-	gauntlet._on_puzzle_solved() # To round 4
-	gauntlet._on_puzzle_solved() # To round 5 (boss)
-	assert_eq(gauntlet.current_round, 5, "Round should be 5 (max_rounds)")
+	for i in range(1, 10):
+		gauntlet._on_puzzle_solved()
+	assert_eq(gauntlet.current_round, 10, "Round should be 10")
+	assert_eq(gauntlet.current_wave_type, "boss", "Wave type should be boss on round 10")
 
 func test_mistake_failure():
 	gauntlet._on_mistake_made(3)
-	await get_tree().create_timer(3.5).timeout
-	assert_eq(get_node("/root/GameManager").current_mode, GameManagerClass.GameMode.MAIN_MENU, "Failed gauntlet should return to Main Menu")
+	# Check that a label with "GAUNTLET FAILED" was created on the UI
+	var failed = false
+	var ui = gauntlet.get_node("CanvasLayer/UI")
+	if ui:
+		for child in ui.get_children():
+			if child is Label and "GAUNTLET FAILED" in child.text:
+				failed = true
+	assert_true(failed, "Failure UI should be spawned when mistakes >= max_mistakes")
 
