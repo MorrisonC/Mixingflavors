@@ -836,6 +836,7 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 		else:
 			hammer_cell(grid_pos)
 			if is_player_action:
+				_play_block_destroy_juice(grid_pos)
 				combo += 1
 				_update_ui_state()
 				if get_node_or_null("/root/AudioManager"):
@@ -1029,6 +1030,7 @@ func destroy_block(block: VoxelBlock) -> void:
 		hammer_cell(block.grid_position)
 
 	if is_player_action:
+		_play_block_destroy_juice(block.grid_position)
 		combo += 1
 		_update_ui_state()
 		if get_node_or_null("/root/AudioManager"):
@@ -1445,3 +1447,24 @@ func _check_and_auto_clear_lines(last_pos: Vector3i) -> void:
 			var pos = Vector3i(last_pos.x, last_pos.y, z)
 			if voxel_states.has(pos) and not voxel_states[pos].get("is_chiseled", false) and not voxel_states[pos].get("is_target", false):
 				on_chisel_requested(pos)
+
+
+func _play_block_destroy_juice(pos: Vector3i) -> void:
+	var dummy = MeshInstance3D.new()
+	var mesh = BoxMesh.new()
+	mesh.size = Vector3(0.98, 0.98, 0.98)
+	dummy.mesh = mesh
+
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.8, 0.8, 0.8) # Base block color
+	mesh.surface_set_material(0, mat)
+
+	var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+	dummy.position = Vector3(pos.x, pos.y, pos.z) + offset
+	add_child(dummy)
+
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.set_ease(Tween.EASE_IN)
+	tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
+	tween.chain().tween_callback(dummy.queue_free)
