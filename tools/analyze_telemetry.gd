@@ -62,7 +62,8 @@ func analyze_and_patch():
             adjustments_needed.append({"type": "increase_difficulty", "mode": level_id})
             level_findings.issues.append(issue_msg)
 
-        if ttc > 0.0 and ttc < implausibly_fast_ttc:
+        var is_navigation_mode = level_id == "MAIN_MENU" or level_id == "PUZZLE_SELECTION"
+        if not is_navigation_mode and ttc > 0.0 and ttc < implausibly_fast_ttc:
             var issue_msg = "IMPLAUSIBLY FAST TTC detected. Time to complete was %.2f seconds. Indicates fake data or skipped logic." % ttc
             print("  - [GameFlow] ", issue_msg)
             level_findings.issues.append(issue_msg)
