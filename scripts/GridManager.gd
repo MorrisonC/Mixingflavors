@@ -1021,7 +1021,8 @@ func destroy_block(block: VoxelBlock) -> void:
 		add_child(dummy)
 
 		var tween = create_tween()
-		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(dummy, "scale", Vector3(1.15, 1.15, 1.15), 0.05)
 		tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
 		tween.tween_callback(dummy.queue_free)
 
@@ -1030,6 +1031,15 @@ func destroy_block(block: VoxelBlock) -> void:
 
 	if is_player_action:
 		combo += 1
+
+		# Add visual polish: light camera shake
+		var active_camera = camera if camera else get_viewport().get_camera_3d()
+		if active_camera:
+			var pivot = active_camera.get_parent()
+			while pivot != null and not pivot.has_method("shake"):
+				pivot = pivot.get_parent()
+			if pivot and pivot.has_method("shake"):
+				pivot.shake(0.15, 0.08)
 		_update_ui_state()
 		if get_node_or_null("/root/AudioManager"):
 			get_node("/root/AudioManager").play_chisel_sfx(combo)
