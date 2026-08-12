@@ -1,4 +1,4 @@
-﻿extends SceneTree
+extends SceneTree
 
 var telemetry_file_path = "user://telemetry_output.json"
 var roadmap_file_path = "res://BALANCE_ROADMAP.md"
@@ -6,6 +6,7 @@ var roadmap_file_path = "res://BALANCE_ROADMAP.md"
 # Thresholds for GameFlow & MDA
 var high_friction_stuck_threshold = 3.0
 var low_friction_apm_threshold = 10.0 # very low APM means boring/disengaged
+var implausibly_fast_ttc = 5.0 # A real puzzle shouldn't be solved in <5 seconds
 var dead_mechanic_threshold = 0.1 # <10% utilization
 
 func _init():
@@ -54,10 +55,16 @@ func analyze_and_patch():
             level_findings.issues.append(issue_msg)
 
         var apm = level_data.get("apm", 0.0)
-        if apm > 0.0 and apm < low_friction_apm_threshold and level_data.get("time_to_complete", 0.0) > 0.0:
+        var ttc = level_data.get("time_to_complete", 0.0)
+        if apm > 0.0 and apm < low_friction_apm_threshold and ttc > 0.0:
             var issue_msg = "LOW FRICTION / BORING detected. Very low APM (%f). Needs difficulty increase." % apm
             print("  - [GameFlow] ", issue_msg)
             adjustments_needed.append({"type": "increase_difficulty", "mode": level_id})
+            level_findings.issues.append(issue_msg)
+
+        if ttc > 0.0 and ttc < implausibly_fast_ttc:
+            var issue_msg = "IMPLAUSIBLY FAST TTC detected. Time to complete was %.2f seconds. Indicates fake data or skipped logic." % ttc
+            print("  - [GameFlow] ", issue_msg)
             level_findings.issues.append(issue_msg)
 
         # 2. MDA Framework: Mechanic usage
@@ -148,9 +155,6 @@ func update_roadmap(findings: Array):
 
 func apply_patches(adjustments: Array):
     print("[TelemetryAnalyzer] Applying physical patches to project files...")
-
-    # We will dynamically adjust GameManager.gd default RPG stats or VoxelGrid3D sizes
-    # For this example, we parse and modify GameManager.gd
 
     var gm_path = "res://scripts/GameManager.gd"
     var gm_file = FileAccess.open(gm_path, FileAccess.READ)
