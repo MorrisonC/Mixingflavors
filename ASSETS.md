@@ -55,3 +55,9 @@
 - **License**: CC0 1.0 Universal (Public Domain)
 - **Use Case**: Target models for Gauntlet mode rounds 1, 2, and Boss fight.
 
+## Materials
+### `assets/materials/Ice002/`
+- **Asset**: Ice002 (1K JPG)
+- **Use Case**: Surface material (Albedo, Normal, Roughness) for the unbroken 3D Picross cube face to add depth perception.
+- **License**: CC0 (Public Domain)
+- **Source**: [ambientCG](https://ambientcg.com/a/Ice002)
