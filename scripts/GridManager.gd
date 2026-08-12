@@ -1280,7 +1280,20 @@ func _setup_multimesh() -> void:
 	mm_u.mesh = BoxMesh.new()
 	mm_u.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_u = StandardMaterial3D.new()
-	mat_u.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_u.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
+
+	# Load ambientCG Ice002 textures for real surface depth
+	var albedo_tex = load("res://assets/materials/Ice002/Ice002_1K-JPG_Color.jpg")
+	var normal_tex = load("res://assets/materials/Ice002/Ice002_1K-JPG_NormalGL.jpg")
+	var roughness_tex = load("res://assets/materials/Ice002/Ice002_1K-JPG_Roughness.jpg")
+
+	if albedo_tex: mat_u.albedo_texture = albedo_tex
+	if normal_tex:
+		mat_u.normal_enabled = true
+		mat_u.normal_texture = normal_tex
+	if roughness_tex:
+		mat_u.roughness_texture = roughness_tex
+
 	mat_u.albedo_color = Color(0.85, 0.93, 0.98, 0.70) # Frosted glass pastel blue-white
 	mat_u.roughness = 0.25
 	mat_u.metallic = 0.05

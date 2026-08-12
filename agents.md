@@ -94,3 +94,6 @@ Jules MUST run tests in headless mode inside the VM:
   - `test:` for adding or updating test cases.
   - `docs:` for documentation updates.
 - **PR Requirements**: Include a summary of changes, rationale, list of modified files, and verification steps (e.g., test suite results).
+
+## Playwright Screenshots
+When capturing visual evidence for PRs using Playwright (e.g., visual regression snapshots or manual screenshots), save them to `tests/playwright/screenshots/`.
