@@ -219,7 +219,7 @@ func _find_and_press_button(button_text: String) -> bool:
     return false
 
 func _search_for_button_with_text(node: Node, text: String) -> Button:
-    if node is Button and text in node.text:
+    if node is Button and text in node.text and node.is_visible_in_tree():
         return node
     for child in node.get_children():
         var result = _search_for_button_with_text(child, text)
@@ -250,7 +250,7 @@ func check_stuck_state():
 
 func _get_all_buttons(node: Node) -> Array:
     var result = []
-    if node is Button and node.visible and node.text != "Back":
+    if node is Button and node.is_visible_in_tree() and node.text != "Back":
         result.append(node)
     for child in node.get_children():
         result.append_array(_get_all_buttons(child))
