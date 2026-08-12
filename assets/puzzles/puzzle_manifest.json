@@ -1,5 +1,5 @@
 {
-  "total_puzzles": 12150,
+  "total_puzzles": 12450,
   "themes": {
     "mythical": {
       "file": "mythical_puzzles.json",
@@ -11,11 +11,11 @@
     },
     "animals": {
       "file": "animals_puzzles.json",
-      "count": 675,
-      "easy_count": 197,
-      "medium_count": 258,
-      "hard_count": 146,
-      "boss_count": 74
+      "count": 875,
+      "easy_count": 239,
+      "medium_count": 287,
+      "hard_count": 204,
+      "boss_count": 145
     },
     "scifi": {
       "file": "scifi_puzzles.json",
@@ -131,11 +131,11 @@
     },
     "egypt": {
       "file": "egypt_puzzles.json",
-      "count": 100,
-      "easy_count": 26,
-      "medium_count": 14,
-      "hard_count": 29,
-      "boss_count": 31
+      "count": 200,
+      "easy_count": 46,
+      "medium_count": 35,
+      "hard_count": 56,
+      "boss_count": 63
     }
   }
 }
