@@ -101,6 +101,13 @@ func _start_round() -> void:
 
 	round_max_time = time_left
 
+	var main_ui = get_node_or_null("/root/Main/CanvasLayer/UIContainer")
+	if main_ui:
+		var canvas = get_node_or_null("CanvasLayer")
+		if canvas:
+			remove_child(canvas)
+			main_ui.add_child(canvas)
+
 	add_child(active_puzzle)
 
 	# Sync UI Health
@@ -196,7 +203,9 @@ func _fail_gauntlet() -> void:
 	label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	label.position.x -= 300
 	label.position.y -= 100
-	$CanvasLayer/UI.add_child(label)
+
+	var ui = $CanvasLayer/UI if has_node("CanvasLayer/UI") else get_node_or_null("/root/Main/CanvasLayer/UIContainer/CanvasLayer/UI")
+	if ui: ui.add_child(label)
 	
 	print("[EscapeGauntlet] Gauntlet Failed!")
 
@@ -210,7 +219,8 @@ func _fail_gauntlet() -> void:
 	retry_btn.pressed.connect(func():
 		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)
 	)
-	$CanvasLayer/UI.add_child(retry_btn)
+	var ui = $CanvasLayer/UI if has_node("CanvasLayer/UI") else get_node_or_null("/root/Main/CanvasLayer/UIContainer/CanvasLayer/UI")
+	if ui: ui.add_child(retry_btn)
 
 	var leave_btn = Button.new()
 	leave_btn.text = "Leave"
@@ -222,7 +232,8 @@ func _fail_gauntlet() -> void:
 	leave_btn.pressed.connect(func():
 		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
 	)
-	$CanvasLayer/UI.add_child(leave_btn)
+	var ui = $CanvasLayer/UI if has_node("CanvasLayer/UI") else get_node_or_null("/root/Main/CanvasLayer/UIContainer/CanvasLayer/UI")
+	if ui: ui.add_child(leave_btn)
 
 
 func _win_gauntlet() -> void:
@@ -235,7 +246,9 @@ func _win_gauntlet() -> void:
 	label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	label.position.x -= 400
 	label.position.y -= 100
-	$CanvasLayer/UI.add_child(label)
+
+	var ui = $CanvasLayer/UI if has_node("CanvasLayer/UI") else get_node_or_null("/root/Main/CanvasLayer/UIContainer/CanvasLayer/UI")
+	if ui: ui.add_child(label)
 	
 	print("[EscapeGauntlet] Gauntlet Won!")
 	var retry_btn = Button.new()
@@ -248,7 +261,8 @@ func _win_gauntlet() -> void:
 	retry_btn.pressed.connect(func():
 		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.ESCAPE_GAUNTLET)
 	)
-	$CanvasLayer/UI.add_child(retry_btn)
+	var ui = $CanvasLayer/UI if has_node("CanvasLayer/UI") else get_node_or_null("/root/Main/CanvasLayer/UIContainer/CanvasLayer/UI")
+	if ui: ui.add_child(retry_btn)
 
 	var leave_btn = Button.new()
 	leave_btn.text = "Leave"
@@ -260,5 +274,6 @@ func _win_gauntlet() -> void:
 	leave_btn.pressed.connect(func():
 		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
 	)
-	$CanvasLayer/UI.add_child(leave_btn)
+	var ui = $CanvasLayer/UI if has_node("CanvasLayer/UI") else get_node_or_null("/root/Main/CanvasLayer/UIContainer/CanvasLayer/UI")
+	if ui: ui.add_child(leave_btn)
 

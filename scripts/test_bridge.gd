@@ -204,22 +204,30 @@ func _on_js_call(args):
             var btn_name = js_obj[1]
             var main_loop = Engine.get_main_loop()
             if main_loop and main_loop.root:
-                var btn = null
-
-                if btn_name == "menu_play":
-                    btn = main_loop.root.get_node_or_null("/root/Main/CanvasLayer/UIContainer/MainMenu/VBoxContainer/PlayButton")
-                elif btn_name == "leave":
-                    btn = main_loop.root.get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/QuitButton")
-                elif btn_name == "confirm_yes":
-                    btn = main_loop.root.get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer/YesButton")
-                elif btn_name == "confirm_no":
-                    btn = main_loop.root.get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer/NoButton")
+                var btn = main_loop.root.find_child(btn_name, true, false)
 
                 if btn and btn is Button:
                     btn.emit_signal("pressed")
                     result = true
                 else:
                     result = false
+
+    elif action == "instantiate_scene":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 1:
+            var scene_path = js_obj[1]
+            var res = load(scene_path)
+            if res:
+                var inst = res.instantiate()
+                get_tree().root.add_child(inst)
+                result = true
+            else:
+                result = false
+
+    elif action == "change_scene":
+        if typeof(js_obj) != TYPE_STRING and js_obj.length > 1:
+            var scene_path = js_obj[1]
+            get_tree().change_scene_to_file(scene_path)
+            result = true
 
     if result != null:
         var window = JavaScriptBridge.get_interface("window")

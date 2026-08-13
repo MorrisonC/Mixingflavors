@@ -30,14 +30,21 @@ func load_theme(theme_name: String) -> Array:
 		# Validator integration
 		var SolvabilityValidator = load("res://scripts/SolvabilityValidator.gd")
 		for puzzle in puzzles:
+			var adapted = puzzle.duplicate(true)
+			if adapted.has("clues"):
+				var clues = adapted["clues"]
+				adapted["hints"] = {}
+				if clues.has("x_axis"): adapted["hints"]["x"] = clues["x_axis"]
+				if clues.has("y_axis"): adapted["hints"]["y"] = clues["y_axis"]
+				if clues.has("z_axis"): adapted["hints"]["z"] = clues["z_axis"]
+
 			if SolvabilityValidator and SolvabilityValidator.has_method("is_puzzle_solvable"):
-				if SolvabilityValidator.is_puzzle_solvable(puzzle):
+				if SolvabilityValidator.is_puzzle_solvable(adapted):
 					valid_puzzles.append(puzzle)
 				else:
 					print("[PuzzleRegistry] Puzzle failed solvability validation, skipping: ", puzzle.get("id", "Unknown"))
 			else:
 				valid_puzzles.append(puzzle)
-
 		loaded_theme_puzzles[theme_name] = valid_puzzles
 		return valid_puzzles
 	return []
