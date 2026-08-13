@@ -835,6 +835,7 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 			_update_clues()
 		else:
 			hammer_cell(grid_pos)
+			_spawn_destruction_juice(grid_pos)
 			if is_player_action:
 				combo += 1
 				_update_ui_state()
@@ -999,31 +1000,33 @@ func _handle_mistake() -> void:
 		current_floor = 1
 		start_level()
 
+func _spawn_destruction_juice(grid_pos: Vector3i) -> void:
+	var dummy = MeshInstance3D.new()
+	dummy.mesh = BoxMesh.new()
+	dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+	var mat = StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color("#70D6FF") # Glowing light-blue light motes
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dummy.material_override = mat
+
+	# Offset calculated the same way as multimesh instances
+	var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+	dummy.position = Vector3(grid_pos) + offset
+	add_child(dummy)
+
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
+	tween.tween_callback(dummy.queue_free)
+
 func destroy_block(block: VoxelBlock) -> void:
 	if block:
 		block.current_state = block.BlockState.DESTROYED
 		if block.break_particles:
 			block.break_particles.restart()
 
-		# Spawn dummy scale-down block
-		var dummy = MeshInstance3D.new()
-		dummy.mesh = BoxMesh.new()
-		dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
-		var mat = StandardMaterial3D.new()
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.albedo_color = Color("#70D6FF") # Glowing light-blue light motes
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		dummy.material_override = mat
-
-		# Offset calculated the same way as multimesh instances
-		var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
-		dummy.position = Vector3(block.grid_position) + offset
-		add_child(dummy)
-
-		var tween = create_tween()
-		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
-		tween.tween_callback(dummy.queue_free)
+		_spawn_destruction_juice(block.grid_position)
 
 	if voxel_states.has(block.grid_position):
 		hammer_cell(block.grid_position)
