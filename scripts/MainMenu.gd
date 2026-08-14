@@ -5,11 +5,13 @@ const GameManagerClass = preload("res://scripts/GameManager.gd")
 @onready var play_button: Button = $VBoxContainer/PlayButton
 @onready var editor_button: Button = $VBoxContainer/EditorButton
 @onready var settings_button: Button = $VBoxContainer/SettingsButton
+@onready var gallery_button: Button = $VBoxContainer/GalleryButton
 
 func _ready() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	editor_button.pressed.connect(_on_editor_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
+	gallery_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/GalleryScreen.tscn"))
 	
 	var select_btn = get_node_or_null("VBoxContainer/SelectButton")
 	if select_btn:
@@ -68,10 +70,13 @@ func _on_editor_pressed() -> void:
 	get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PUZZLE_EDITOR)
 
 func _on_settings_pressed() -> void:
-	# Show settings menu
 	var settings_menu = get_node_or_null("SettingsPanel")
 	if settings_menu:
 		settings_menu.show()
+		settings_menu.z_index = 100
+		settings_menu.set_anchors_preset(PRESET_CENTER)
+		settings_menu.position = (size - settings_menu.size) / 2.0
+	# Show settings menu
 
 func _on_difficulty_selected(mode: String) -> void:
 	_hide_difficulty_modal()

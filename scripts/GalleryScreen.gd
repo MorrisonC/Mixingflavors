@@ -93,6 +93,11 @@ func _populate_grid(filter_cat: String) -> void:
 			var tex = TextureRect.new()
 			if item.unlocked:
 				tex.texture = item.thumbnail
+				if tex.texture == null:
+					var p = PlaceholderTexture2D.new()
+					p.size = Vector2(200, 200)
+					tex.texture = p
+					tex.modulate = Color(1, 1, 1) # white
 			else:
 				# Show a locked indicator. Using a plain texture/color for missing lock logic gracefully.
 				var placeholder = PlaceholderTexture2D.new()

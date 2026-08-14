@@ -99,6 +99,9 @@ func _load_category(category_name: String) -> void:
 			for i in range(min(18, theme_puzzles.size())):
 				puzzles_to_show.append(theme_puzzles[i])
 
+	if puzzles_to_show.is_empty():
+		print("[PuzzleSelection] No puzzles found for category ", category_name)
+
 	for puzzle_data in puzzles_to_show:
 		var btn = Button.new()
 		var btn_text = puzzle_data.get("name", "Untitled")
