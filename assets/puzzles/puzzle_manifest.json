@@ -1,37 +1,37 @@
 {
-  "total_puzzles": 12450,
+  "total_puzzles": 12770,
   "themes": {
     "mythical": {
       "file": "mythical_puzzles.json",
-      "count": 801,
-      "easy_count": 268,
-      "medium_count": 327,
-      "hard_count": 156,
-      "boss_count": 50
+      "count": 851,
+      "easy_count": 273,
+      "medium_count": 336,
+      "hard_count": 178,
+      "boss_count": 64
     },
     "animals": {
       "file": "animals_puzzles.json",
-      "count": 875,
-      "easy_count": 239,
-      "medium_count": 287,
-      "hard_count": 204,
-      "boss_count": 145
+      "count": 935,
+      "easy_count": 250,
+      "medium_count": 297,
+      "hard_count": 222,
+      "boss_count": 166
     },
     "scifi": {
       "file": "scifi_puzzles.json",
-      "count": 625,
-      "easy_count": 178,
-      "medium_count": 253,
-      "hard_count": 133,
-      "boss_count": 61
+      "count": 685,
+      "easy_count": 190,
+      "medium_count": 263,
+      "hard_count": 152,
+      "boss_count": 80
     },
     "cyberpunk": {
       "file": "cyberpunk_puzzles.json",
-      "count": 1625,
-      "easy_count": 379,
-      "medium_count": 405,
-      "hard_count": 439,
-      "boss_count": 402
+      "count": 1675,
+      "easy_count": 389,
+      "medium_count": 411,
+      "hard_count": 454,
+      "boss_count": 421
     },
     "medieval": {
       "file": "medieval_puzzles.json",
@@ -115,11 +115,11 @@
     },
     "alchemy": {
       "file": "alchemy_puzzles.json",
-      "count": 796,
-      "easy_count": 234,
-      "medium_count": 335,
-      "hard_count": 165,
-      "boss_count": 62
+      "count": 846,
+      "easy_count": 247,
+      "medium_count": 344,
+      "hard_count": 177,
+      "boss_count": 78
     },
     "fantasy": {
       "file": "fantasy_puzzles.json",
@@ -131,11 +131,11 @@
     },
     "egypt": {
       "file": "egypt_puzzles.json",
-      "count": 200,
-      "easy_count": 46,
-      "medium_count": 35,
-      "hard_count": 56,
-      "boss_count": 63
+      "count": 250,
+      "easy_count": 58,
+      "medium_count": 41,
+      "hard_count": 69,
+      "boss_count": 82
     }
   }
 }
