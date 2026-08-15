@@ -1,5 +1,5 @@
 {
-  "total_puzzles": 12450,
+  "total_puzzles": 12500,
   "themes": {
     "mythical": {
       "file": "mythical_puzzles.json",
@@ -27,11 +27,11 @@
     },
     "cyberpunk": {
       "file": "cyberpunk_puzzles.json",
-      "count": 1625,
-      "easy_count": 379,
-      "medium_count": 405,
-      "hard_count": 439,
-      "boss_count": 402
+      "count": 1675,
+      "easy_count": 389,
+      "medium_count": 415,
+      "hard_count": 452,
+      "boss_count": 419
     },
     "medieval": {
       "file": "medieval_puzzles.json",
