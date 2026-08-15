@@ -106,6 +106,28 @@ func mark_cell(pos: Vector3i) -> bool:
 		elif new_state == CellState.UNBROKEN:
 			block.set_state(block.BlockState.UNBROKEN)
 
+	# Spawn dummy scale-up block
+	var dummy = MeshInstance3D.new()
+	dummy.mesh = BoxMesh.new()
+	dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+	var mat = StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(1.0, 0.45, 0.0, 1.0) # Solid high-intensity glowing warm orange
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dummy.material_override = mat
+
+	# Offset calculated the same way as multimesh instances
+	var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+	dummy.position = Vector3(pos) + offset
+	dummy.scale = Vector3.ZERO
+	add_child(dummy)
+
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(dummy, "scale", Vector3.ONE * 1.2, 0.2)
+	tween.tween_property(dummy, "scale", Vector3.ONE, 0.1)
+	tween.tween_callback(dummy.queue_free)
+
 	cell_state_changed.emit(pos, new_state)
 	_update_multimesh()
 	_check_win_condition()
@@ -123,6 +145,28 @@ func hammer_cell(pos: Vector3i) -> bool:
 	var block = blocks.get(pos)
 	if block:
 		block.set_state(block.BlockState.DESTROYED)
+		if block.break_particles:
+			block.break_particles.restart()
+
+	# Spawn dummy scale-down block
+	var dummy = MeshInstance3D.new()
+	dummy.mesh = BoxMesh.new()
+	dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+	var mat = StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color("#70D6FF") # Glowing light-blue light motes
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dummy.material_override = mat
+
+	# Offset calculated the same way as multimesh instances
+	var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+	dummy.position = Vector3(pos) + offset
+	add_child(dummy)
+
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
+	tween.tween_callback(dummy.queue_free)
 
 	cell_state_changed.emit(pos, CellState.DESTROYED)
 	_update_multimesh()
@@ -1000,31 +1044,6 @@ func _handle_mistake() -> void:
 		start_level()
 
 func destroy_block(block: VoxelBlock) -> void:
-	if block:
-		block.current_state = block.BlockState.DESTROYED
-		if block.break_particles:
-			block.break_particles.restart()
-
-		# Spawn dummy scale-down block
-		var dummy = MeshInstance3D.new()
-		dummy.mesh = BoxMesh.new()
-		dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
-		var mat = StandardMaterial3D.new()
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.albedo_color = Color("#70D6FF") # Glowing light-blue light motes
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		dummy.material_override = mat
-
-		# Offset calculated the same way as multimesh instances
-		var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
-		dummy.position = Vector3(block.grid_position) + offset
-		add_child(dummy)
-
-		var tween = create_tween()
-		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
-		tween.tween_callback(dummy.queue_free)
-
 	if voxel_states.has(block.grid_position):
 		hammer_cell(block.grid_position)
 
@@ -1277,9 +1296,11 @@ func _setup_multimesh() -> void:
 	multimesh_unbroken = MultiMeshInstance3D.new()
 	var mm_u = MultiMesh.new()
 	mm_u.transform_format = MultiMesh.TRANSFORM_3D
+	mm_u.use_colors = true
 	mm_u.mesh = BoxMesh.new()
 	mm_u.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_u = StandardMaterial3D.new()
+	mat_u.vertex_color_use_as_albedo = true
 	mat_u.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
 
 	# Load ambientCG Ice002 textures for real surface depth
@@ -1308,9 +1329,11 @@ func _setup_multimesh() -> void:
 	multimesh_marked = MultiMeshInstance3D.new()
 	var mm_m = MultiMesh.new()
 	mm_m.transform_format = MultiMesh.TRANSFORM_3D
+	mm_m.use_colors = true
 	mm_m.mesh = BoxMesh.new()
 	mm_m.mesh.size = Vector3(0.98, 0.98, 0.98)
 	var mat_m = StandardMaterial3D.new()
+	mat_m.vertex_color_use_as_albedo = true
 	mat_m.albedo_color = Color(1.0, 0.45, 0.0, 1.0) # Solid high-intensity glowing warm orange
 	mat_m.roughness = 0.3
 	mat_m.metallic = 0.0
