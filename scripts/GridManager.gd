@@ -995,6 +995,28 @@ func _apply_undo_move(move: Dictionary) -> void:
 		if block:
 			block.set_state(prev_state)
 
+		# Visual juice for Undo: green glowing "reverse pop"
+		var dummy = MeshInstance3D.new()
+		dummy.mesh = BoxMesh.new()
+		dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+		var mat = StandardMaterial3D.new()
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.albedo_color = Color(0.2, 1.0, 0.4, 0.7) # Glowing green for undo/restore
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		dummy.material_override = mat
+
+		var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
+		dummy.position = Vector3(pos) + offset
+		dummy.scale = Vector3.ONE * 1.5
+		add_child(dummy)
+
+		var tween = create_tween()
+		tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		tween.set_parallel(true)
+		tween.tween_property(dummy, "scale", Vector3.ONE, 0.3)
+		tween.tween_property(mat, "albedo_color:a", 0.0, 0.3)
+		tween.chain().tween_callback(dummy.queue_free)
+
 func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
 	if not voxel_states.has(grid_pos) or is_cell_chiseled(grid_pos):
 		hovered_pos = Vector3i(-1, -1, -1)
