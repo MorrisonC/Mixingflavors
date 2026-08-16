@@ -8,7 +8,7 @@ async def run_harness():
     print(f"[TestHarness] Connecting to {uri}...")
 
     try:
-        async with websockets.connect(uri, timeout=5) as ws:
+        async with websockets.connect(uri) as ws:
             print("[TestHarness] Connected successfully!")
 
             # 1. Ping test
