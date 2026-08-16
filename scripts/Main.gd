@@ -38,9 +38,12 @@ func _load_mode_scene(mode: int) -> void:
 	else:
 		sub_viewport.add_child(active_mode_instance)
 
-		# Workaround for CanvasLayers in 3D views failing to composite/render
-		# If the loaded scene has a CanvasLayer child (like EscapeGauntlet HUD), reparent it to Main's CanvasLayer
+		# Track and reparent any CanvasLayers in 3D views (HUDs) so they render over UI Container
+		var canvas_children: Array = []
 		for child in active_mode_instance.get_children():
 			if child is CanvasLayer:
-				active_mode_instance.remove_child(child)
-				ui_container.add_child(child)
+				canvas_children.append(child)
+
+		for cl in canvas_children:
+			active_mode_instance.remove_child(cl)
+			ui_container.add_child(cl)
