@@ -1025,6 +1025,11 @@ func _handle_mistake() -> void:
 		tween.chain().tween_property(hp_label, "modulate", Color(1, 1, 1, 1), 0.2)
 		tween.parallel().tween_property(hp_label, "scale", Vector2(1, 1), 0.2)
 
+	# Hit-stop effect (frame freeze) for impact
+	Engine.time_scale = 0.05
+	var hitstop_tween = get_tree().create_tween()
+	hitstop_tween.tween_property(Engine, "time_scale", 1.0, 0.4).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+
 	if OS.has_feature("mobile"):
 		if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_heavy()
 	if camera:
