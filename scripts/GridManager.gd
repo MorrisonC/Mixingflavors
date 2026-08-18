@@ -164,9 +164,18 @@ func hammer_cell(pos: Vector3i) -> bool:
 	add_child(dummy)
 
 	var tween = create_tween()
-	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
-	tween.tween_callback(dummy.queue_free)
+
+	var random_rotation = Vector3(
+		randf_range(-PI, PI),
+		randf_range(-PI, PI),
+		randf_range(-PI, PI)
+	)
+	tween.tween_property(dummy, "rotation", random_rotation, 0.15)
+
+	tween.chain().tween_callback(dummy.queue_free)
 
 	cell_state_changed.emit(pos, CellState.DESTROYED)
 	_update_multimesh()
@@ -880,6 +889,12 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 		else:
 			hammer_cell(grid_pos)
 			if is_player_action:
+				if camera:
+					var pivot = camera.get_parent()
+					while pivot != null and not pivot.has_method("shake"):
+						pivot = pivot.get_parent()
+					if pivot and pivot.has_method("shake"):
+						pivot.shake(0.05, 0.05)
 				combo += 1
 				_update_ui_state()
 				if get_node_or_null("/root/AudioManager"):
