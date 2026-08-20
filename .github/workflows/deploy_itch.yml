@@ -29,14 +29,17 @@ jobs:
       with:
         lfs: true
 
-    - name: Cache Godot Engine and Templates
+    - name: Cache Godot Engine and Imported Assets
       id: cache-godot
       uses: actions/cache@v4
       with:
         path: |
           ~/.local/share/godot/export_templates
           ~/.local/bin/godot
-        key: ${{ runner.os }}-godot-4.3-stable
+          .godot/
+        key: ${{ runner.os }}-godot-4.3-stable-${{ hashFiles('assets/**', 'scenes/**', 'icon.svg') }}
+        restore-keys: |
+          ${{ runner.os }}-godot-4.3-stable-
 
     - name: Download and Install Godot
       if: steps.cache-godot.outputs.cache-hit != 'true'
