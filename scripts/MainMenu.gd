@@ -8,10 +8,24 @@ const GameManagerClass = preload("res://scripts/GameManager.gd")
 @onready var gallery_button: Button = $VBoxContainer/GalleryButton
 
 func _ready() -> void:
+	_setup_button_hover_animations()
 	play_button.pressed.connect(_on_play_pressed)
 	editor_button.pressed.connect(_on_editor_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	gallery_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/GalleryScreen.tscn"))
+
+func _setup_button_hover_animations() -> void:
+	for btn in [play_button, editor_button, settings_button, gallery_button]:
+		if btn and is_instance_valid(btn):
+			btn.pivot_offset = btn.size / 2
+			btn.mouse_entered.connect(func():
+				var tween = btn.create_tween()
+				tween.tween_property(btn, "scale", Vector2(1.08, 1.08), 0.12).set_trans(Tween.TRANS_BACK)
+			)
+			btn.mouse_exited.connect(func():
+				var tween = btn.create_tween()
+				tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
+			)
 	
 	var select_btn = get_node_or_null("VBoxContainer/SelectButton")
 	if select_btn:
