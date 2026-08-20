@@ -884,11 +884,17 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 				_update_ui_state()
 				if get_node_or_null("/root/AudioManager"):
 					get_node("/root/AudioManager").play_chisel_sfx(combo)
+				if camera:
+					var pivot = camera.get_parent()
+					while pivot != null and not pivot.has_method("shake"):
+						pivot = pivot.get_parent()
+					if pivot and pivot.has_method("shake"):
+						pivot.shake(0.08, 0.08)
 				if combo_label:
 					combo_label.pivot_offset = combo_label.size / 2
 					var tween = create_tween()
 					tween.set_parallel(true)
-					tween.tween_property(combo_label, "scale", Vector2(1.5, 1.5), 0.1)
+					tween.tween_property(combo_label, "scale", Vector2(1.6, 1.6), 0.1)
 					tween.tween_property(combo_label, "modulate", Color(1.0, 0.84, 0.0, 1.0), 0.1)
 					tween.chain().tween_property(combo_label, "scale", Vector2(1, 1), 0.2)
 					tween.parallel().tween_property(combo_label, "modulate", Color(1, 1, 1, 1), 0.2)
