@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 const GridManagerScene = preload("res://scenes/VoxelLogic.tscn")
 var grid_manager

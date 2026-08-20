@@ -1,7 +1,6 @@
 [gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/EscapeGauntlet.gd" id="1_escape"]
-[ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="2_6dx2x"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_6skyl"]
 panorama = ExtResource("2_6dx2x")
