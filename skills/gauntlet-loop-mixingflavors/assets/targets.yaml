@@ -1,43 +1,51 @@
-# Mirrors the GameMode roadmap table in MASTER_LEVEL_DESIGN.md Section 4.
-# Update this file if that table changes — it's the source of truth for
-# scripts/list_targets.py, not a copy that can silently drift... except
-# that it IS a copy, so re-sync it manually when the roadmap table moves.
+# Core Gameplay & Roadmap Targets for Gauntlet Loop Evaluation
 
 targets:
-  - id: Picross3D
+  - id: Picross3D_CoreLoop
     repo_status: Playtested
     core_script: VoxelGrid3D.gd
     scene_hint: "scenes/**/*picross*.tscn"
     notes: >
-      Best first gauntlet target — already has real, playable content to
-      compare against a bar, unlike the Draft/Blockout modes below.
+      Evaluates overall 3D voxel grid state rendering, chiseling, and marking.
 
-  - id: DetectiveCrimeScene
-    repo_status: Draft
-    core_script: TBD
-    scene_hint: "scenes/**/*detective*.tscn"
+  - id: Picross3D_ChiselJuice
+    repo_status: Playtested
+    core_script: GridManager.gd
+    scene_hint: "scenes/VoxelLogic.tscn"
     notes: >
-      Non-linear exploration mode. Bar candidates should be
-      point-and-click / clue-based investigation games specifically —
-      don't compare against a generic "adventure game."
+      Evaluates voxel destruction animations, dummy mesh scale-bounce VFX, and audio impact.
+
+  - id: Picross3D_ComboFeedback
+    repo_status: Playtested
+    core_script: ComboHealMechanic.gd
+    scene_hint: "scenes/VoxelLogic.tscn"
+    notes: >
+      Evaluates combo multiplier visual overlays, dynamic health recovery feedback, and hit-stop feel.
+
+  - id: Picross3D_ClueRecalculation
+    repo_status: Playtested
+    core_script: SolvabilityValidator.gd
+    scene_hint: "scripts/GridManager.gd"
+    notes: >
+      Evaluates dynamic clue recalculation on outer exposed faces during block destruction.
+
+  - id: Picross3D_TimeBombMechanic
+    repo_status: Playtested
+    core_script: TimeBombMechanic.gd
+    scene_hint: "scripts/TimeBombMechanic.gd"
+    notes: >
+      Evaluates hazardous time-bomb voxel pulse visual cues and defusal mechanics.
 
   - id: EscapeGauntlet
     repo_status: Blockout
-    core_script: TBD
+    core_script: EscapeGauntlet.gd
     scene_hint: "scenes/**/*escape*.tscn"
     notes: >
-      Time-pressured voxel puzzle sequences. Bar should include a
-      fetchable timing/pressure reference, not just visual style.
+      Time-pressured voxel puzzle sequences under active tension.
 
   - id: TimeShiftPalimpsest
     repo_status: Draft
     core_script: TBD
     scene_hint: "scenes/**/*palimpsest*.tscn|scenes/**/*timeshift*.tscn"
     notes: >
-      2D past/present overlay puzzles. Narrow sub-genre — if the closest
-      fetchable bar is only a partial match, say so in the bar proposal
-      rather than forcing a weak comparison.
-
-# Order here is the default pick order in list_targets.py — roughly
-# "most content already exists" to "least," so early gauntlet runs have
-# real material to compare against.
+      2D past/present temporal overlay puzzles.
