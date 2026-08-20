@@ -1,5 +1,6 @@
-bar: 'Picross 3D: Round 2 (Nintendo 3DS) - Benchmark standard for 3D voxel grid state,
-  chiseling, and marking controls'
+bar: 'AAA Standard: Picross 3D: Round 2 (Nintendo 3DS / Jupiter) - Pixel-perfect frosted
+  glass voxel shader, high-contrast emission highlights, crisp depth anti-aliasing,
+  and zero visual stutter.'
 last_gap: ''
 rounds: 2
 status: won

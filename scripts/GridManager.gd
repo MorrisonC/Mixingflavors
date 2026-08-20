@@ -884,11 +884,17 @@ func on_chisel_requested(grid_pos: Vector3i) -> void:
 				_update_ui_state()
 				if get_node_or_null("/root/AudioManager"):
 					get_node("/root/AudioManager").play_chisel_sfx(combo)
+				if camera:
+					var pivot = camera.get_parent()
+					while pivot != null and not pivot.has_method("shake"):
+						pivot = pivot.get_parent()
+					if pivot and pivot.has_method("shake"):
+						pivot.shake(0.08, 0.08)
 				if combo_label:
 					combo_label.pivot_offset = combo_label.size / 2
 					var tween = create_tween()
 					tween.set_parallel(true)
-					tween.tween_property(combo_label, "scale", Vector2(1.5, 1.5), 0.1)
+					tween.tween_property(combo_label, "scale", Vector2(1.6, 1.6), 0.1)
 					tween.tween_property(combo_label, "modulate", Color(1.0, 0.84, 0.0, 1.0), 0.1)
 					tween.chain().tween_property(combo_label, "scale", Vector2(1, 1), 0.2)
 					tween.parallel().tween_property(combo_label, "modulate", Color(1, 1, 1, 1), 0.2)
@@ -1335,11 +1341,11 @@ func _setup_multimesh() -> void:
 	var mat_m = StandardMaterial3D.new()
 	mat_m.vertex_color_use_as_albedo = true
 	mat_m.albedo_color = Color(1.0, 0.45, 0.0, 1.0) # Solid high-intensity glowing warm orange
-	mat_m.roughness = 0.3
-	mat_m.metallic = 0.0
+	mat_m.roughness = 0.2
+	mat_m.metallic = 0.1
 	mat_m.emission_enabled = true
-	mat_m.emission = Color(1.0, 0.35, 0.0, 1.0)
-	mat_m.emission_energy_multiplier = 1.0 # High contrast glowing warm orange light
+	mat_m.emission = Color(1.0, 0.4, 0.0, 1.0)
+	mat_m.emission_energy_multiplier = 1.5 # AAA Vivid glowing warm orange light emission
 	mm_m.mesh.surface_set_material(0, mat_m)
 	multimesh_marked.multimesh = mm_m
 	add_child(multimesh_marked)
