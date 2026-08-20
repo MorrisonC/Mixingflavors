@@ -1,0 +1,9 @@
+project_path: "."                      # run from the Mixingflavors repo root
+godot_binary: "godot"                 # override if your Godot 4 binary has a different name
+export_preset: "Web"                   # must match a preset name in export_presets_web.cfg
+web_build_dir: "build/web"
+serve_port: 8060
+state_dir: "skills/gauntlet-loop-mixingflavors/state"
+targets_file: "skills/gauntlet-loop-mixingflavors/assets/targets.yaml"
+stop_file: "STOP"
+screenshot_dir: "skills/gauntlet-loop-mixingflavors/state/captures"

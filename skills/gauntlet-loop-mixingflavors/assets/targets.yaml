@@ -1,0 +1,43 @@
+# Mirrors the GameMode roadmap table in MASTER_LEVEL_DESIGN.md Section 4.
+# Update this file if that table changes — it's the source of truth for
+# scripts/list_targets.py, not a copy that can silently drift... except
+# that it IS a copy, so re-sync it manually when the roadmap table moves.
+
+targets:
+  - id: Picross3D
+    repo_status: Playtested
+    core_script: VoxelGrid3D.gd
+    scene_hint: "scenes/**/*picross*.tscn"
+    notes: >
+      Best first gauntlet target — already has real, playable content to
+      compare against a bar, unlike the Draft/Blockout modes below.
+
+  - id: DetectiveCrimeScene
+    repo_status: Draft
+    core_script: TBD
+    scene_hint: "scenes/**/*detective*.tscn"
+    notes: >
+      Non-linear exploration mode. Bar candidates should be
+      point-and-click / clue-based investigation games specifically —
+      don't compare against a generic "adventure game."
+
+  - id: EscapeGauntlet
+    repo_status: Blockout
+    core_script: TBD
+    scene_hint: "scenes/**/*escape*.tscn"
+    notes: >
+      Time-pressured voxel puzzle sequences. Bar should include a
+      fetchable timing/pressure reference, not just visual style.
+
+  - id: TimeShiftPalimpsest
+    repo_status: Draft
+    core_script: TBD
+    scene_hint: "scenes/**/*palimpsest*.tscn|scenes/**/*timeshift*.tscn"
+    notes: >
+      2D past/present overlay puzzles. Narrow sub-genre — if the closest
+      fetchable bar is only a partial match, say so in the bar proposal
+      rather than forcing a weak comparison.
+
+# Order here is the default pick order in list_targets.py — roughly
+# "most content already exists" to "least," so early gauntlet runs have
+# real material to compare against.
