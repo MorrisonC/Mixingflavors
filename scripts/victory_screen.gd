@@ -49,17 +49,23 @@ func initialize(stats) -> void: # Type is NonogramStatsClass implicitly to avoid
 	if stars_stat_label:
 		stars_stat_label.text = str(stats.stars_earned) + "/3"
 
-	# Update top star icons based on earned stars
+	# Update top star icons with AAA animated pop transitions
 	if stars_container:
 		for i in range(stars_container.get_child_count()):
 			var star_icon = stars_container.get_child(i)
 			if star_icon is Label:
-				# Show a filled star if they earned it, otherwise empty star or dim
 				if i < stats.stars_earned:
 					star_icon.modulate = Color(1.0, 0.84, 0.0) # Gold
 					star_icon.text = "★"
+					star_icon.pivot_offset = star_icon.size / 2
+					star_icon.scale = Vector2.ZERO
+					var delay = 0.2 + (float(i) * 0.15)
+					var tween = create_tween()
+					tween.tween_interval(delay)
+					tween.tween_property(star_icon, "scale", Vector2(1.5, 1.5), 0.15).set_trans(Tween.TRANS_BACK)
+					tween.tween_property(star_icon, "scale", Vector2(1.0, 1.0), 0.1)
 				else:
-					star_icon.modulate = Color(0.3, 0.3, 0.3) # Dark Gray / Empty
+					star_icon.modulate = Color(0.3, 0.3, 0.3) # Dark Gray
 					star_icon.text = "☆"
 
 	# Radial Meter

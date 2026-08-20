@@ -18,7 +18,11 @@ var collections: Dictionary = {
 	"Treasure": [],
 	"Mythical": [],
 	"Alchemy": [],
-	"Medieval": []
+	"Medieval": [],
+	"SciFi": [],
+	"Cyberpunk": [],
+	"Culinary": [],
+	"Arcade": []
 }
 
 var btn_normal: StyleBoxFlat
