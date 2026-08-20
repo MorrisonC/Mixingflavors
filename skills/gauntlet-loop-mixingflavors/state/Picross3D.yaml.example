@@ -1,0 +1,6 @@
+# Example only -- delete or overwrite once you've actually picked a bar
+# via SKILL.md step 2. This shows the shape run_gauntlet.sh expects.
+status: bar_picked
+bar: "REPLACE ME: named, fetchable, comparable reference for Picross3D"
+rounds: 0
+last_gap: ""
