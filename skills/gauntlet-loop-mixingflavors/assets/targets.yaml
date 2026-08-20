@@ -1,58 +1,30 @@
-# Core Gameplay & UI Roadmap Targets for Gauntlet Loop Evaluation
+# Full Game Suite Targets: Zero Bugs, Valid Level Mappings, AAA Victory Screen & High Enjoyability
 
 targets:
-  - id: StartScreen_MainMenu
+  - id: FullGame_ZeroBugs
     repo_status: Playtested
-    core_script: MainMenu.gd
-    scene_hint: "scenes/MainMenu.tscn"
+    core_script: GameManager.gd
+    scene_hint: "scenes/Main.tscn"
     notes: >
-      Main title menu screen styling, button hover scale transitions, and background aesthetic.
+      Zero script errors, zero missing resource crashes, and flawless mode transitions across all scenes.
 
-  - id: LevelSelect_Menu
+  - id: LevelSelect_AllLevelsBound
     repo_status: Playtested
     core_script: PuzzleSelection.gd
     scene_hint: "scenes/PuzzleSelection.tscn"
     notes: >
-      3D/2D puzzle level selection grid, thumbnail preview cards, and progression stars.
+      Every level card in level select connects to a valid, playable, 100% solvable 3D Picross puzzle.
 
-  - id: UIPopups_Dialogs
+  - id: VictoryScreen_AAAPolish
     repo_status: Playtested
-    core_script: SettingsPanel.gd
-    scene_hint: "scenes/MainMenu.tscn"
+    core_script: victory_screen.gd
+    scene_hint: "scenes/victory_screen.tscn"
     notes: >
-      Pause, victory, settings, and exit confirmation modal dialog overlays.
+      AAA visual reward screen with animated star pops, glowing victory banner, particle celebration, and high juice.
 
-  - id: Picross3D_CoreLoop
-    repo_status: Playtested
-    core_script: VoxelGrid3D.gd
-    scene_hint: "scenes/**/*picross*.tscn"
-    notes: >
-      3D voxel grid state rendering, chiseling, and marking.
-
-  - id: Picross3D_ChiselJuice
+  - id: OverallGame_Enjoyability
     repo_status: Playtested
     core_script: GridManager.gd
     scene_hint: "scenes/VoxelLogic.tscn"
     notes: >
-      Voxel destruction animations, dummy mesh scale-bounce VFX, and audio impact.
-
-  - id: Picross3D_ComboFeedback
-    repo_status: Playtested
-    core_script: ComboHealMechanic.gd
-    scene_hint: "scenes/VoxelLogic.tscn"
-    notes: >
-      Combo multiplier visual overlays, dynamic health recovery feedback, and hit-stop feel.
-
-  - id: Picross3D_ClueRecalculation
-    repo_status: Playtested
-    core_script: SolvabilityValidator.gd
-    scene_hint: "scripts/GridManager.gd"
-    notes: >
-      Dynamic clue recalculation on outer exposed faces during block destruction.
-
-  - id: Picross3D_TimeBombMechanic
-    repo_status: Playtested
-    core_script: TimeBombMechanic.gd
-    scene_hint: "scripts/TimeBombMechanic.gd"
-    notes: >
-      Hazardous time-bomb voxel pulse visual cues and defusal mechanics.
+      Cohesive, highly enjoyable game loop with responsive controls, camera shake, audio feedback, and smooth progression.
