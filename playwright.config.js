@@ -1,31 +1,65 @@
+'use strict';
+
 const { defineConfig, devices } = require('@playwright/test');
 
+const requestedPort = process.env.PLAYWRIGHT_PORT || process.env.PORT || '8080';
+const port = Number(requestedPort);
+if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`PLAYWRIGHT_PORT/PORT must be an integer between 1 and 65535; received ${requestedPort}`);
+}
+
+const baseURL = `http://127.0.0.1:${port}`;
+
 module.exports = defineConfig({
-  testDir: './tests/playwright',
-  timeout: 60000,
-  expect: {
-    timeout: 10000
-  },
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
-  use: {
-    actionTimeout: 0,
-    trace: 'on-first-retry',
-    baseURL: 'http://localhost:8080',
-    headless: true,
-  },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+    testDir: './tests/playwright',
+    timeout: 120000,
+    expect: {
+        timeout: 15000,
     },
-  ],
-  webServer: {
-    command: 'node server.js',
-    port: 8080,
-    reuseExistingServer: !process.env.CI,
-  },
+    fullyParallel: true,
+    forbidOnly: Boolean(process.env.CI),
+    retries: 0,
+    workers: process.env.CI ? 1 : undefined,
+    reporter: [
+        ['list'],
+        ['html', { open: 'never' }],
+    ],
+    use: {
+        baseURL,
+        headless: true,
+        actionTimeout: 10000,
+        navigationTimeout: 30000,
+        trace: 'retain-on-failure',
+    },
+    projects: [
+        {
+            name: 'chromium',
+            testIgnore: /mobile\.spec\.js$/,
+            use: {
+                ...devices['Desktop Chrome'],
+                browserName: 'chromium',
+            },
+        },
+        {
+            name: 'mobile-chromium',
+            testMatch: /mobile\.spec\.js$/,
+            use: {
+                ...devices['Pixel 5'],
+                browserName: 'chromium',
+            },
+        },
+    ],
+    // The build is deliberately part of the server command.  With
+    // reuseExistingServer disabled, neither a stale local server nor a stale
+    // build/web directory can be used by an E2E run.
+    webServer: {
+        command: 'npm run build:web && node server.js',
+        url: baseURL,
+        timeout: 600000,
+        reuseExistingServer: false,
+        env: {
+            ...process.env,
+            PORT: String(port),
+        },
+    },
 });

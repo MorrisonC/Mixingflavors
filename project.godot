@@ -4,7 +4,7 @@ config_version=5
 
 run/main_scene="res://scenes/Main.tscn"
 config/name="HybridTacticalPuzzleRPG"
-config/features=PackedStringArray("4.3", "GL Compatibility")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [rendering]
@@ -14,7 +14,7 @@ renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.97, 0.91, 0.59, 1)
 anti_aliasing/quality/msaa_2d=0
 anti_aliasing/quality/msaa_3d=2
-anti_aliasing/quality/screen_space_aa=1
+anti_aliasing/quality/screen_space_aa=0
 
 [input_devices]
 

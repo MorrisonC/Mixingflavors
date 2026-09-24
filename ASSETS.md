@@ -1,57 +1,54 @@
-# Project Assets & Attribution Log
+# Project Assets & Attribution
 
-## 3D Models & Voxels
-- **Asset Name**: Kenney Voxel Pack
-- **Source**: https://www.kenney.nl/assets/voxel-pack
-- **Creator**: Kenney
-- **License**: CC0 1.0 Universal (Public Domain)
-- **Use Case**: Default unbroken block base meshes and breaking particle debris.
+Only assets with a verified, compatible license are approved for release.
 
-- **Asset Name**: Low Poly Voxel Furniture & Items (Target Models)
-- **Source**: https://poly.pizza/
-- **Creator**: Various Open Source Authors (CC0 / CC-BY 4.0)
-- **License**: CC-BY 4.0 (Requires Attribution)
-- **Use Case**: Hidden puzzle target shapes unlocked upon level completion.
+## Bundled Open-Source Audio
 
-## UI & Audio
-- **Asset Name**: Digital Audio / Block Break Sound Effects
-- **Source**: https://opengameart.org/content/100-cc0-metal-and-wood-sfx
-- **Creator**: OpenGameArt Community / Q009
-- **License**: CC0 1.0 Universal
-- **Use Case**: Voxel destruction and UI click audio feedback.
+- **Asset pack:** Kenney Interface Sounds 1.0
+- **Creator:** Kenney
+- **Source:** https://kenney.nl/assets/interface-sounds
+- **License:** CC0 1.0 Universal
+- **Bundled files:** `assets/audio/kenney_interface_sounds/chisel.ogg`, `mark.ogg`,
+  `error.ogg`, `toggle.ogg`, and `victory.ogg`
+- **Upstream files:** `click_002.ogg`, `confirmation_002.ogg`, `error_003.ogg`,
+  `toggle_002.ogg`, and `confirmation_004.ogg`
+- **Changes:** Files were renamed to describe their gameplay role; no audio processing
+  was applied.
+- **License copy:** `assets/audio/kenney_interface_sounds/LICENSE.txt`
 
-## Custom Procedural Assets
-- **Asset Name**: Procedural Stylized Background & Cube Texture
-- **Source**: Dynamically generated via FastNoiseLite in Godot 4.
-- **Creator**: Jules (Agent)
-- **License**: CC0 1.0 Universal (Public Domain)
-- **Use Case**: Abstract earthy environment background and stylized vibrant cube textures.
+## Original Project Artwork
 
-## Mobile UI & Icons
-- **Asset Name**: Kenney Mobile UI Pack
-- **Source**: https://www.kenney.nl/assets/ui-pack
-- **Creator**: Kenney
-- **License**: CC0 1.0 Universal
-- **Use Case**: Touch buttons, sliders, mode toggle icons for mobile HUD.
+- **Assets:** `assets/textures/generated/abstract_panorama.svg` and `icon.svg`
+- **Creator:** Hybrid Tactical Puzzle RPG project
+- **License:** CC0 1.0 Universal
+- **Use:** The panorama replaces uncleared photographic runtime backgrounds; the icon is
+  the application and Web icon.
+- **License copy:** `assets/textures/generated/LICENSE.txt`
 
-## Puzzle Audio & SFX
-- **Asset Name**: UI & Game Audio Pack
-- **Source**: https://opengameart.org/
-- **Creator**: Various Open Source Authors
-- **License**: CC0 / CC-BY 3.0
-- **Use Case**: Chisel impact, block breaking, menu clicks.
+## Runtime-Generated Geometry
 
-## 2D Art & Overlays
-- **Asset Name**: Public Domain Classical & Fantasy Paintings
-- **Source**: https://opengameart.org/
-- **Creator**: Various Open Source Authors
-- **License**: Public Domain / CC0
-- **Use Case**: Masquerade Painting hidden-line canvas art.
+Voxel blocks, outlines, cursors, reveal animation, and UI themes are generated from Godot
+meshes, materials, shaders, and scene resources in this repository. No third-party voxel or
+UI-pack files are required at runtime.
 
-## Valentine-Themed Assets
-- **Asset Name**: Valentine Heart, Rose, and Cupid's Bow Voxel Models
-- **Source**: Procedural designs inspired by Kenney's Valentine/Holiday Voxel Pack
-- **Creator**: Jules (Agent)
-- **License**: CC0 1.0 Universal (Public Domain)
-- **Use Case**: Target models for Gauntlet mode rounds 1, 2, and Boss fight.
+## Development Dependency
 
+- **Asset:** Godot Unit Test (GUT) 9.6.1
+- **Source:** https://github.com/bitwes/Gut
+- **License:** MIT
+- **License copy:** `addons/gut/LICENSE.md`
+- GUT is used for automated tests and is excluded from release exports.
+
+## Unverified Legacy Files
+
+The following files do not have sufficient provenance in the repository and are not
+approved for public distribution:
+
+- `assets/textures/valentine/bg1.jpg` through `bg8.jpg`
+- `assets/textures/beautiful_skybox.jpg`
+- `assets/textures/abstract_bg.png`
+- `assets/textures/stylized_cube.png`
+- `assets/models/heart.obj`
+
+Runtime scenes no longer depend on these files, and the Web release preset excludes them.
+They may be removed after any historical visual references are no longer needed.

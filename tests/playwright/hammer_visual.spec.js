@@ -1,32 +1,26 @@
 const { test, expect } = require('@playwright/test');
+const {
+    assertNoBrowserErrors,
+    attachBrowserDiagnostics,
+    callGameAPI,
+    waitForEngine,
+} = require('./test-utils');
 
 test.describe('Hammer Action Visual Removal E2E Verification', () => {
 
+  let diagnostics;
+
   test.beforeEach(async ({ page }) => {
-    page.on('console', msg => {
-      console.log(`Browser log: ${msg.text()}`);
-    });
+    diagnostics = attachBrowserDiagnostics(page);
     await page.goto('/');
   });
 
-  async function callGameAPI(page, args) {
-      await page.evaluate(() => {
-         window.__godot_promise = new Promise(resolve => {
-            window.__godot_resolve = resolve;
-         });
-      });
-
-      await page.evaluate((a) => { window.gameAPI(a); }, args);
-
-      const res = await page.evaluate(async () => {
-         return await window.__godot_promise;
-      });
-      return res;
-  }
+  test.afterEach(() => {
+    assertNoBrowserErrors(diagnostics);
+  });
 
   test('Chiseling non-target block changes cell state and hides multimesh instance', async ({ page }) => {
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
-    await page.waitForTimeout(2000);
+    await waitForEngine(page);
 
     // Switch to Escape Gauntlet / Puzzle mode
     await callGameAPI(page, ['switch_mode', 2]);

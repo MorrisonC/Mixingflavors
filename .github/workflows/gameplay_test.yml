@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   telemetry-test:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -22,39 +21,50 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Cache Godot Engine
+      - name: Cache Godot 4.7.1 and export templates
         id: cache-godot
         uses: actions/cache@v4
         with:
-          path: ~/.local/bin/godot
-          key: ${{ runner.os }}-godot-4.3-stable-bin
+          path: |
+            ~/.local/share/godot/export_templates
+            ~/.local/bin/godot
+          key: ${{ runner.os }}-godot-4.7.1
 
-      - name: Install Godot
+      - name: Install Godot 4.7.1 and matching templates
         if: steps.cache-godot.outputs.cache-hit != 'true'
+        env:
+          GODOT_VERSION: 4.7.1
         run: |
-          mkdir -p ~/.local/bin
-          wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
-          unzip Godot_v4.3-stable_linux.x86_64.zip
-          mv Godot_v4.3-stable_linux.x86_64 ~/.local/bin/godot
-          chmod +x ~/.local/bin/godot
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin"
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q "Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" "$HOME/.local/bin/godot"
+          chmod +x "$HOME/.local/bin/godot"
 
-      - name: Ensure Godot is executable
-        run: |
-          chmod +x ~/.local/bin/godot
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          template_root="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$template_root"
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q "Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -d "$template_root"
+          mv "$template_root/templates/"* "$template_root/"
+          rmdir "$template_root/templates"
 
-      - name: Import Resources
+      - name: Put Godot on PATH and verify version
         run: |
-          # First run to import all assets properly
-          godot --headless --rendering-driver opengl3 --editor --quit || true
+          set -euo pipefail
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          chmod +x "$HOME/.local/bin/godot"
+          "$HOME/.local/bin/godot" --version
+          "$HOME/.local/bin/godot" --version | grep -Eq '^4\.7\.1(\.|$)'
+
+      - name: Import project resources
+        run: godot --headless --rendering-driver opengl3 --path "$GITHUB_WORKSPACE" --import
 
       - name: Run Telemetry Bot Test
-        run: |
-          godot --headless --rendering-driver opengl3 --script res://tools/telemetry_runner.gd
+        run: godot --headless --rendering-driver opengl3 --path "$GITHUB_WORKSPACE" --script res://tools/telemetry_runner.gd
 
-      - name: Analyze & Auto-Patch Balance
-        run: |
-          godot --headless --rendering-driver opengl3 --script res://tools/analyze_telemetry.gd
+      - name: Analyze and auto-patch balance
+        run: godot --headless --rendering-driver opengl3 --path "$GITHUB_WORKSPACE" --script res://tools/analyze_telemetry.gd
 
       - name: Upload Telemetry Output
         uses: actions/upload-artifact@v4

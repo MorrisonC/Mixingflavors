@@ -22,7 +22,6 @@ concurrency:
 
 jobs:
   build-and-test:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -30,118 +29,56 @@ jobs:
         with:
           lfs: true
 
-      - name: Cache Godot Engine and Templates
+      - name: Cache Godot 4.7.1 and export templates
         id: cache-godot
         uses: actions/cache@v4
         with:
           path: |
             ~/.local/share/godot/export_templates
             ~/.local/bin/godot
-          key: ${{ runner.os }}-godot-4.3-stable
+          key: ${{ runner.os }}-godot-4.7.1
 
-      - name: Download and Install Godot
+      - name: Install Godot 4.7.1 and matching templates
         if: steps.cache-godot.outputs.cache-hit != 'true'
+        env:
+          GODOT_VERSION: 4.7.1
         run: |
-          mkdir -p ~/.local/bin
-          wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
-          unzip Godot_v4.3-stable_linux.x86_64.zip
-          mv Godot_v4.3-stable_linux.x86_64 ~/.local/bin/godot
-          chmod +x ~/.local/bin/godot
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin"
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q "Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" "$HOME/.local/bin/godot"
+          chmod +x "$HOME/.local/bin/godot"
 
-          wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/4.3.stable
-          unzip Godot_v4.3-stable_export_templates.tpz -d ~/.local/share/godot/export_templates/4.3.stable/
-          mv ~/.local/share/godot/export_templates/4.3.stable/templates/* ~/.local/share/godot/export_templates/4.3.stable/
+          template_root="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$template_root"
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q "Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -d "$template_root"
+          mv "$template_root/templates/"* "$template_root/"
+          rmdir "$template_root/templates"
 
-      - name: Ensure Godot is executable
+      - name: Put Godot on PATH and verify version
         run: |
-          chmod +x ~/.local/bin/godot
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Create export_presets.cfg
-        run: |
-          cat << 'PRESET_EOF' > export_presets.cfg
-          [preset.0]
-          name="Web"
-          platform="Web"
-          runnable=true
-          dedicated_server=false
-          custom_features=""
-          export_filter="all_resources"
-          include_filter=""
-          exclude_filter=""
-          export_path="build/web/index.html"
-          encryption_include_filters=""
-          encryption_exclude_filters=""
-          encrypt_pck=false
-          encrypt_directory=false
-
-          [preset.0.options]
-          custom_template/debug=""
-          custom_template/release=""
-          variant/export_type=0
-          vram_texture_compression/for_desktop=true
-          vram_texture_compression/for_mobile=false
-          html/export_icon=true
-          html/custom_html_shell=""
-          html/head_include=""
-          html/canvas_resize_policy=2
-          html/focus_canvas_on_start=true
-          html/experimental_virtual_keyboard=false
-          progressive_web_app/enabled=false
-          progressive_web_app/offline_page=""
-          progressive_web_app/display=1
-          progressive_web_app/orientation=0
-          progressive_web_app/icon_144x144=""
-          progressive_web_app/icon_180x180=""
-          progressive_web_app/icon_512x512=""
-          progressive_web_app/background_color=Color(0, 0, 0, 1)
-          PRESET_EOF
-
-      - name: Build Web Export
-        run: |
-          mkdir -p build/web
-          godot --headless --rendering-driver opengl3 --editor --quit || true
-          godot --headless --rendering-driver opengl3 --export-release "Web" build/web/index.html
-
-      - name: Inject COI Service Worker (for SharedArrayBuffer)
-        run: |
-          # Fetch the coi-serviceworker script
-          wget https://raw.githubusercontent.com/gzuidhof/coi-serviceworker/master/coi-serviceworker.js -O build/web/coi-serviceworker.js
-
-          # Inject the script into the exported HTML file
-          sed -i 's|</head>|<script src="coi-serviceworker.js"></script></head>|' build/web/index.html
+          set -euo pipefail
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          chmod +x "$HOME/.local/bin/godot"
+          "$HOME/.local/bin/godot" --version
+          "$HOME/.local/bin/godot" --version | grep -Eq '^4\.7\.1(\.|$)'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Cache npm Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache: npm
 
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Cache Playwright Browsers
-        id: cache-playwright
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
-      - name: Install Playwright Browsers
-        if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install chromium --with-deps
+      - name: Build fresh Web export
+        run: npm run build:web
 
-      - name: Install Playwright OS Dependencies
-        if: steps.cache-playwright.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
-
-      - name: Run Playwright E2E Tests
-        run: npx playwright test --project=chromium
+      - name: Run Playwright E2E tests against a fresh build
+        run: npm run test:web

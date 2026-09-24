@@ -41,19 +41,20 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
 [node name="Title" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -200.0
-offset_top = 40.0
-offset_right = 200.0
-offset_bottom = 100.0
-grow_horizontal = 2
+anchor_left = 0.0
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 20.0
+offset_right = -16.0
+offset_bottom = 76.0
+mouse_filter = 2
 theme_override_colors/font_color = Color(0.85, 0.15, 0.3, 1)
 theme_override_font_sizes/font_size = 40
 text = "Select a Puzzle"
@@ -64,66 +65,75 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 50.0
-offset_top = 120.0
-offset_right = -50.0
-offset_bottom = -100.0
+offset_left = 28.0
+offset_top = 108.0
+offset_right = -28.0
+offset_bottom = -84.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
+clip_contents = true
+theme_override_constants/separation = 24
 
 [node name="CategoryPanel" type="VBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(250, 0)
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
-theme_override_constants/separation = 16
+size_flags_horizontal = 0
+theme_override_constants/separation = 12
 
 [node name="Label" type="Label" parent="HBoxContainer/CategoryPanel"]
 layout_mode = 2
+clip_text = true
 theme_override_colors/font_color = Color(0.4, 0.1, 0.2, 1)
 theme_override_font_sizes/font_size = 24
 text = "Categories"
 
 [node name="CategoryList" type="VBoxContainer" parent="HBoxContainer/CategoryPanel"]
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="PuzzlePanel" type="VBoxContainer" parent="HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 16
+theme_override_constants/separation = 14
 
 [node name="Label" type="Label" parent="HBoxContainer/PuzzlePanel"]
 layout_mode = 2
+clip_text = true
 theme_override_colors/font_color = Color(0.4, 0.1, 0.2, 1)
 theme_override_font_sizes/font_size = 24
 text = "Puzzles"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/PuzzlePanel"]
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="PuzzleGrid" type="GridContainer" parent="HBoxContainer/PuzzlePanel/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
 columns = 3
 
 [node name="BackButton" type="Button" parent="."]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -100.0
+offset_left = -110.0
 offset_top = -80.0
-offset_right = 100.0
-offset_bottom = -30.0
+offset_right = 110.0
+offset_bottom = -32.0
 grow_horizontal = 2
 grow_vertical = 0
+focus_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")

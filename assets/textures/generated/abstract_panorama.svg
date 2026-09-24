@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1024" viewBox="0 0 2048 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111a3a"/>
+      <stop offset="0.38" stop-color="#43356f"/>
+      <stop offset="0.72" stop-color="#b95f88"/>
+      <stop offset="1" stop-color="#f2b38f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="46%" r="55%">
+      <stop offset="0" stop-color="#ffd6c9" stop-opacity="0.62"/>
+      <stop offset="0.46" stop-color="#d891c7" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#111a3a" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="96" height="96" patternUnits="userSpaceOnUse">
+      <path d="M48 10 82 29 82 66 48 85 14 66 14 29Z" fill="none" stroke="#d9f4ff" stroke-opacity="0.055" stroke-width="2"/>
+      <circle cx="48" cy="48" r="3" fill="#ffffff" fill-opacity="0.08"/>
+    </pattern>
+  </defs>
+  <rect width="2048" height="1024" fill="url(#sky)"/>
+  <rect width="2048" height="1024" fill="url(#glow)"/>
+  <rect width="2048" height="1024" fill="url(#grid)"/>
+  <g opacity="0.16" fill="#ffd6e6">
+    <path d="M250 270c-50-70-158-8-63 104 51 59 91 92 139 143 45-47 88-87 135-143 97-113-7-176-63-104-18 24-31 48-38 75-7-27-19-51-39-75Z"/>
+    <path d="M1710 620c-39-55-124-7-50 81 40 46 72 72 109 112 36-37 69-68 107-112 75-88-10-136-49-81-14 19-24 37-30 59-5-22-14-40-29-59Z"/>
+  </g>
+  <g fill="#dff7ff" opacity="0.2">
+    <rect x="780" y="188" width="54" height="54" rx="8" transform="rotate(15 807 215)"/>
+    <rect x="1160" y="746" width="42" height="42" rx="7" transform="rotate(-18 1181 767)"/>
+    <rect x="1480" y="288" width="34" height="34" rx="6" transform="rotate(30 1497 305)"/>
+    <rect x="500" y="690" width="38" height="38" rx="6" transform="rotate(-12 519 709)"/>
+  </g>
+  <path d="M0 860C320 710 570 925 900 816s610-114 1148 18v190H0Z" fill="#0c1330" fill-opacity="0.38"/>
+</svg>

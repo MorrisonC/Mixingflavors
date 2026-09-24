@@ -40,7 +40,7 @@ static func _init_textures() -> void:
 		return
 	
 	# Generate Circle Texture (Glowing cyan-blue outline)
-	var c_img = Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	var c_img := Image.create_empty(128, 128, false, Image.FORMAT_RGBA8)
 	c_img.fill(Color(0, 0, 0, 0))
 	var center = Vector2(64, 64)
 	var radius = 48.0
@@ -52,7 +52,7 @@ static func _init_textures() -> void:
 	circle_texture = ImageTexture.create_from_image(c_img)
 	
 	# Generate Square Texture (Glowing cyan-blue outline)
-	var s_img = Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	var s_img := Image.create_empty(128, 128, false, Image.FORMAT_RGBA8)
 	s_img.fill(Color(0, 0, 0, 0))
 	var border = 16
 	for y in range(128):
@@ -126,39 +126,40 @@ func _create_face_labels() -> void:
 		face_labels[d["dir"]] = label
 
 func set_face_hint(direction: Vector3i, hint_text: String) -> void:
-	# Parse simple text back to structured data for compatibility
-	var num = hint_text.to_int()
-	var type = 0
+	var normalized_text := hint_text.replace("(", "").replace(")", "").replace("[", "").replace("]", "")
+	var num: int = normalized_text.to_int()
+	var hint_kind: int = 0
 	if hint_text.begins_with("("):
-		type = 1
+		hint_kind = 1
 	elif hint_text.begins_with("["):
-		type = 2
-	
-	set_face_hint_data(direction, {"num": num, "type": type})
+		hint_kind = 2
+	set_face_hint_data(direction, {"num": num, "type": hint_kind})
 
 func set_face_hint_data(direction: Vector3i, hint_data: Dictionary) -> void:
-	if face_labels.has(direction) and face_sprites.has(direction):
-		var label = face_labels[direction] as Label3D
-		var sprite = face_sprites[direction] as Sprite3D
-		
-		if hint_data.is_empty() or hint_data["num"] == 0:
-			label.visible = false
-			sprite.visible = false
-			label.text = ""
-		else:
-			label.text = str(hint_data["num"])
-			
-			var is_visible = (current_state != BlockState.DESTROYED and current_state != BlockState.HIDDEN_BY_SLICE)
-			label.visible = is_visible
-			
-			if hint_data["type"] == 1:
-				sprite.texture = circle_texture
-				sprite.visible = is_visible
-			elif hint_data["type"] == 2:
-				sprite.texture = square_texture
-				sprite.visible = is_visible
-			else:
-				sprite.visible = false
+	if not face_labels.has(direction) or not face_sprites.has(direction):
+		return
+	var label := face_labels[direction] as Label3D
+	var sprite := face_sprites[direction] as Sprite3D
+	if hint_data.is_empty():
+		label.visible = false
+		sprite.visible = false
+		label.text = ""
+		return
+	var clue_total: int = int(hint_data.get("num", 0))
+	var hint_kind: int = int(hint_data.get("type", 0))
+	var is_visible: bool = current_state != BlockState.DESTROYED and current_state != BlockState.HIDDEN_BY_SLICE
+	label.text = str(clue_total)
+	label.visible = is_visible
+	sprite.visible = false
+	if clue_total == 0:
+		label.modulate = Color("#ff6b7a")
+		label.outline_modulate = Color(1.0, 1.0, 1.0, 0.9)
+	elif hint_kind == 1:
+		sprite.texture = circle_texture
+		sprite.visible = is_visible
+	elif hint_kind == 2:
+		sprite.texture = square_texture
+		sprite.visible = is_visible
 
 func clear_all_hints() -> void:
 	for dir in face_labels.keys():

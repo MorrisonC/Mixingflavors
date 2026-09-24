@@ -3,6 +3,8 @@ extends Node3D
 class_name GridManager
 
 const VoxelLogicSolver = preload("res://scripts/VoxelLogicSolver.gd")
+const PuzzleDataValidator = preload("res://scripts/PuzzleDataValidator.gd")
+const DEFAULT_PANORAMA: Texture2D = preload("res://assets/textures/generated/abstract_panorama.svg")
 
 @export var grid_size: Vector3i = Vector3i(5, 5, 5)
 
@@ -24,7 +26,8 @@ var hovered_pos: Vector3i = Vector3i(-1, -1, -1)
 enum CellState {
 	UNBROKEN,
 	MARKED,
-	DESTROYED
+	DESTROYED,
+	PAINTED
 }
 
 # Internal storage
@@ -75,57 +78,91 @@ func is_cell_correct(pos: Vector3i) -> bool:
 		return state == CellState.DESTROYED
 
 func is_cell_chiseled(pos: Vector3i) -> bool:
-	return voxel_states.has(pos) and voxel_states[pos].get("cell_state", CellState.UNBROKEN) == CellState.DESTROYED
+	return voxel_states.has(pos) and int(voxel_states[pos].get("cell_state", CellState.UNBROKEN)) == CellState.DESTROYED
 
 func is_cell_marked(pos: Vector3i) -> bool:
-	return voxel_states.has(pos) and voxel_states[pos].get("cell_state", CellState.UNBROKEN) == CellState.MARKED
+	return voxel_states.has(pos) and int(voxel_states[pos].get("cell_state", CellState.UNBROKEN)) == CellState.MARKED
+
+func is_cell_painted(pos: Vector3i) -> bool:
+	return voxel_states.has(pos) and int(voxel_states[pos].get("cell_state", CellState.UNBROKEN)) == CellState.PAINTED
 
 func is_cell_unbroken(pos: Vector3i) -> bool:
-	return voxel_states.has(pos) and voxel_states[pos].get("cell_state", CellState.UNBROKEN) == CellState.UNBROKEN
+	return voxel_states.has(pos) and int(voxel_states[pos].get("cell_state", CellState.UNBROKEN)) == CellState.UNBROKEN
+
+func is_cell_interactable(pos: Vector3i) -> bool:
+	if not voxel_states.has(pos):
+		return false
+	var state: Dictionary = voxel_states[pos]
+	return not state.get("is_hidden_by_slice", false) and int(state.get("cell_state", CellState.UNBROKEN)) != CellState.DESTROYED
 
 func mark_cell(pos: Vector3i) -> bool:
 	if not voxel_states.has(pos):
 		return false
-	var state = voxel_states[pos]
-	if state.get("is_hidden_by_slice", false):
+	var state: Dictionary = voxel_states[pos]
+	if state.get("is_hidden_by_slice", false) or is_cell_chiseled(pos) or is_cell_painted(pos):
 		return false
-
-	var current: CellState = state.get("cell_state", CellState.UNBROKEN)
-	if current == CellState.DESTROYED:
+	var current_state: CellState = int(state.get("cell_state", CellState.UNBROKEN))
+	if current_state != CellState.UNBROKEN and current_state != CellState.MARKED:
 		return false
+	var new_state: CellState = CellState.MARKED if current_state == CellState.UNBROKEN else CellState.UNBROKEN
+	_set_canonical_cell_state(pos, new_state)
+	return true
 
-	var new_state: CellState = CellState.MARKED if current != CellState.MARKED else CellState.UNBROKEN
-	state["cell_state"] = new_state
-
-	var block = blocks.get(pos)
-	if block:
-		if new_state == CellState.MARKED:
-			block.set_state(block.BlockState.MARKED)
-		elif new_state == CellState.UNBROKEN:
-			block.set_state(block.BlockState.UNBROKEN)
-
-	cell_state_changed.emit(pos, new_state)
-	_update_multimesh()
-	_check_win_condition()
+func paint_cell(pos: Vector3i) -> bool:
+	if not voxel_states.has(pos):
+		return false
+	var state: Dictionary = voxel_states[pos]
+	if state.get("is_hidden_by_slice", false) or is_cell_chiseled(pos) or is_cell_marked(pos):
+		return false
+	var current_state: CellState = int(state.get("cell_state", CellState.UNBROKEN))
+	if current_state != CellState.UNBROKEN and current_state != CellState.PAINTED:
+		return false
+	var new_state: CellState = CellState.PAINTED if current_state == CellState.UNBROKEN else CellState.UNBROKEN
+	_set_canonical_cell_state(pos, new_state)
 	return true
 
 func hammer_cell(pos: Vector3i) -> bool:
 	if not voxel_states.has(pos):
 		return false
-	var state = voxel_states[pos]
-	if state.get("is_hidden_by_slice", false):
+	var state: Dictionary = voxel_states[pos]
+	if state.get("is_hidden_by_slice", false) or is_cell_chiseled(pos):
 		return false
-
-	state["cell_state"] = CellState.DESTROYED
-
-	var block = blocks.get(pos)
-	if block:
-		block.set_state(block.BlockState.DESTROYED)
-
-	cell_state_changed.emit(pos, CellState.DESTROYED)
-	_update_multimesh()
-	_check_win_condition()
+	_set_canonical_cell_state(pos, CellState.DESTROYED)
 	return true
+
+func _set_canonical_cell_state(pos: Vector3i, new_state: CellState) -> void:
+	if not voxel_states.has(pos):
+		return
+	var state: Dictionary = voxel_states[pos]
+	state["cell_state"] = new_state
+	state["is_painted"] = new_state == CellState.PAINTED
+	_sync_block_state(pos)
+	cell_state_changed.emit(pos, new_state)
+	_update_multimesh()
+	_update_clues()
+	_check_win_condition()
+
+func _sync_block_state(pos: Vector3i) -> void:
+	var block := blocks.get(pos) as VoxelBlock
+	if not block:
+		return
+	if not voxel_states.has(pos):
+		block.set_state(block.BlockState.DESTROYED)
+		return
+	var state: Dictionary = voxel_states[pos]
+	if state.get("is_hidden_by_slice", false):
+		block.set_state(block.BlockState.HIDDEN_BY_SLICE)
+		return
+	var cell_state: CellState = int(state.get("cell_state", CellState.UNBROKEN))
+	match cell_state:
+		CellState.MARKED:
+			block.set_state(block.BlockState.MARKED)
+		CellState.DESTROYED:
+			block.set_state(block.BlockState.DESTROYED)
+		CellState.PAINTED:
+			block.set_state(block.BlockState.PAINTED)
+		_:
+			block.set_state(block.BlockState.UNBROKEN)
 
 var start_time: float = 0.0
 var time_elapsed: float = 0.0
@@ -138,10 +175,12 @@ var base_grid_size: int = 3
 @onready var slice_slider_z: HSlider = null
 @onready var slice_controls: VBoxContainer = null
 @onready var chisel_btn: Button = null
+@onready var paint_btn: Button = null
 @onready var mark_btn: Button = null
 @onready var rotate_btn: Button = null
 @onready var slice_toggle_btn: Button = null
 @onready var undo_btn: Button = null
+@onready var hint_btn: Button = null
 @onready var export_btn: Button = null
 
 @onready var round_label: Label = null
@@ -163,30 +202,32 @@ var has_custom_puzzle: bool = false
 var is_tutorial: bool = false
 var tutorial_manager: TutorialManager = null
 var tutorial_ui: CanvasLayer = null
+var input_locked: bool = false
+var puzzle_solved_emitted: bool = false
+var touch_controls: MobileTouchControls = null
+var local_confirm_dialog: Control = null
 
 func _ready() -> void:
-	var env_node = get_node_or_null("WorldEnvironment")
-	if env_node and env_node.environment and env_node.environment.sky and env_node.environment.sky.sky_material:
-		var bg_index = (randi() % 8) + 1
-		var bg_path = "res://assets/textures/valentine/bg" + str(bg_index) + ".jpg"
-		var bg_tex = load(bg_path)
-		if bg_tex:
-			env_node.environment.sky.sky_material.panorama = bg_tex
+	var env_node := get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if env_node and env_node.environment and env_node.environment.sky and env_node.environment.sky.sky_material is PanoramaSkyMaterial:
+		(env_node.environment.sky.sky_material as PanoramaSkyMaterial).panorama = DEFAULT_PANORAMA
 
 
 	# Initialize MultiMesh batching
 	_setup_multimesh()
 
-	var game_manager = get_node_or_null("/root/GameManager")
+	var game_manager := get_node_or_null("/root/GameManager")
 
-	# custom_puzzle_data handled at class level
+	if not custom_puzzle_data.is_empty():
+		has_custom_puzzle = true
 
-	if game_manager and game_manager.get("mode_payload"):
-		if game_manager.mode_payload.get("mode") == "editor":
+	if game_manager:
+		var mode_payload: Dictionary = game_manager.get("mode_payload")
+		if mode_payload.get("mode") == "editor":
 			is_editor_mode = true
-		if game_manager.mode_payload.has("custom_puzzle"):
+		if mode_payload.has("custom_puzzle"):
 			has_custom_puzzle = true
-			custom_puzzle_data = game_manager.mode_payload["custom_puzzle"]
+			custom_puzzle_data = mode_payload["custom_puzzle"]
 
 	# Find UI elements
 	slice_controls = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls")
@@ -196,7 +237,7 @@ func _ready() -> void:
 		slice_slider_z = slice_controls.get_node_or_null("SliderZ")
 
 	chisel_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ChiselButton")
-	var paint_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/PaintButton")
+	paint_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/PaintButton")
 	mark_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/MarkButton")
 	rotate_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/RotateButton")
 	slice_toggle_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/SliceToggleButton")
@@ -233,8 +274,9 @@ func _ready() -> void:
 
 	start_level()
 
-	var touch_controls = get_node_or_null("CanvasLayer/Control")
-	if touch_controls and touch_controls is MobileTouchControls:
+	touch_controls = get_node_or_null("CanvasLayer/Control") as MobileTouchControls
+	if touch_controls:
+		touch_controls.set_grid_manager(self)
 		if not touch_controls.chisel_voxel_requested.is_connected(on_chisel_requested):
 			touch_controls.chisel_voxel_requested.connect(on_chisel_requested)
 		if not touch_controls.mark_voxel_requested.is_connected(on_mark_requested):
@@ -268,113 +310,152 @@ func _ready() -> void:
 		slice_toggle_btn.pressed.connect(_on_slice_toggle_pressed)
 	if undo_btn and not undo_btn.pressed.is_connected(undo_last_move):
 		undo_btn.pressed.connect(undo_last_move)
-	var hint_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/HintButton")
+	hint_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/HintButton")
 	if hint_btn and not hint_btn.pressed.is_connected(_on_hint_pressed):
 		hint_btn.pressed.connect(_on_hint_pressed)
+	var hint_mechanic := get_node_or_null("CooldownHintMechanic") as CooldownHintMechanic
+	if hint_mechanic:
+		if not hint_mechanic.hint_ready.is_connected(_on_hint_ready):
+			hint_mechanic.hint_ready.connect(_on_hint_ready)
+		if not hint_mechanic.cooldown_updated.is_connected(_on_hint_cooldown):
+			hint_mechanic.cooldown_updated.connect(_on_hint_cooldown)
 	if export_btn and not export_btn.pressed.is_connected(_export_puzzle):
 		export_btn.pressed.connect(_export_puzzle)
-
-	if has_custom_puzzle:
-		_load_custom_puzzle(custom_puzzle_data)
+	_update_ui_state()
 
 func _on_hint_pressed() -> void:
-	var mechanic = get_node_or_null("CooldownHintMechanic")
-	if mechanic and mechanic.has_method("use_hint"):
-		mechanic.use_hint()
+	var mechanic := get_node_or_null("CooldownHintMechanic") as CooldownHintMechanic
+	if not mechanic or not _can_edit_grid():
+		return
+	if not mechanic.use_hint():
+		_play_ui_sound("error")
+		return
+	_update_hint_ui()
+
+func _on_hint_ready() -> void:
+	_update_hint_ui()
+
+func _on_hint_cooldown(time_left: float) -> void:
+	if hint_btn:
+		hint_btn.text = "Hint %.0fs" % ceil(maxf(time_left, 0.0))
+		hint_btn.tooltip_text = "Hint ready in %.1f seconds" % maxf(time_left, 0.0)
+
+func _update_hint_ui() -> void:
+	if not hint_btn:
+		return
+	var mechanic := get_node_or_null("CooldownHintMechanic") as CooldownHintMechanic
+	if mechanic and not mechanic.is_ready:
+		hint_btn.text = "Hint %.0fs" % ceil(mechanic.get_cooldown_remaining())
+		hint_btn.disabled = true
+	else:
+		hint_btn.text = "Hint"
+		hint_btn.disabled = input_locked or not is_puzzle_active
 
 func _load_custom_puzzle(puzzle_data: Dictionary) -> void:
-	if puzzle_data.get("theme") == "tutorial" or puzzle_data.get("id") == "tutorial_star":
-		is_tutorial = true
+	var analysis: Dictionary = PuzzleDataValidator.analyze_puzzle(puzzle_data, true, true)
+	if not bool(analysis.get("ok", false)):
+		push_warning("Rejected invalid custom puzzle '%s': %s" % [puzzle_data.get("id", puzzle_data.get("name", "unknown")), str(analysis.get("errors", []))])
+		has_custom_puzzle = false
+		custom_puzzle_data = {}
+		grid_size = Vector3i(base_grid_size, base_grid_size, base_grid_size)
+		slice_max = grid_size - Vector3i.ONE
+		_clear_grid_blocks()
+		_generate_solution()
+		_initialize_grid_state()
+		_build_grid()
+		_update_slicing()
+		_update_clues()
+		_fit_camera_to_grid()
+		_check_win_condition()
+		return
 
-		# Instantiate tutorial manager and UI
+	custom_puzzle_data = (analysis.get("puzzle", {}) as Dictionary).duplicate(true)
+	var canonical_solution: Dictionary = analysis.get("solution", {})
+	var dims_array: Array = custom_puzzle_data.get("dims", [3, 3, 3])
+	grid_size = Vector3i(int(dims_array[0]), int(dims_array[1]), int(dims_array[2]))
+	slice_max = grid_size - Vector3i.ONE
+	target_solution.clear()
+	for coordinate: Vector3i in canonical_solution.keys():
+		target_solution[coordinate] = bool(canonical_solution[coordinate])
+
+	_clear_grid_blocks()
+	_initialize_grid_state()
+	_build_grid()
+	_setup_tutorial(custom_puzzle_data)
+	_update_slicing()
+	_update_clues()
+	_update_ui_state()
+	_fit_camera_to_grid()
+	_check_win_condition()
+
+func _clear_grid_blocks() -> void:
+	for block: VoxelBlock in blocks.values():
+		if is_instance_valid(block):
+			block.queue_free()
+	blocks.clear()
+
+func _initialize_grid_state() -> void:
+	target_shape.clear()
+	voxel_states.clear()
+	move_history.clear()
+	for z: int in range(grid_size.z):
+		for y: int in range(grid_size.y):
+			for x: int in range(grid_size.x):
+				var pos := Vector3i(x, y, z)
+				var is_target: bool = is_target_cell(pos)
+				if is_target:
+					target_shape.append(pos)
+				voxel_states[pos] = {
+					"is_target": is_target,
+					"cell_state": CellState.UNBROKEN,
+					"is_painted": false,
+					"is_hidden_by_slice": false
+				}
+
+func _setup_tutorial(puzzle_data: Dictionary) -> void:
+	is_tutorial = puzzle_data.get("theme") == "tutorial" or puzzle_data.get("id") == "tutorial_star"
+	if not is_tutorial:
+		return
+	if not is_instance_valid(tutorial_manager):
 		tutorial_manager = TutorialManager.new()
 		tutorial_manager.grid_manager = self
 		add_child(tutorial_manager)
-
-		var tutorial_ui_scene = load("res://scenes/TutorialUI.tscn")
+	else:
+		tutorial_manager.grid_manager = self
+	if not is_instance_valid(tutorial_ui):
+		var tutorial_ui_scene: PackedScene = load("res://scenes/TutorialUI.tscn")
 		if tutorial_ui_scene:
-			tutorial_ui = tutorial_ui_scene.instantiate()
+			tutorial_ui = tutorial_ui_scene.instantiate() as CanvasLayer
 			add_child(tutorial_ui)
-			tutorial_ui.setup(tutorial_manager)
+			tutorial_ui.call("setup", tutorial_manager)
+	if touch_controls and not touch_controls.camera_rotated.is_connected(tutorial_manager.on_camera_rotated):
+		touch_controls.camera_rotated.connect(tutorial_manager.on_camera_rotated)
+	if slice_slider_y and not slice_slider_y.value_changed.is_connected(_on_tutorial_layer_slider_changed):
+		slice_slider_y.value_changed.connect(_on_tutorial_layer_slider_changed)
+	if not block_destroyed.is_connected(tutorial_manager.on_voxel_chiseled):
+		block_destroyed.connect(tutorial_manager.on_voxel_chiseled)
+	if not voxel_marked.is_connected(tutorial_manager.on_voxel_marked):
+		voxel_marked.connect(tutorial_manager.on_voxel_marked)
+	if not puzzle_solved.is_connected(tutorial_manager.on_puzzle_solved):
+		puzzle_solved.connect(tutorial_manager.on_puzzle_solved)
 
-			# Connect signals for tutorial
-			var touch_controls = get_node_or_null("CanvasLayer/Control")
-			if touch_controls and touch_controls is MobileTouchControls:
-				if touch_controls.has_signal("camera_rotated"):
-					touch_controls.camera_rotated.connect(tutorial_manager.on_camera_rotated)
-				if slice_slider_y:
-					slice_slider_y.value_changed.connect(func(val): tutorial_manager.on_layer_slider_changed("Y", val))
-
-			if self.has_signal("block_destroyed"):
-				self.block_destroyed.connect(func(pos, is_player): tutorial_manager.on_voxel_chiseled(pos, true))
-			if self.has_signal("voxel_marked"):
-				self.voxel_marked.connect(tutorial_manager.on_voxel_marked)
-			if self.has_signal("puzzle_solved"):
-				self.puzzle_solved.connect(tutorial_manager.on_puzzle_solved)
-
-	var dims_arr = puzzle_data.get("dims", puzzle_data.get("grid_size", [5, 5, 5]))
-	grid_size = Vector3i(int(dims_arr[0]), int(dims_arr[1]), int(dims_arr[2]))
-	slice_max = grid_size - Vector3i(1, 1, 1)
-
-	target_solution.clear()
-	for pos in blocks.keys():
-		if blocks[pos] and is_instance_valid(blocks[pos]):
-			blocks[pos].queue_free()
-	blocks.clear()
-	move_history.clear()
-
-	if puzzle_data.has("hints"):
-		target_solution = VoxelLogicSolver.solve(grid_size, puzzle_data["hints"])
-	elif puzzle_data.has("target_voxels"):
-		for z in range(grid_size.z):
-			for y in range(grid_size.y):
-				for x in range(grid_size.x):
-					target_solution[Vector3i(x, y, z)] = false
-		for v in puzzle_data["target_voxels"]:
-			target_solution[Vector3i(int(v[0]), int(v[1]), int(v[2]))] = true
-	elif puzzle_data.has("cells"):
-		var cells = puzzle_data["cells"]
-		var index = 0
-		for z in range(grid_size.z):
-			for y in range(grid_size.y):
-				for x in range(grid_size.x):
-					var pos = Vector3i(x, y, z)
-					if index < cells.size() and cells[index] == 1:
-						target_solution[pos] = true
-					else:
-						target_solution[pos] = false
-					index += 1
-
-	target_shape.clear()
-	voxel_states.clear()
-	for pos in target_solution.keys():
-		var is_target = target_solution[pos]
-		if is_target:
-			target_shape.append(pos)
-		voxel_states[pos] = {
-			"is_target": is_target,
-			"cell_state": CellState.UNBROKEN,
-			"is_painted": false,
-			"is_hidden_by_slice": false
-		}
-
-	_build_grid()
-	_update_multimesh()
-	_update_clues()
+func _on_tutorial_layer_slider_changed(value: float) -> void:
+	if is_instance_valid(tutorial_manager):
+		tutorial_manager.on_layer_slider_changed("Y", int(value))
 
 
 func start_level() -> void:
 	is_puzzle_active = true
+	puzzle_solved_emitted = false
+	input_locked = false
 	start_time = Time.get_ticks_msec()
 	mistakes = 0
 	combo = 0
 	player_hp = 3
 	move_history.clear()
 
-	# Clear old blocks
-	for pos in blocks.keys():
-		blocks[pos].queue_free()
-	blocks.clear()
+	# Clear old blocks and targets.
+	_clear_grid_blocks()
 	target_solution.clear()
 
 	grid_size = Vector3i(base_grid_size, base_grid_size, base_grid_size)
@@ -387,51 +468,19 @@ func start_level() -> void:
 	# Initialize MultiMesh batching
 	_setup_multimesh()
 
-	var game_manager = get_node_or_null("/root/GameManager")
-
-	if game_manager and game_manager.get("mode_payload") and game_manager.mode_payload.has("custom_puzzle"):
-		_load_custom_puzzle(game_manager.mode_payload["custom_puzzle"])
+	if has_custom_puzzle and not custom_puzzle_data.is_empty():
+		_load_custom_puzzle(custom_puzzle_data)
 		return
 
 	_generate_solution()
+	_initialize_grid_state()
 	_build_grid()
-
-	target_shape.clear()
-	voxel_states.clear()
-	for pos in target_solution.keys():
-		var is_target = target_solution[pos]
-		if is_target:
-			target_shape.append(pos)
-		voxel_states[pos] = {
-			"is_target": is_target,
-			"cell_state": CellState.UNBROKEN,
-			"is_painted": false,
-			"is_hidden_by_slice": false
-		}
 
 	_update_slicing()
 
 	_update_clues()
 
-	# Dynamically set max_zoom based on grid size and adjust camera
-	if camera:
-		var max_dim = max(grid_size.x, max(grid_size.y, grid_size.z))
-		var target_zoom = float(max_dim) * 2.0
-		var pivot = camera.get_parent()
-		while pivot != null and not pivot is CameraPivotController and not "max_zoom" in pivot:
-			pivot = pivot.get_parent()
-
-		if pivot and "max_zoom" in pivot:
-			pivot.max_zoom = target_zoom * 2.5
-			pivot.min_zoom = max(2.0, target_zoom * 0.25)
-		elif pivot and "max_distance" in pivot:
-			pivot.max_distance = target_zoom * 2.5
-			pivot.min_distance = max(2.0, target_zoom * 0.25)
-
-		if pivot and "target_distance" in pivot:
-			pivot.target_distance = target_zoom
-		else:
-			camera.position.z = target_zoom
+	_fit_camera_to_grid()
 
 	# Find UI elements
 	slice_controls = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls")
@@ -441,10 +490,12 @@ func start_level() -> void:
 		slice_slider_z = slice_controls.get_node_or_null("SliderZ")
 
 	chisel_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ChiselButton")
+	paint_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/PaintButton")
 	mark_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/MarkButton")
 	rotate_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/RotateButton")
 	slice_toggle_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/SliceToggleButton")
 	undo_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/UndoButton")
+	hint_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/HintButton")
 	export_btn = get_node_or_null("CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/ExportButton")
 
 	var top_info = get_node_or_null("CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer")
@@ -473,50 +524,77 @@ func start_level() -> void:
 	if slice_slider_x:
 		slice_slider_x.max_value = grid_size.x - 1
 		slice_slider_x.value = grid_size.x - 1
-		slice_slider_x.value_changed.connect(_on_slice_x_changed)
+		if not slice_slider_x.value_changed.is_connected(_on_slice_x_changed):
+			slice_slider_x.value_changed.connect(_on_slice_x_changed)
 	if slice_slider_y:
 		slice_slider_y.max_value = grid_size.y - 1
 		slice_slider_y.value = grid_size.y - 1
-		slice_slider_y.value_changed.connect(_on_slice_y_changed)
+		if not slice_slider_y.value_changed.is_connected(_on_slice_y_changed):
+			slice_slider_y.value_changed.connect(_on_slice_y_changed)
 	if slice_slider_z:
 		slice_slider_z.max_value = grid_size.z - 1
 		slice_slider_z.value = grid_size.z - 1
-		slice_slider_z.value_changed.connect(_on_slice_z_changed)
+		if not slice_slider_z.value_changed.is_connected(_on_slice_z_changed):
+			slice_slider_z.value_changed.connect(_on_slice_z_changed)
 
-	if chisel_btn:
+	if chisel_btn and not chisel_btn.pressed.is_connected(_on_chisel_mode_selected):
 		chisel_btn.pressed.connect(_on_chisel_mode_selected)
-	if mark_btn:
+	if paint_btn and not paint_btn.pressed.is_connected(_on_paint_mode_selected):
+		paint_btn.pressed.connect(_on_paint_mode_selected)
+	if mark_btn and not mark_btn.pressed.is_connected(_on_mark_mode_selected):
 		mark_btn.pressed.connect(_on_mark_mode_selected)
-	if rotate_btn:
+	if rotate_btn and not rotate_btn.pressed.is_connected(_on_rotate_mode_selected):
 		rotate_btn.pressed.connect(_on_rotate_mode_selected)
-	if slice_toggle_btn:
+	if slice_toggle_btn and not slice_toggle_btn.pressed.is_connected(_on_slice_toggle_pressed):
 		slice_toggle_btn.pressed.connect(_on_slice_toggle_pressed)
-	if undo_btn:
+	if undo_btn and not undo_btn.pressed.is_connected(undo_last_move):
 		undo_btn.pressed.connect(undo_last_move)
+	if hint_btn and not hint_btn.pressed.is_connected(_on_hint_pressed):
+		hint_btn.pressed.connect(_on_hint_pressed)
 
 	_update_ui_state()
 
-	# Dynamically set max_zoom based on grid size and adjust camera
-	if camera:
-		var max_dim = max(grid_size.x, max(grid_size.y, grid_size.z))
-		var target_zoom = float(max_dim) * 2.0
-		var pivot = camera.get_parent()
-		while pivot != null and not pivot is CameraPivotController and not "max_zoom" in pivot:
-			pivot = pivot.get_parent()
+	_fit_camera_to_grid()
 
-		if pivot and "max_zoom" in pivot:
-			pivot.max_zoom = target_zoom * 2.5
-			pivot.min_zoom = max(2.0, target_zoom * 0.25)
-		elif pivot and "max_distance" in pivot:
-			pivot.max_distance = target_zoom * 2.5
-			pivot.min_distance = max(2.0, target_zoom * 0.25)
+func _fit_camera_to_grid() -> void:
+	if not camera:
+		return
+	var pivot := camera.get_parent()
+	while pivot and not pivot is CameraPivotController:
+		pivot = pivot.get_parent()
+	if pivot is CameraPivotController:
+		(pivot as CameraPivotController).fit_to_grid(grid_size)
+	elif camera:
+		camera.position.z = maxf(Vector3(grid_size).length() * 1.2, 4.0)
 
-		if pivot and "target_distance" in pivot:
-			pivot.target_distance = target_zoom
-		else:
-			camera.position.z = target_zoom
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not event is InputEventKey or event.echo:
+		return
+	var key_event := event as InputEventKey
+	if key_event.keycode != KEY_ESCAPE and not _can_edit_grid():
+		return
+	match key_event.keycode:
+		KEY_ESCAPE:
+			_on_leave_requested()
+		KEY_1:
+			_on_chisel_mode_selected()
+		KEY_2:
+			_on_mark_mode_selected()
+		KEY_Q:
+			_on_chisel_mode_selected()
+		KEY_E:
+			_on_mark_mode_selected()
+		KEY_S:
+			_on_slice_toggle_pressed()
+		KEY_H:
+			_on_hint_pressed()
+		KEY_Z:
+			if key_event.ctrl_pressed:
+				undo_last_move()
+	if is_puzzle_active:
+		get_viewport().set_input_as_handled()
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if is_puzzle_active:
 		time_elapsed = (Time.get_ticks_msec() - start_time) / 1000.0
 		if timer_label:
@@ -524,12 +602,11 @@ func _process(delta: float) -> void:
 
 func _update_ui_state() -> void:
 	if hp_label:
-		var gauntlet = get_parent()
-		var max_hp = 3
+		var gauntlet := get_parent()
+		var max_hp: int = 3
 		if gauntlet and "max_mistakes" in gauntlet:
-			max_hp = gauntlet.max_mistakes
+			max_hp = int(gauntlet.get("max_mistakes"))
 		hp_label.text = "HP: %d/%d" % [player_hp, max_hp]
-
 	if round_label:
 		round_label.text = "Floor %d" % current_floor
 	if boss_hp_bar:
@@ -540,45 +617,81 @@ func _update_ui_state() -> void:
 	if combo_label:
 		combo_label.text = "Combo: x%d" % combo
 
-	if chisel_btn and mark_btn and rotate_btn:
-		chisel_btn.disabled = (current_mode == EditMode.DESTROY)
-		mark_btn.disabled = (current_mode == EditMode.MARK or current_mode == EditMode.BUILD)
-		rotate_btn.disabled = (current_mode == EditMode.ROTATE)
+	var controls_disabled: bool = input_locked or not is_puzzle_active
+	if chisel_btn:
+		chisel_btn.disabled = controls_disabled
+		chisel_btn.button_pressed = current_mode == EditMode.DESTROY
+	if paint_btn:
+		paint_btn.disabled = controls_disabled
+		paint_btn.button_pressed = current_mode == EditMode.PAINT
+	if mark_btn:
+		mark_btn.disabled = controls_disabled
+		mark_btn.button_pressed = current_mode == EditMode.MARK or current_mode == EditMode.BUILD
+	if rotate_btn:
+		rotate_btn.disabled = controls_disabled
+		rotate_btn.button_pressed = current_mode == EditMode.ROTATE
+	if slice_toggle_btn:
+		slice_toggle_btn.disabled = controls_disabled
+	if undo_btn:
+		undo_btn.disabled = controls_disabled or move_history.is_empty()
+	if hint_btn:
+		hint_btn.disabled = controls_disabled
+	if export_btn:
+		export_btn.disabled = not is_editor_mode
+	for slider: HSlider in [slice_slider_x, slice_slider_y, slice_slider_z]:
+		if slider:
+			slider.editable = not controls_disabled
+	if touch_controls:
+		touch_controls.input_locked = controls_disabled
+		touch_controls.set_touch_mode(_touch_mode_for_current_mode())
+	_update_hint_ui()
+
+func _touch_mode_for_current_mode() -> MobileTouchControls.TouchMode:
+	match current_mode:
+		EditMode.MARK, EditMode.BUILD:
+			return MobileTouchControls.TouchMode.MARK
+		EditMode.ROTATE:
+			return MobileTouchControls.TouchMode.ROTATE
+		EditMode.PAINT:
+			return MobileTouchControls.TouchMode.PAINT
+		_:
+			return MobileTouchControls.TouchMode.CHISEL
+
+func set_input_locked(locked: bool) -> void:
+	input_locked = locked
+	_update_ui_state()
+
+func _can_edit_grid() -> bool:
+	return is_puzzle_active and not input_locked and not puzzle_solved_emitted
 
 func _on_chisel_mode_selected() -> void:
+	if current_mode == EditMode.DESTROY:
+		return
 	current_mode = EditMode.DESTROY
+	_play_ui_sound("toggle")
 	_update_ui_state()
-	var touch_controls = get_node_or_null("CanvasLayer/Control")
-	if touch_controls and touch_controls is MobileTouchControls:
-		touch_controls.set_touch_mode(touch_controls.TouchMode.CHISEL)
 
 func _on_paint_mode_selected() -> void:
 	current_mode = EditMode.PAINT if not is_editor_mode else EditMode.BUILD
+	_play_ui_sound("toggle")
 	_update_ui_state()
-	var touch_controls = get_node_or_null("CanvasLayer/Control")
-	if touch_controls and touch_controls is MobileTouchControls:
-		touch_controls.set_touch_mode(touch_controls.TouchMode.PAINT)
 
 func _on_mark_mode_selected() -> void:
-	if is_editor_mode:
-		current_mode = EditMode.BUILD
-	else:
-		current_mode = EditMode.MARK
+	current_mode = EditMode.MARK if not is_editor_mode else EditMode.BUILD
+	_play_ui_sound("toggle")
 	_update_ui_state()
-	var touch_controls = get_node_or_null("CanvasLayer/Control")
-	if touch_controls and touch_controls is MobileTouchControls:
-		touch_controls.set_touch_mode(touch_controls.TouchMode.MARK)
 
 func _on_rotate_mode_selected() -> void:
 	current_mode = EditMode.ROTATE
+	_play_ui_sound("toggle")
 	_update_ui_state()
-	var touch_controls = get_node_or_null("CanvasLayer/Control")
-	if touch_controls and touch_controls is MobileTouchControls:
-		touch_controls.set_touch_mode(touch_controls.TouchMode.ROTATE)
 
 func _on_slice_toggle_pressed() -> void:
+	if not _can_edit_grid():
+		return
 	if slice_controls:
 		slice_controls.visible = not slice_controls.visible
+		slice_toggle_btn.set_pressed_no_signal(slice_controls.visible)
 
 func _generate_solution() -> void:
 	target_solution.clear()
@@ -703,87 +816,67 @@ func _on_slice_z_changed(value: float) -> void:
 	_update_clues()
 
 func _update_slicing() -> void:
-	for pos in voxel_states.keys():
-		var state = voxel_states[pos]
-		var block = blocks.get(pos)
-
-		if pos.x > slice_max.x or pos.y > slice_max.y or pos.z > slice_max.z:
-			if not is_cell_chiseled(pos):
-				state["is_hidden_by_slice"] = true
-				if block: block.current_state = block.BlockState.HIDDEN_BY_SLICE
-		else:
-			if state.get("is_hidden_by_slice", false):
-				state["is_hidden_by_slice"] = false
-				if block:
-					block.current_state = block.BlockState.UNBROKEN
+	for pos: Vector3i in voxel_states.keys():
+		var state: Dictionary = voxel_states[pos]
+		var should_hide: bool = pos.x > slice_max.x or pos.y > slice_max.y or pos.z > slice_max.z
+		state["is_hidden_by_slice"] = should_hide and not is_cell_chiseled(pos)
+		_sync_block_state(pos)
 	_update_multimesh()
 
 func _update_clues() -> void:
-	# Clear all block hints first
-	for pos in blocks.keys():
-		blocks[pos].clear_all_hints()
+	for block: VoxelBlock in blocks.values():
+		block.clear_all_hints()
 
-	# X clues (along X axis)
-	for y in range(grid_size.y):
-		for z in range(grid_size.z):
-			var counts = _calculate_clue(Vector3i(0, y, z), Vector3i(1, 0, 0), grid_size.x)
-			if counts.size() > 0:
-				var hint_text = _format_hint_text(counts)
-				var visible_blocks = []
-				for x in range(grid_size.x):
-					var pos = Vector3i(x, y, z)
-					if voxel_states.has(pos):
-						if not is_cell_chiseled(pos) and not voxel_states[pos].get("is_hidden_by_slice", false):
-							if blocks.has(pos):
-								visible_blocks.append(blocks[pos])
-				if visible_blocks.size() > 0:
-					visible_blocks[0].set_face_hint(Vector3i(-1, 0, 0), hint_text)
-					visible_blocks[-1].set_face_hint(Vector3i(1, 0, 0), hint_text)
+	for y: int in range(grid_size.y):
+		for z: int in range(grid_size.z):
+			var counts: Array = _calculate_clue(Vector3i(0, y, z), Vector3i(1, 0, 0), grid_size.x)
+			var visible_blocks: Array[VoxelBlock] = []
+			for x: int in range(grid_size.x):
+				var pos := Vector3i(x, y, z)
+				if is_cell_interactable(pos):
+					visible_blocks.append(blocks[pos] as VoxelBlock)
+			if not visible_blocks.is_empty():
+				var hint_text: String = _format_hint_text(counts)
+				visible_blocks[0].set_face_hint(Vector3i(-1, 0, 0), hint_text)
+				visible_blocks[-1].set_face_hint(Vector3i(1, 0, 0), hint_text)
 
-	# Y clues (along Y axis)
-	for x in range(grid_size.x):
-		for z in range(grid_size.z):
-			var counts = _calculate_clue(Vector3i(x, 0, z), Vector3i(0, 1, 0), grid_size.y)
-			if counts.size() > 0:
-				var hint_text = _format_hint_text(counts)
-				var visible_blocks = []
-				for y in range(grid_size.y):
-					var pos = Vector3i(x, y, z)
-					if voxel_states.has(pos):
-						if not is_cell_chiseled(pos) and not voxel_states[pos].get("is_hidden_by_slice", false):
-							if blocks.has(pos):
-								visible_blocks.append(blocks[pos])
-				if visible_blocks.size() > 0:
-					visible_blocks[0].set_face_hint(Vector3i(0, -1, 0), hint_text)
-					visible_blocks[-1].set_face_hint(Vector3i(0, 1, 0), hint_text)
+	for x: int in range(grid_size.x):
+		for z: int in range(grid_size.z):
+			var counts: Array = _calculate_clue(Vector3i(x, 0, z), Vector3i(0, 1, 0), grid_size.y)
+			var visible_blocks: Array[VoxelBlock] = []
+			for y: int in range(grid_size.y):
+				var pos := Vector3i(x, y, z)
+				if is_cell_interactable(pos):
+					visible_blocks.append(blocks[pos] as VoxelBlock)
+			if not visible_blocks.is_empty():
+				var hint_text: String = _format_hint_text(counts)
+				visible_blocks[0].set_face_hint(Vector3i(0, -1, 0), hint_text)
+				visible_blocks[-1].set_face_hint(Vector3i(0, 1, 0), hint_text)
 
-	# Z clues (along Z axis)
-	for x in range(grid_size.x):
-		for y in range(grid_size.y):
-			var counts = _calculate_clue(Vector3i(x, y, 0), Vector3i(0, 0, 1), grid_size.z)
-			if counts.size() > 0:
-				var hint_text = _format_hint_text(counts)
-				var visible_blocks = []
-				for z in range(grid_size.z):
-					var pos = Vector3i(x, y, z)
-					if voxel_states.has(pos):
-						if not is_cell_chiseled(pos) and not voxel_states[pos].get("is_hidden_by_slice", false):
-							if blocks.has(pos):
-								visible_blocks.append(blocks[pos])
-				if visible_blocks.size() > 0:
-					visible_blocks[0].set_face_hint(Vector3i(0, 0, -1), hint_text)
-					visible_blocks[-1].set_face_hint(Vector3i(0, 0, 1), hint_text)
+	for x: int in range(grid_size.x):
+		for y: int in range(grid_size.y):
+			var counts: Array = _calculate_clue(Vector3i(x, y, 0), Vector3i(0, 0, 1), grid_size.z)
+			var visible_blocks: Array[VoxelBlock] = []
+			for z: int in range(grid_size.z):
+				var pos := Vector3i(x, y, z)
+				if is_cell_interactable(pos):
+					visible_blocks.append(blocks[pos] as VoxelBlock)
+			if not visible_blocks.is_empty():
+				var hint_text: String = _format_hint_text(counts)
+				visible_blocks[0].set_face_hint(Vector3i(0, 0, -1), hint_text)
+				visible_blocks[-1].set_face_hint(Vector3i(0, 0, 1), hint_text)
 
 func _format_hint_text(counts: Array) -> String:
-	var sum = 0
-	for c in counts:
-		sum += c
+	var total: int = 0
+	for count: int in counts:
+		total += count
+	if counts.is_empty():
+		return "0"
 	if counts.size() == 1:
-		return str(sum)
-	elif counts.size() == 2:
-		return "(%d)" % sum
-	else:
-		return "[%d]" % sum
+		return str(total)
+	if counts.size() == 2:
+		return "(%d)" % total
+	return "[%d]" % total
 
 func _calculate_clue(start: Vector3i, step: Vector3i, length: int) -> Array:
 	var groups = []
@@ -800,96 +893,103 @@ func _calculate_clue(start: Vector3i, step: Vector3i, length: int) -> Array:
 		groups.append(count)
 	return groups
 
-# Signal handlers for MobileTouchControls
 func on_chisel_requested(grid_pos: Vector3i) -> void:
-	if not voxel_states.has(grid_pos):
+	if not _can_edit_grid() or not is_cell_interactable(grid_pos):
 		return
-	var state = voxel_states[grid_pos]
-	var block = blocks.get(grid_pos)
-
-	if is_cell_marked(grid_pos) or state.get("is_painted", false):
-		if OS.has_feature("mobile"):
-			if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
+	if is_cell_marked(grid_pos) or is_cell_painted(grid_pos):
+		return
+	if is_editor_mode:
+		_set_editor_target(grid_pos, false)
 		return
 
-	if not is_cell_chiseled(grid_pos):
-		record_move(grid_pos, state.get("cell_state", CellState.UNBROKEN))
+	var state: Dictionary = voxel_states[grid_pos]
+	var previous_state: CellState = int(state.get("cell_state", CellState.UNBROKEN))
+	record_move(grid_pos, previous_state)
+	if is_target_cell(grid_pos):
+		mark_cell(grid_pos)
+		if not is_tutorial:
+			_handle_mistake()
+		_play_ui_sound("error")
+		block_destroyed.emit(grid_pos, false)
+		return
 
-		if is_target_cell(grid_pos):
-			mark_cell(grid_pos)
-
-			if is_tutorial:
-				if OS.has_feature("mobile"):
-					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-				if camera:
-					var pivot = camera.get_parent()
-					while pivot != null and not pivot.has_method("shake"):
-						pivot = pivot.get_parent()
-					if pivot and pivot.has_method("shake"):
-						pivot.shake(0.1, 0.1)
-			else:
-				_handle_mistake()
-			_update_multimesh()
-			_update_clues()
-		else:
-			hammer_cell(grid_pos)
-			if is_player_action:
-				combo += 1
-				_update_ui_state()
-				if get_node_or_null("/root/AudioManager"):
-					get_node("/root/AudioManager").play_chisel_sfx(combo)
-				if combo_label:
-					combo_label.pivot_offset = combo_label.size / 2
-					var tween = create_tween()
-					tween.set_parallel(true)
-					tween.tween_property(combo_label, "scale", Vector2(1.5, 1.5), 0.1)
-					tween.tween_property(combo_label, "modulate", Color(1.0, 0.84, 0.0, 1.0), 0.1)
-					tween.chain().tween_property(combo_label, "scale", Vector2(1, 1), 0.2)
-					tween.parallel().tween_property(combo_label, "modulate", Color(1, 1, 1, 1), 0.2)
-			emit_signal("block_destroyed", grid_pos, is_player_action)
-			if OS.has_feature("mobile"):
-				if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-			_update_multimesh()
-			_update_clues()
+	if not hammer_cell(grid_pos):
+		move_history.pop_back()
+		return
+	combo += 1
+	combo_updated.emit(combo)
+	_update_ui_state()
+	_play_ui_sound("chisel", combo)
+	_pulse_combo_label()
+	block_destroyed.emit(grid_pos, is_player_action)
+	_check_and_auto_clear_lines(grid_pos)
 
 func on_mark_requested(grid_pos: Vector3i) -> void:
-	if not voxel_states.has(grid_pos):
+	if not _can_edit_grid() or not is_cell_interactable(grid_pos):
 		return
-	var block = blocks.get(grid_pos) as VoxelBlock
-
 	if is_editor_mode:
-		if block and block.current_state == block.BlockState.DESTROYED:
-			record_move(grid_pos, block.current_state)
-			block.set_state(block.BlockState.UNBROKEN)
-			target_solution[grid_pos] = true
-			_update_clues()
-	else:
-		if current_mode == EditMode.PAINT:
-			if block and (block.current_state == block.BlockState.UNBROKEN or block.current_state == block.BlockState.MARKED):
-				record_move(grid_pos, block.current_state)
-				block.set_state(block.BlockState.PAINTED)
-				if OS.has_feature("mobile"):
-					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-			elif block and block.current_state == block.BlockState.PAINTED:
-				record_move(grid_pos, block.current_state)
-				block.set_state(block.BlockState.UNBROKEN)
-				if OS.has_feature("mobile"):
-					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-		elif current_mode == EditMode.MARK:
-			var current_st = voxel_states[grid_pos].get("cell_state", CellState.UNBROKEN)
-			record_move(grid_pos, current_st)
-			mark_cell(grid_pos)
-			if OS.has_feature("mobile"):
-				if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-			if get_node_or_null("/root/AudioManager") and get_node("/root/AudioManager").has_method("play_paint_sfx"):
-				get_node("/root/AudioManager").play_paint_sfx()
-			emit_signal("voxel_marked", grid_pos)
-		else:
-			if is_tutorial:
-				if OS.has_feature("mobile"):
-					if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").trigger_haptic_light()
-			else:
+		_set_editor_target(grid_pos, true)
+		return
+
+	var state: Dictionary = voxel_states[grid_pos]
+	var previous_state: CellState = int(state.get("cell_state", CellState.UNBROKEN))
+	record_move(grid_pos, previous_state)
+	match current_mode:
+		EditMode.PAINT:
+			if not paint_cell(grid_pos):
+				move_history.pop_back()
+				return
+			_play_ui_sound("mark")
+		EditMode.MARK:
+			if not mark_cell(grid_pos):
+				move_history.pop_back()
+				return
+			_play_ui_sound("mark")
+			voxel_marked.emit(grid_pos)
+		_:
+			move_history.pop_back()
+			if not is_tutorial:
 				_handle_mistake()
+			else:
+				_play_ui_sound("error")
+
+func _set_editor_target(grid_pos: Vector3i, should_be_target: bool) -> void:
+	var state: Dictionary = voxel_states[grid_pos]
+	var previous_state: CellState = int(state.get("cell_state", CellState.UNBROKEN))
+	var previous_target: bool = is_target_cell(grid_pos)
+	if previous_target == should_be_target and (should_be_target or not is_cell_chiseled(grid_pos)):
+		return
+	record_move(grid_pos, previous_state, previous_target)
+	target_solution[grid_pos] = should_be_target
+	state["is_target"] = should_be_target
+	_set_canonical_cell_state(grid_pos, CellState.UNBROKEN if should_be_target else CellState.DESTROYED)
+
+func _play_ui_sound(sound_name: String, combo: int = 0) -> void:
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if not audio_manager:
+		return
+	match sound_name:
+		"chisel":
+			audio_manager.call("play_chisel_sfx", combo)
+		"mark":
+			audio_manager.call("play_paint_sfx")
+		"error":
+			audio_manager.call("play_error_sfx")
+		"toggle":
+			audio_manager.call("play_ui_click_sfx")
+		"victory":
+			audio_manager.call("play_victory_sfx")
+
+func _pulse_combo_label() -> void:
+	if not combo_label:
+		return
+	combo_label.pivot_offset = combo_label.size / 2.0
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(combo_label, "scale", Vector2(1.5, 1.5), 0.1)
+	tween.tween_property(combo_label, "modulate", Color(1.0, 0.84, 0.0, 1.0), 0.1)
+	tween.chain().tween_property(combo_label, "scale", Vector2.ONE, 0.2)
+	tween.parallel().tween_property(combo_label, "modulate", Color.WHITE, 0.2)
 
 func _export_puzzle() -> void:
 	var puzzle_data = {
@@ -914,40 +1014,36 @@ func _export_puzzle() -> void:
 		file.close()
 		print("Saved puzzle to user://exported_puzzle.json")
 
-func record_move(pos: Vector3i, previous_state: int) -> void:
-	move_history.append({"pos": pos, "state": previous_state})
-	emit_signal("history_updated", true)
+func record_move(pos: Vector3i, previous_state: int, previous_target_override: Variant = null) -> void:
+	var previous_target: bool = is_target_cell(pos) if previous_target_override == null else bool(previous_target_override)
+	move_history.append({"pos": pos, "state": previous_state, "target": previous_target})
+	history_updated.emit(true)
+	_update_ui_state()
 
 func undo_last_move() -> void:
-	if move_history.is_empty():
+	if not _can_edit_grid() or move_history.is_empty():
 		return
-	var last_move = move_history.pop_back()
-
-	if typeof(last_move) == TYPE_ARRAY:
-		for move in last_move:
+	var last_move: Variant = move_history.pop_back()
+	if last_move is Array:
+		for move: Dictionary in last_move:
 			_apply_undo_move(move)
 	else:
-		_apply_undo_move(last_move)
+		_apply_undo_move(last_move as Dictionary)
 	_update_slicing()
-	_update_multimesh()
-	emit_signal("history_updated", not move_history.is_empty())
+	_update_clues()
+	history_updated.emit(not move_history.is_empty())
+	_update_ui_state()
 
 func _apply_undo_move(move: Dictionary) -> void:
-	var pos = move["pos"]
-	var prev_state = move["state"]
-	if voxel_states.has(pos):
-		var state = voxel_states[pos]
-		var block = blocks.get(pos)
-
-		var target_cell_st: CellState = CellState.UNBROKEN
-		if prev_state == 1 or prev_state == CellState.MARKED:
-			target_cell_st = CellState.MARKED
-		elif prev_state == 3 or prev_state == CellState.DESTROYED:
-			target_cell_st = CellState.DESTROYED
-
-		state["cell_state"] = target_cell_st
-		if block:
-			block.set_state(prev_state)
+	var pos: Vector3i = move["pos"]
+	if not voxel_states.has(pos):
+		return
+	var previous_state: CellState = int(move.get("state", CellState.UNBROKEN))
+	var previous_target: bool = bool(move.get("target", is_target_cell(pos)))
+	target_solution[pos] = previous_target
+	var state: Dictionary = voxel_states[pos]
+	state["is_target"] = previous_target
+	_set_canonical_cell_state(pos, previous_state)
 
 func on_hover_requested(grid_pos: Vector3i, is_hover: bool) -> void:
 	if not voxel_states.has(grid_pos) or is_cell_chiseled(grid_pos):
@@ -990,79 +1086,68 @@ func _handle_mistake() -> void:
 
 	if player_hp <= 0:
 		is_puzzle_active = false
-		emit_signal("game_over")
-		print("Game Over! Restarting floor.")
-		await get_tree().create_timer(2.0).timeout
-		base_grid_size = 3
-		current_floor = 1
-		start_level()
+		input_locked = true
+		_update_ui_state()
+		game_over.emit()
+		print("Game Over! The active game mode owns restart and retry flow.")
 
-func destroy_block(block: VoxelBlock) -> void:
-	if block:
-		block.current_state = block.BlockState.DESTROYED
-		if block.break_particles:
-			block.break_particles.restart()
+func destroy_block(block: VoxelBlock) -> bool:
+	if not block or not is_instance_valid(block) or not voxel_states.has(block.grid_position):
+		return false
+	if not is_puzzle_active or input_locked or is_cell_chiseled(block.grid_position):
+		return false
+	if not hammer_cell(block.grid_position):
+		return false
 
-		# Spawn dummy scale-down block
-		var dummy = MeshInstance3D.new()
-		dummy.mesh = BoxMesh.new()
-		dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
-		var mat = StandardMaterial3D.new()
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.albedo_color = Color("#70D6FF") # Glowing light-blue light motes
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		dummy.material_override = mat
-
-		# Offset calculated the same way as multimesh instances
-		var offset = -Vector3(grid_size) / 2.0 + Vector3(0.5, 0.5, 0.5)
-		dummy.position = Vector3(block.grid_position) + offset
-		add_child(dummy)
-
-		var tween = create_tween()
-		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
-		tween.tween_callback(dummy.queue_free)
-
-	if voxel_states.has(block.grid_position):
-		hammer_cell(block.grid_position)
+	var dummy := MeshInstance3D.new()
+	dummy.mesh = BoxMesh.new()
+	dummy.mesh.size = Vector3(0.98, 0.98, 0.98)
+	var mat := StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color("#70D6FF")
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dummy.material_override = mat
+	dummy.position = block.position
+	add_child(dummy)
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(dummy, "scale", Vector3.ZERO, 0.15)
+	tween.tween_callback(dummy.queue_free)
 
 	if is_player_action:
 		combo += 1
+		combo_updated.emit(combo)
 		_update_ui_state()
-		if get_node_or_null("/root/AudioManager"):
-			get_node("/root/AudioManager").play_chisel_sfx(combo)
-		if combo_label:
-			combo_label.pivot_offset = combo_label.size / 2
-			var tween = create_tween()
-			tween.set_parallel(true)
-			tween.tween_property(combo_label, "scale", Vector2(1.5, 1.5), 0.1)
-			tween.tween_property(combo_label, "modulate", Color(1.0, 0.84, 0.0, 1.0), 0.1) # Gold
-			tween.chain().tween_property(combo_label, "scale", Vector2(1, 1), 0.2)
-			tween.parallel().tween_property(combo_label, "modulate", Color(1, 1, 1, 1), 0.2)
-	_check_win_condition()
-	emit_signal("block_destroyed", block.grid_position, is_player_action)
-	_update_multimesh()
-	_update_clues()
-	if is_player_action:
+		_play_ui_sound("chisel", combo)
+		_pulse_combo_label()
 		_check_and_auto_clear_lines(block.grid_position)
+	block_destroyed.emit(block.grid_position, is_player_action)
+	return true
 
 func check_puzzle_complete() -> bool:
-	if player_hp <= 0 or voxel_states.is_empty():
+	if player_hp <= 0:
 		return false
-
-	# Direct ground-truth state comparison for every voxel in grid bounds
-	for pos in voxel_states.keys():
-		if not is_cell_correct(pos):
-			return false
-
+	var expected_count: int = grid_size.x * grid_size.y * grid_size.z
+	if voxel_states.size() != expected_count or target_solution.size() != expected_count:
+		return false
+	for x: int in range(grid_size.x):
+		for y: int in range(grid_size.y):
+			for z: int in range(grid_size.z):
+				if not is_cell_correct(Vector3i(x, y, z)):
+					return false
 	return true
 
 func _check_win_condition() -> void:
-	if check_puzzle_complete():
-		is_puzzle_active = false
-		print("Puzzle Solved! Revealing model...")
-		emit_signal("puzzle_solved")
-		_reveal_model()
+	if puzzle_solved_emitted or not is_puzzle_active or not check_puzzle_complete():
+		return
+	puzzle_solved_emitted = true
+	is_puzzle_active = false
+	input_locked = true
+	_update_ui_state()
+	_play_ui_sound("victory")
+	print("Puzzle Solved! Revealing model...")
+	puzzle_solved.emit()
+	_reveal_model()
 
 func _reveal_model() -> void:
 	# Hide all slice constraints
@@ -1112,10 +1197,10 @@ func _reveal_model() -> void:
 	# Initialize MultiMesh batching
 	_setup_multimesh()
 
-	var game_manager = get_node_or_null("/root/GameManager")
+	var game_manager := get_node_or_null("/root/GameManager")
 
-	if game_manager and game_manager.get("mode_payload") and game_manager.mode_payload.has("custom_puzzle"):
-		puzzle_name = game_manager.mode_payload["custom_puzzle"].get("name", "")
+	if has_custom_puzzle and not custom_puzzle_data.is_empty():
+		puzzle_name = str(custom_puzzle_data.get("name", custom_puzzle_data.get("id", "Puzzle")))
 	elif not has_custom_puzzle:
 		if round_num == 1:
 			puzzle_name = "Heart"
@@ -1208,31 +1293,50 @@ func _show_victory_screen(puzzle_name: String) -> void:
 		victory_scene.leave_requested.connect(_on_leave_requested)
 
 func _on_leave_requested() -> void:
-	var local_confirm = get_node_or_null("CanvasLayer/Control/ConfirmDialog")
-	if local_confirm:
-		local_confirm.show()
-		var yes_btn = local_confirm.get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer/YesButton")
-		var no_btn = local_confirm.get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer/NoButton")
-		if yes_btn and not yes_btn.pressed.is_connected(_confirm_leave):
-			yes_btn.pressed.connect(_confirm_leave)
-		if no_btn and not no_btn.pressed.is_connected(func(): local_confirm.hide()):
-			no_btn.pressed.connect(func(): local_confirm.hide())
+	var gauntlet := _find_round_owner()
+	if gauntlet and gauntlet.has_method("_on_quit_pressed"):
+		gauntlet.call("_on_quit_pressed")
 		return
-
+	local_confirm_dialog = get_node_or_null("CanvasLayer/Control/ConfirmDialog") as Control
+	if local_confirm_dialog:
+		var yes_button := local_confirm_dialog.get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer/YesButton") as Button
+		var no_button := local_confirm_dialog.get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer/NoButton") as Button
+		if yes_button and not yes_button.pressed.is_connected(_confirm_leave):
+			yes_button.pressed.connect(_confirm_leave)
+		if no_button and not no_button.pressed.is_connected(_dismiss_local_confirm):
+			no_button.pressed.connect(_dismiss_local_confirm)
+		if not local_confirm_dialog.visibility_changed.is_connected(_on_local_confirm_visibility_changed):
+			local_confirm_dialog.visibility_changed.connect(_on_local_confirm_visibility_changed)
+		local_confirm_dialog.show()
+		return
 	_confirm_leave()
 
+func _on_local_confirm_visibility_changed() -> void:
+	if local_confirm_dialog:
+		set_input_locked(local_confirm_dialog.visible)
+
+func _dismiss_local_confirm() -> void:
+	if local_confirm_dialog:
+		local_confirm_dialog.hide()
+
+func _find_round_owner() -> Node:
+	var current := get_parent()
+	while current:
+		if current.has_method("_on_quit_pressed") or current.has_method("_on_yes_pressed"):
+			return current
+		current = current.get_parent()
+	return null
+
 func _confirm_leave() -> void:
-	if has_custom_puzzle:
-		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.PUZZLE_SELECTION)
-	elif get_node_or_null("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet"):
-		var gauntlet = get_node("/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet")
-		var confirm = gauntlet.get_node_or_null("CanvasLayer/UI/ConfirmDialog")
-		if confirm:
-			confirm.show()
-		else:
-			get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
-	else:
-		get_node("/root/GameManager").switch_mode(GameManagerClass.GameMode.MAIN_MENU)
+	var gauntlet := _find_round_owner()
+	if gauntlet and gauntlet.has_method("_on_yes_pressed"):
+		gauntlet.call("_on_yes_pressed")
+		return
+	var game_manager := get_node_or_null("/root/GameManager")
+	if not game_manager:
+		return
+	var target_mode: int = GameManagerClass.GameMode.PUZZLE_SELECTION if has_custom_puzzle else GameManagerClass.GameMode.MAIN_MENU
+	game_manager.switch_mode(target_mode)
 
 
 func _on_next_level_requested(victory_scene: Node) -> void:

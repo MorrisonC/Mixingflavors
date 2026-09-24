@@ -1,7 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/EscapeGauntlet.gd" id="1_escape"]
-[ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="2_6dx2x"]
+[ext_resource type="Texture2D" path="res://assets/textures/generated/abstract_panorama.svg" id="2_6dx2x"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_6skyl"]
 panorama = ExtResource("2_6dx2x")
@@ -17,9 +17,39 @@ ambient_light_source = 3
 ambient_light_color = Color(0.901961, 0.901961, 0.901961, 1)
 ambient_light_energy = 0.6
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Panel"]
+bg_color = Color(0.98, 0.92, 0.93, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.2)
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Button"]
+bg_color = Color(0.82, 0.16, 0.32, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 12.0
+content_margin_right = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ButtonHover"]
+bg_color = Color(0.95, 0.25, 0.42, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 12.0
+content_margin_right = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Transparent"]
+bg_color = Color(0, 0, 0, 0)
+
 [node name="EscapeGauntlet" type="Node3D"]
 script = ExtResource("1_escape")
-
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = 10
@@ -38,11 +68,17 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -150.0
+offset_left = -170.0
 offset_top = 20.0
 offset_right = -20.0
-offset_bottom = 50.0
+offset_bottom = 52.0
 grow_horizontal = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+clip_text = true
 text = "Time: 60s"
 horizontal_alignment = 2
 
@@ -51,31 +87,115 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -100.0
+offset_left = -140.0
 offset_top = 20.0
-offset_right = 100.0
-offset_bottom = 50.0
+offset_right = 140.0
+offset_bottom = 52.0
 grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+clip_text = true
 text = "Round: 1"
 horizontal_alignment = 1
 
+[node name="HealthLabel" type="Label" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 170.0
+offset_bottom = 52.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+clip_text = true
+text = "HP: 3/3"
+horizontal_alignment = 0
+
+[node name="ScoreLabel" type="Label" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -170.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 52.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+clip_text = true
+text = "Score: 0"
+horizontal_alignment = 2
+
 [node name="QuitButton" type="Button" parent="CanvasLayer/UI"]
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -100.0
-offset_top = -60.0
+offset_left = -116.0
+offset_top = -68.0
 offset_right = -20.0
 offset_bottom = -20.0
 grow_horizontal = 0
 grow_vertical = 0
+focus_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_Button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ButtonHover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ButtonHover")
 text = "Leave"
 
 [node name="ConfirmDialog" type="Panel" parent="CanvasLayer/UI"]
 visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_Transparent")
+
+[node name="ConfirmScrim" type="ColorRect" parent="CanvasLayer/UI/ConfirmDialog"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.03, 0.01, 0.03, 0.7)
+
+[node name="ConfirmCard" type="PanelContainer" parent="CanvasLayer/UI/ConfirmDialog"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -100.0
+offset_right = 170.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_Panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI/ConfirmDialog"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -88,37 +208,122 @@ offset_right = 150.0
 offset_bottom = 80.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI/ConfirmDialog"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
+alignment = 1
 
 [node name="Label" type="Label" parent="CanvasLayer/UI/ConfirmDialog/VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.08, 0.15, 1)
+theme_override_font_sizes/font_size = 20
 text = "Quit to Main Menu?"
 horizontal_alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/UI/ConfirmDialog/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="YesButton" type="Button" parent="CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(110, 48)
 layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_Button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ButtonHover")
 text = "Yes"
 
 [node name="NoButton" type="Button" parent="CanvasLayer/UI/ConfirmDialog/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(110, 48)
 layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_Button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ButtonHover")
 text = "No"
+
+[node name="GameOver" type="Control" parent="CanvasLayer/UI"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="GameOverScrim" type="ColorRect" parent="CanvasLayer/UI/GameOver"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.005, 0.01, 0.78)
+
+[node name="GameOverPanel" type="PanelContainer" parent="CanvasLayer/UI/GameOver"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -190.0
+offset_top = -150.0
+offset_right = 190.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_Panel")
+
+[node name="GameOverVBox" type="VBoxContainer" parent="CanvasLayer/UI/GameOver/GameOverPanel"]
+layout_mode = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="GameOverTitle" type="Label" parent="CanvasLayer/UI/GameOver/GameOverPanel/GameOverVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.08, 0.16, 1)
+theme_override_font_sizes/font_size = 30
+text = "GAUNTLET FAILED"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="GameOverMessage" type="Label" parent="CanvasLayer/UI/GameOver/GameOverPanel/GameOverVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.08, 0.15, 1)
+theme_override_font_sizes/font_size = 20
+text = "Game over"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="GameOverButtons" type="GridContainer" parent="CanvasLayer/UI/GameOver/GameOverPanel/GameOverVBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="RetryButton" type="Button" parent="CanvasLayer/UI/GameOver/GameOverPanel/GameOverVBox/GameOverButtons"]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_Button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ButtonHover")
+text = "Retry"
+
+[node name="LeaveButton" type="Button" parent="CanvasLayer/UI/GameOver/GameOverPanel/GameOverVBox/GameOverButtons"]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_Button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ButtonHover")
+text = "Leave"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_ikp3j")

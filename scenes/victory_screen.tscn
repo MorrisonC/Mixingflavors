@@ -4,13 +4,13 @@
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Card"]
 bg_color = Color(0.96, 0.94, 0.92, 1)
-corner_radius_top_left = 30
-corner_radius_top_right = 30
-corner_radius_bottom_right = 30
-corner_radius_bottom_left = 30
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
 shadow_color = Color(0, 0, 0, 0.2)
-shadow_size = 20
-shadow_offset = Vector2(0, 10)
+shadow_size = 16
+shadow_offset = Vector2(0, 8)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Clock"]
 bg_color = Color(0.1, 0.1, 0.12, 1)
@@ -32,6 +32,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+content_margin_left = 12.0
+content_margin_right = 12.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ButtonHover"]
 bg_color = Color(0.25, 0.7, 0.45, 1)
@@ -39,15 +41,10 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+content_margin_left = 12.0
+content_margin_right = 12.0
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_RadialBg"]
-bg_color = Color(0.8, 0.8, 0.8, 1)
-corner_radius_top_left = 50
-corner_radius_top_right = 50
-corner_radius_bottom_right = 50
-corner_radius_bottom_left = 50
-
-[sub_resource type="Theme" id="Theme_Victory"]
+[sub_resource type="StyleBoxFlat" id="Theme_Victory"]
 Button/styles/normal = SubResource("StyleBoxFlat_Button")
 Button/styles/hover = SubResource("StyleBoxFlat_ButtonHover")
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_Card")
@@ -59,6 +56,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
 theme = SubResource("Theme_Victory")
 script = ExtResource("1_vscrn")
 
@@ -69,6 +67,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
 color = Color(1, 1, 1, 0.75)
 
 [node name="PanelContainer" type="PanelContainer" parent="Background"]
@@ -84,21 +83,23 @@ offset_right = 250.0
 offset_bottom = 350.0
 grow_horizontal = 2
 grow_vertical = 2
+clip_contents = true
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Background/PanelContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 14
 alignment = 1
 
 [node name="HeaderLabel" type="Label" parent="Background/PanelContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 28
 text = "Level 1-A"
 horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="ClockPanel" type="PanelContainer" parent="Background/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(200, 60)
+custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_Clock")
@@ -106,12 +107,12 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_Clock")
 [node name="ClockLabel" type="Label" parent="Background/PanelContainer/VBoxContainer/ClockPanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 36
+theme_override_font_sizes/font_size = 32
 text = "05:14"
 horizontal_alignment = 1
 
 [node name="MeterContainer" type="Control" parent="Background/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(120, 120)
 layout_mode = 2
 size_flags_horizontal = 4
 
@@ -122,13 +123,15 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 fill_mode = 4
 tint_progress = Color(0.2, 0.8, 0.4, 1)
 
 [node name="IllustrationContainer" type="Control" parent="Background/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(400, 250)
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 4
+clip_contents = true
 
 [node name="IllustrationPlaceholder" type="ColorRect" parent="Background/PanelContainer/VBoxContainer/IllustrationContainer"]
 layout_mode = 1
@@ -137,6 +140,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
 [node name="OverlayBox" type="PanelContainer" parent="Background/PanelContainer/VBoxContainer/IllustrationContainer"]
@@ -147,18 +151,22 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -150.0
-offset_top = -80.0
+offset_top = -70.0
 offset_right = 150.0
-offset_bottom = -10.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_Overlay")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Background/PanelContainer/VBoxContainer/IllustrationContainer/OverlayBox"]
 layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
 
 [node name="StarsContainer" type="HBoxContainer" parent="Background/PanelContainer/VBoxContainer/IllustrationContainer/OverlayBox/VBoxContainer"]
 layout_mode = 2
+mouse_filter = 2
 alignment = 1
 
 [node name="Star1" type="Label" parent="Background/PanelContainer/VBoxContainer/IllustrationContainer/OverlayBox/VBoxContainer/StarsContainer"]
@@ -185,28 +193,31 @@ horizontal_alignment = 1
 [node name="WellDoneLabel" type="Label" parent="Background/PanelContainer/VBoxContainer/IllustrationContainer/OverlayBox/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.6, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 18
 text = "WELL DONE!"
 horizontal_alignment = 1
 
 [node name="StatsContainer" type="VBoxContainer" parent="Background/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(300, 0)
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_constants/separation = 2
 
 [node name="TimeRow" type="HBoxContainer" parent="Background/PanelContainer/VBoxContainer/StatsContainer"]
 layout_mode = 2
 alignment = 1
 
 [node name="Label" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/TimeRow"]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
 text = "Time:"
 
 [node name="Value" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/TimeRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 text = "05:14"
 horizontal_alignment = 2
@@ -216,14 +227,16 @@ layout_mode = 2
 alignment = 1
 
 [node name="Label" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/StarsRow"]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
 text = "Stars:"
 
 [node name="Value" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/StarsRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 text = "3/3"
 horizontal_alignment = 2
@@ -233,30 +246,34 @@ layout_mode = 2
 alignment = 1
 
 [node name="Label" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/ScoreRow"]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
 text = "Score:"
 
 [node name="Value" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/ScoreRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 text = "12,500"
 horizontal_alignment = 2
 
 [node name="LeaveButton" type="Button" parent="Background/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
+focus_mode = 2
+theme_override_font_sizes/font_size = 18
 text = "Leave"
 
 [node name="NextButton" type="Button" parent="Background/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
+focus_mode = 2
+theme_override_font_sizes/font_size = 18
 text = "Next Level"
 
 [node name="ConfettiParticles" type="CPUParticles2D" parent="."]

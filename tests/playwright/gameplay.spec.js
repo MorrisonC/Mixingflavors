@@ -1,39 +1,29 @@
 const { test, expect } = require('@playwright/test');
+const {
+    assertNoBrowserErrors,
+    attachBrowserDiagnostics,
+    callGameAPI,
+    waitForEngine,
+} = require('./test-utils');
 
 test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
 
+  let diagnostics;
+
   test.beforeEach(async ({ page }) => {
-    page.on('console', msg => {
-      if (msg.type() === 'error') {
-        console.error(`Browser console error: ${msg.text()}`);
-      } else {
-        console.log(`Browser log: ${msg.text()}`);
-      }
-    });
+    diagnostics = attachBrowserDiagnostics(page);
     await page.goto('/');
   });
 
-  async function callGameAPI(page, args) {
-      await page.evaluate(() => {
-         window.__godot_promise = new Promise(resolve => {
-            window.__godot_resolve = resolve;
-         });
-      });
-
-      await page.evaluate((a) => { window.gameAPI(a); }, args);
-
-      const res = await page.evaluate(async () => {
-         return await window.__godot_promise;
-      });
-      return res;
-  }
+  test.afterEach(() => {
+    assertNoBrowserErrors(diagnostics);
+  });
 
   test('Main Menu UI Audit & Settings Interaction', async ({ page }) => {
     const canvas = page.locator('#canvas');
     await expect(canvas).toBeVisible();
 
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
-    await page.waitForTimeout(2000);
+    await waitForEngine(page);
 
     const mode = await callGameAPI(page, ['get_current_mode']);
     expect(mode).toBe(0); // MAIN_MENU
@@ -51,8 +41,7 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
   });
 
   test('Puzzle Solving Flow', async ({ page }) => {
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
-    await page.waitForTimeout(2000);
+    await waitForEngine(page);
 
     await callGameAPI(page, ['switch_mode', 2]); // ESCAPE_GAUNTLET
     await page.waitForTimeout(2000);
@@ -69,14 +58,12 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
   });
 
   test('Settings Panel Navigation', async ({ page }) => {
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
-    await page.waitForTimeout(2000);
+    await waitForEngine(page);
     // Open settings and close (omitted here as it was empty originally)
   });
 
   test('Leave Button and Mark Feature E2E', async ({ page }) => {
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
-    await page.waitForTimeout(2000);
+    await waitForEngine(page);
 
     // Switch to Escape Gauntlet to test Leave and Mark
     await callGameAPI(page, ['switch_mode', 2]);
@@ -123,8 +110,7 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
   });
 
   test('New Grid Interactions & Slicing E2E', async ({ page }) => {
-    await page.waitForFunction(() => window.gameAPI !== undefined, { timeout: 60000 });
-    await page.waitForTimeout(2000);
+    await waitForEngine(page);
 
     // Switch to Escape Gauntlet to test new mechanics
     await callGameAPI(page, ['switch_mode', 2]);

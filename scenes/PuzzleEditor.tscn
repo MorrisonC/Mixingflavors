@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://scripts/GridManager.gd" id="2_grid"]
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
 [ext_resource type="Script" path="res://scripts/CameraPivotController.gd" id="4_camera"]
-[ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="5_sky"]
+[ext_resource type="Texture2D" path="res://assets/textures/generated/abstract_panorama.svg" id="5_sky"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_n2"]
 panorama = ExtResource("5_sky")

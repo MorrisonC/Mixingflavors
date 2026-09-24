@@ -1,0 +1,10 @@
+Generated Project Artwork
+
+The SVG panorama and application icon were created specifically for Hybrid Tactical
+Puzzle RPG. They contain no third-party source artwork.
+
+Creator: Hybrid Tactical Puzzle RPG project
+License: CC0 1.0 Universal
+Source files:
+- assets/textures/generated/abstract_panorama.svg
+- icon.svg

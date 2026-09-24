@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/GridManager.gd" id="1_grid"]
 [ext_resource type="Script" path="res://scripts/TimeBombMechanic.gd" id="2_bomb"]
@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/Block.tscn" id="2_1kbjf"]
 [ext_resource type="Script" path="res://scripts/CameraPivotController.gd" id="2_camera"]
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
-[ext_resource type="Texture2D" path="res://assets/textures/abstract_bg.png" id="4_twcvd"]
+[ext_resource type="Texture2D" path="res://assets/textures/generated/abstract_panorama.svg" id="4_twcvd"]
 [ext_resource type="Script" path="res://scripts/CooldownHintMechanic.gd" id="1_hint"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_bcnql"]
@@ -28,7 +28,7 @@ glow_enabled = true
 glow_bloom = 0.15
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_GlassPanel"]
-bg_color = Color(1, 1, 1, 0.15)
+bg_color = Color(0.08, 0.03, 0.08, 0.78)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -38,12 +38,15 @@ corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
-shadow_color = Color(0, 0, 0, 0.15)
+shadow_color = Color(0, 0, 0, 0.2)
 shadow_size = 10
 shadow_offset = Vector2(0, 4)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Transparent"]
+bg_color = Color(0, 0, 0, 0)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_GlassBtnNormal"]
-bg_color = Color(1, 1, 1, 0.18)
+bg_color = Color(0.1, 0.04, 0.1, 0.72)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -53,12 +56,12 @@ corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
-shadow_color = Color(0, 0, 0, 0.1)
+shadow_color = Color(0, 0, 0, 0.2)
 shadow_size = 6
 shadow_offset = Vector2(0, 2)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_GlassBtnHover"]
-bg_color = Color(1, 1, 1, 0.32)
+bg_color = Color(0.25, 0.08, 0.18, 0.88)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -68,12 +71,12 @@ corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
-shadow_color = Color(0, 0, 0, 0.2)
+shadow_color = Color(0, 0, 0, 0.25)
 shadow_size = 8
 shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_GlassBtnPressed"]
-bg_color = Color(1, 1, 1, 0.45)
+bg_color = Color(0.4, 0.12, 0.24, 0.95)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -135,22 +138,28 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="TopRowContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer"]
 layout_mode = 2
 size_flags_vertical = 0
 mouse_filter = 2
+theme_override_constants/separation = 8
 
 [node name="LeaveButton" type="Button" parent="CanvasLayer/Control/MarginContainer/TopRowContainer"]
 custom_minimum_size = Vector2(90, 44)
 layout_mode = 2
+focus_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
@@ -159,41 +168,51 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Leave"
 
 [node name="TopInfoBar" type="PanelContainer" parent="CanvasLayer/Control/MarginContainer/TopRowContainer"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_GlassPanel")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar"]
+[node name="HBoxContainer" type="GridContainer" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar"]
 layout_mode = 2
-theme_override_constants/separation = 24
-alignment = 1
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 4
+columns = 2
 
 [node name="RoundLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
+clip_text = true
 text = "Floor 1"
 horizontal_alignment = 1
 
 [node name="HPLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
+clip_text = true
 text = "HP: 3/3"
 horizontal_alignment = 1
 
 [node name="ComboLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
+clip_text = true
 text = "Combo: x0"
 horizontal_alignment = 1
 
 [node name="TimerLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
+clip_text = true
 text = "Time: 00:00"
 horizontal_alignment = 1
 
@@ -208,6 +227,7 @@ text = "Guardian"
 horizontal_alignment = 1
 
 [node name="BossHPBar" type="ProgressBar" parent="CanvasLayer/Control/MarginContainer/TopRowContainer/TopInfoBar/HBoxContainer/BossContainer"]
+custom_minimum_size = Vector2(80, 20)
 layout_mode = 2
 value = 100.0
 
@@ -215,19 +235,26 @@ value = 100.0
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
+alignment = 2
 mouse_filter = 2
 
 [node name="SliceControls" type="VBoxContainer" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
-layout_mode = 2
 visible = false
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 4
 
 [node name="LabelX" type="Label" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
 layout_mode = 2
 text = "Slice X"
 
 [node name="SliderX" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
-custom_minimum_size = Vector2(200, 32)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
 max_value = 5.0
 value = 5.0
 
@@ -236,8 +263,10 @@ layout_mode = 2
 text = "Slice Y"
 
 [node name="SliderY" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
-custom_minimum_size = Vector2(200, 32)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
 max_value = 5.0
 value = 5.0
 
@@ -246,21 +275,28 @@ layout_mode = 2
 text = "Slice Z"
 
 [node name="SliderZ" type="HSlider" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/SliceControls"]
-custom_minimum_size = Vector2(200, 32)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
 max_value = 5.0
 value = 5.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="GridContainer" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 size_flags_vertical = 8
-theme_override_constants/separation = 16
-mouse_filter = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 2
+alignment = 1
 
 [node name="ChiselButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(110, 52)
+custom_minimum_size = Vector2(64, 52)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+clip_text = true
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
 theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
@@ -269,8 +305,11 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Hammer"
 
 [node name="MarkButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 52)
+custom_minimum_size = Vector2(64, 52)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+clip_text = true
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
 theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
@@ -279,8 +318,11 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Mark"
 
 [node name="SliceToggleButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 52)
+custom_minimum_size = Vector2(64, 52)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+clip_text = true
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
 theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
@@ -289,8 +331,11 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Slice"
 
 [node name="UndoButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 52)
+custom_minimum_size = Vector2(64, 52)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+clip_text = true
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
 theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
@@ -299,8 +344,12 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Undo"
 
 [node name="HintButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 52)
+custom_minimum_size = Vector2(64, 52)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+clip_text = true
+tooltip_text = "Use a hint when it is ready"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
 theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
@@ -308,33 +357,65 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Hint"
 
-[node name="ConfirmDialog" type="PanelContainer" parent="CanvasLayer/Control"]
+[node name="ConfirmDialog" type="Panel" parent="CanvasLayer/Control"]
 visible = false
-custom_minimum_size = Vector2(340, 180)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_Transparent")
+
+[node name="Scrim" type="ColorRect" parent="CanvasLayer/Control/ConfirmDialog"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.03, 0.01, 0.03, 0.68)
+
+[node name="ConfirmCard" type="PanelContainer" parent="CanvasLayer/Control/ConfirmDialog"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -170.0
-offset_top = -90.0
-offset_right = 170.0
-offset_bottom = 90.0
+offset_left = -150.0
+offset_top = -85.0
+offset_right = 150.0
+offset_bottom = 85.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_GlassPanel")
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Control/ConfirmDialog"]
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = -65.0
+offset_right = 130.0
+offset_bottom = 65.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_bottom = 16
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/ConfirmDialog/MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="Label" type="Label" parent="CanvasLayer/Control/ConfirmDialog/MarginContainer/VBoxContainer"]
@@ -346,12 +427,13 @@ horizontal_alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/ConfirmDialog/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="YesButton" type="Button" parent="CanvasLayer/Control/ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 44)
+custom_minimum_size = Vector2(100, 48)
 layout_mode = 2
+focus_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
@@ -359,8 +441,9 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
 text = "Yes"
 
 [node name="NoButton" type="Button" parent="CanvasLayer/Control/ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(100, 44)
+custom_minimum_size = Vector2(100, 48)
 layout_mode = 2
+focus_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
