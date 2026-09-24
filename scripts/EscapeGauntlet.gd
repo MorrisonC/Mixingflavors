@@ -94,8 +94,8 @@ func _start_round() -> void:
 		puzzle_data = {}
 
 	var environment_node: WorldEnvironment = get_node_or_null("WorldEnvironment") as WorldEnvironment
-	if environment_node and environment_node.sky and environment_node.sky.sky_material is PanoramaSkyMaterial:
-		(environment_node.sky.sky_material as PanoramaSkyMaterial).panorama = DEFAULT_PANORAMA
+	if environment_node and environment_node.environment and environment_node.environment.sky and environment_node.environment.sky.sky_material is PanoramaSkyMaterial:
+		(environment_node.environment.sky.sky_material as PanoramaSkyMaterial).panorama = DEFAULT_PANORAMA
 
 	var round_text: String = "Round: " + str(current_round)
 	if current_wave_type == "blitz":

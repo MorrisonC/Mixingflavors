@@ -1,51 +1,50 @@
 extends GutTest
 
-const EscapeGauntletScene = preload("res://scenes/EscapeGauntlet.tscn")
+const EscapeGauntletScene: PackedScene = preload("res://scenes/EscapeGauntlet.tscn")
 const GameManagerClass = preload("res://scripts/GameManager.gd")
-var gauntlet
 
-func before_each():
-	# Mock GameManager Autoload
-	var gm = GameManagerClass.new()
-	gm.name = "GameManager"
-	get_tree().root.add_child(gm)
+var gauntlet: Node3D
 
-	var pr = PuzzleRegistryClass.new()
-	pr.name = "PuzzleRegistry"
-	get_tree().root.add_child(pr)
+func before_each() -> void:
+	var game_manager := GameManagerClass.new()
+	game_manager.name = "GameManager"
+	get_tree().root.add_child(game_manager)
+	var registry := PuzzleRegistryClass.new()
+	registry.name = "PuzzleRegistry"
+	get_tree().root.add_child(registry)
+	gauntlet = EscapeGauntletScene.instantiate() as Node3D
+	add_child_autoqfree(gauntlet)
 
-	gauntlet = EscapeGauntletScene.instantiate()
-	add_child(gauntlet)
+func after_each() -> void:
+	var game_manager := get_tree().root.get_node_or_null("GameManager")
+	if game_manager:
+		game_manager.queue_free()
+	var registry := get_tree().root.get_node_or_null("PuzzleRegistry")
+	if registry:
+		registry.queue_free()
+	await get_tree().process_frame
+	await get_tree().process_frame
 
-func after_each():
-	gauntlet.queue_free()
-	var gm = get_tree().root.get_node_or_null("GameManager")
-	if gm:
-		gm.queue_free()
+func test_initialization() -> void:
+	assert_not_null(gauntlet.active_puzzle)
+	assert_eq(gauntlet.current_round, 1)
+	assert_gt(gauntlet.time_left, 0.0)
 
-	var pr = get_tree().root.get_node_or_null("PuzzleRegistry")
-	if pr:
-		pr.queue_free()
+func test_round_progression() -> void:
+	gauntlet.call("_on_puzzle_solved")
+	await get_tree().process_frame
+	assert_eq(gauntlet.current_round, 2)
+	assert_gt(gauntlet.time_left, 0.0)
 
-func test_initialization():
-	assert_not_null(gauntlet.active_puzzle, "Active puzzle should be created on initialization")
-	assert_eq(gauntlet.current_round, 1, "Initial round should be 1")
-	assert_true(gauntlet.time_left > 0, "Initial time should be set")
+func test_boss_round() -> void:
+	for expected_round: int in range(2, 6):
+		gauntlet.call("_on_puzzle_solved")
+		await get_tree().process_frame
+		assert_eq(gauntlet.current_round, expected_round)
+	assert_eq(gauntlet.current_wave_type, "boss")
 
-func test_round_progression():
-	gauntlet._on_puzzle_solved()
-	assert_eq(gauntlet.current_round, 2, "Round should increase to 2 after solving puzzle")
-	assert_true(gauntlet.time_left > 0, "Time should reset for round 2")
-
-func test_boss_round():
-	gauntlet._on_puzzle_solved() # To round 2
-	gauntlet._on_puzzle_solved() # To round 3
-	gauntlet._on_puzzle_solved() # To round 4
-	gauntlet._on_puzzle_solved() # To round 5 (boss)
-	assert_eq(gauntlet.current_round, 5, "Round should be 5 (max_rounds)")
-
-func test_mistake_failure():
-	gauntlet._on_mistake_made(3)
-	await get_tree().create_timer(3.5).timeout
-	assert_eq(get_node("/root/GameManager").current_mode, GameManagerClass.GameMode.MAIN_MENU, "Failed gauntlet should return to Main Menu")
-
+func test_mistake_failure_opens_game_over_without_silent_mode_switch() -> void:
+	gauntlet.call("_on_mistake_made", 3)
+	assert_true(gauntlet.is_game_over)
+	assert_true((gauntlet.get_node("CanvasLayer/UI/GameOver") as Control).visible)
+	assert_eq(get_tree().root.get_node("GameManager").current_mode, GameManagerClass.GameMode.MAIN_MENU)

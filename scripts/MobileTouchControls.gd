@@ -708,8 +708,6 @@ func _has_active_gesture() -> bool:
 func _event_is_canceled(event: InputEvent) -> bool:
 	if event is InputEventScreenTouch:
 		return (event as InputEventScreenTouch).canceled
-	if event is InputEventScreenDrag:
-		return (event as InputEventScreenDrag).canceled
 	if event is InputEventMouseButton:
 		return (event as InputEventMouseButton).canceled
 	return false

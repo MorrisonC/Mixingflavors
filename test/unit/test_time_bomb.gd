@@ -1,135 +1,78 @@
 extends GutTest
 
-const GridManager = preload("res://scripts/GridManager.gd")
-const BlockClass = preload("res://scripts/Block.gd")
-const GameManagerClass = preload("res://scripts/GameManager.gd")
-const TimeBombMechanic = preload("res://scripts/TimeBombMechanic.gd")
+const GridManagerClass = preload("res://scripts/GridManager.gd")
+const TimeBombMechanicClass = preload("res://scripts/TimeBombMechanic.gd")
 
 var grid: GridManager
 var bomb_mechanic: TimeBombMechanic
+var _owns_game_manager: bool = false
 
-func before_each():
-	var gm = Node.new()
-	gm.name = "GameManager"
-	gm.set_script(GameManagerClass)
-	get_tree().root.add_child(gm)
+func before_each() -> void:
+	var game_manager: Node = get_tree().root.get_node_or_null("GameManager")
+	if not game_manager:
+		game_manager = Node.new()
+		game_manager.name = "GameManager"
+		game_manager.set_script(preload("res://scripts/GameManager.gd"))
+		get_tree().root.add_child(game_manager)
+		_owns_game_manager = true
 
-	grid = GridManager.new()
+	grid = GridManagerClass.new()
 	grid.base_grid_size = 2
-
-	bomb_mechanic = TimeBombMechanic.new()
+	bomb_mechanic = TimeBombMechanicClass.new()
 	bomb_mechanic.is_enabled = true
-	bomb_mechanic.bomb_spawn_interval = 1.0 # Fast spawn for testing
-	bomb_mechanic.bomb_duration = 0.5 # Fast explode for testing
-
+	bomb_mechanic.bomb_spawn_interval = 1.0
+	bomb_mechanic.bomb_duration = 0.5
 	grid.add_child(bomb_mechanic)
 	add_child_autoqfree(grid)
-
-func after_each():
-	var gm = get_tree().root.get_node_or_null("GameManager")
-	if gm:
-		gm.queue_free()
-
-func test_bomb_spawns_on_unbroken_block():
 	grid.start_level()
+	_set_only_target(Vector3i(0, 0, 0))
 	grid.is_puzzle_active = true
+	grid.input_locked = false
 
-	grid.target_solution.clear()
+func after_each() -> void:
+	if _owns_game_manager:
+		var game_manager := get_tree().root.get_node_or_null("GameManager")
+		if game_manager:
+			game_manager.queue_free()
+
+func _set_only_target(target_pos: Vector3i) -> void:
 	grid.target_shape.clear()
-	grid.voxel_states.clear()
-	# Set target solution so that we have at least one block that is NOT part of the solution
-	grid.target_solution[Vector3i(0, 0, 0)] = true
-	grid.target_shape.append(Vector3i(0, 0, 0))
-	grid.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
-	grid.target_solution[Vector3i(1, 0, 0)] = false # Valid bomb target
-	grid.voxel_states[Vector3i(1, 0, 0)] = {"is_target": false, "is_chiseled": false, "is_marked": false}
+	for pos: Vector3i in grid.voxel_states.keys():
+		grid.target_solution[pos] = pos == target_pos
+		grid.voxel_states[pos]["is_target"] = pos == target_pos
+		if pos == target_pos:
+			grid.target_shape.append(pos)
+	grid._update_clues()
 
-	bomb_mechanic.grid_manager = grid
-	bomb_mechanic._ready() # Force ready to hook up signals
-
-	# Fast forward logic
+func test_bomb_spawns_on_unbroken_non_target() -> void:
 	bomb_mechanic._process(1.5)
-
 	assert_ne(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should have spawned")
-	assert_false(bomb_mechanic.active_bomb_pos in grid.target_shape, "Bomb should not spawn on a solution block")
+	assert_false(bomb_mechanic.active_bomb_pos in grid.target_shape, "Bomb should not spawn on a target")
 
-func test_bomb_explosion_causes_mistake():
-	grid.start_level()
-	grid.is_puzzle_active = true
-
-	grid.target_solution.clear()
-	grid.target_shape.clear()
-	grid.voxel_states.clear()
-	grid.target_solution[Vector3i(0, 0, 0)] = true
-	grid.target_shape.append(Vector3i(0, 0, 0))
-	grid.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
-
-	bomb_mechanic.grid_manager = grid
-	bomb_mechanic._ready() # Force ready to hook up signals
-
-	var initial_hp = grid.player_hp
-	var initial_mistakes = grid.mistakes
-
-	# Spawn bomb
+func test_bomb_explosion_causes_mistake() -> void:
+	var initial_hp: int = grid.player_hp
+	var initial_mistakes: int = grid.mistakes
 	bomb_mechanic._process(1.5)
-	var bomb_pos = bomb_mechanic.active_bomb_pos
-
+	var bomb_pos: Vector3i = bomb_mechanic.active_bomb_pos
 	assert_ne(bomb_pos, Vector3i(-1, -1, -1), "Bomb should have spawned")
-	if bomb_pos == Vector3i(-1, -1, -1): return
-
-	# Fast forward to explosion
 	bomb_mechanic._process(1.0)
+	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should reset after explosion")
+	assert_eq(grid.blocks[bomb_pos].current_state, VoxelBlock.BlockState.DESTROYED)
+	assert_eq(grid.player_hp, initial_hp - 1)
+	assert_eq(grid.mistakes, initial_mistakes + 1)
 
-	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should have reset after explosion")
-
-	var block = grid.blocks[bomb_pos]
-	assert_eq(block.current_state, block.BlockState.DESTROYED, "Bomb block should be destroyed")
-	assert_eq(grid.player_hp, initial_hp - 1, "Player should lose HP on bomb explosion")
-	assert_eq(grid.mistakes, initial_mistakes + 1, "Player should gain a mistake on bomb explosion")
-
-func test_defusing_bomb_resets_mechanic():
-	grid.start_level()
-	grid.is_puzzle_active = true
-
-	grid.target_solution.clear()
-	grid.target_shape.clear()
-	grid.voxel_states.clear()
-	grid.target_solution[Vector3i(0, 0, 0)] = true
-	grid.target_shape.append(Vector3i(0, 0, 0))
-	grid.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
-
-	bomb_mechanic.grid_manager = grid
-	bomb_mechanic._ready() # Force ready to hook up signals
-
-	var initial_hp = grid.player_hp
-	var initial_mistakes = grid.mistakes
-
-	# Spawn bomb
+func test_defusing_bomb_resets_mechanic_without_penalty() -> void:
+	var initial_hp: int = grid.player_hp
+	var initial_mistakes: int = grid.mistakes
 	bomb_mechanic._process(1.5)
-	var bomb_pos = bomb_mechanic.active_bomb_pos
-
+	var bomb_pos: Vector3i = bomb_mechanic.active_bomb_pos
 	assert_ne(bomb_pos, Vector3i(-1, -1, -1), "Bomb should have spawned")
-	if bomb_pos == Vector3i(-1, -1, -1): return
+	grid.destroy_block(grid.blocks[bomb_pos] as VoxelBlock)
+	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should reset after defusal")
+	assert_eq(grid.player_hp, initial_hp)
+	assert_eq(grid.mistakes, initial_mistakes)
 
-	var block = grid.blocks[bomb_pos]
-	grid.destroy_block(block) # Player destroys block manually
-
-	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should have reset after defusal")
-	assert_eq(grid.player_hp, initial_hp, "Player should NOT lose HP on defusal")
-	assert_eq(grid.mistakes, initial_mistakes, "Player should NOT gain a mistake on defusal")
-
-func test_mechanic_disabled_when_flag_false():
-	grid.start_level()
-	grid.is_puzzle_active = true
-
+func test_mechanic_disabled_when_flag_false() -> void:
 	bomb_mechanic.is_enabled = false
-	grid.target_solution.clear()
-	grid.target_shape.clear()
-	grid.voxel_states.clear()
-
-	bomb_mechanic.grid_manager = grid
-	bomb_mechanic._ready() # Force ready to hook up signals
-
 	bomb_mechanic._process(5.0)
-
-	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should NOT have spawned when disabled")
+	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1))
