@@ -1,50 +1,43 @@
 extends GutTest
 
-const GridManagerScene = preload("res://scenes/VoxelLogic.tscn")
-var grid_manager
-var hint_mechanic
+const GridManagerScene: PackedScene = preload("res://scenes/VoxelLogic.tscn")
 
-func before_each():
+var grid_manager: GridManager
+var hint_mechanic: CooldownHintMechanic
+
+func before_each() -> void:
 	grid_manager = GridManagerScene.instantiate()
 	grid_manager.base_grid_size = 2
-	add_child(grid_manager)
+	add_child_autoqfree(grid_manager)
+	hint_mechanic = grid_manager.get_node_or_null("CooldownHintMechanic") as CooldownHintMechanic
 
-	hint_mechanic = grid_manager.get_node_or_null("CooldownHintMechanic")
+func test_mechanic_initialization() -> void:
+	assert_not_null(hint_mechanic)
+	assert_true(hint_mechanic.is_enabled)
+	assert_true(hint_mechanic.is_ready)
 
-func after_each():
-	grid_manager.queue_free()
+func test_hint_updates_canonical_target_state() -> void:
+	var target_pos := Vector3i(0, 0, 0)
+	grid_manager.target_solution[target_pos] = true
+	grid_manager.voxel_states[target_pos]["is_target"] = true
+	grid_manager.target_shape.append(target_pos)
+	assert_true(hint_mechanic.use_hint())
+	assert_false(hint_mechanic.is_ready)
+	assert_true(grid_manager.is_cell_marked(target_pos))
+	assert_eq(grid_manager.blocks[target_pos].current_state, VoxelBlock.BlockState.MARKED)
+	assert_eq(int(grid_manager.voxel_states[target_pos]["cell_state"]), GridManager.CellState.MARKED)
 
-func test_mechanic_initialization():
-	assert_not_null(hint_mechanic, "CooldownHintMechanic node should be instantiated")
-	assert_true(hint_mechanic.is_enabled, "Mechanic should be enabled by default")
-	assert_true(hint_mechanic.is_ready, "Mechanic should be ready initially")
+func test_hint_destroys_non_target_through_canonical_state() -> void:
+	var empty_pos := Vector3i(0, 0, 0)
+	grid_manager.target_solution[empty_pos] = false
+	grid_manager.voxel_states[empty_pos]["is_target"] = false
+	assert_true(hint_mechanic.use_hint())
+	assert_true(grid_manager.is_cell_chiseled(empty_pos))
+	assert_eq(grid_manager.blocks[empty_pos].current_state, VoxelBlock.BlockState.DESTROYED)
 
-func test_hint_usage():
-	grid_manager.target_solution[Vector3i(0, 0, 0)] = true
-	grid_manager.target_shape.append(Vector3i(0, 0, 0))
-	grid_manager.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
-
-	var initial_ready = hint_mechanic.is_ready
-	assert_true(initial_ready, "Hint should be ready initially")
-
-	var result = hint_mechanic.use_hint()
-
-	assert_true(result, "use_hint() should return true on success")
-	assert_false(hint_mechanic.is_ready, "Hint should no longer be ready after use")
-
-	# Since it's a target, it should be marked
-	assert_true(grid_manager.blocks[Vector3i(0, 0, 0)].current_state == grid_manager.blocks[Vector3i(0,0,0)].BlockState.MARKED, "Target block should be marked by hint")
-
-func test_cooldown_recharge():
-	grid_manager.target_solution[Vector3i(0, 0, 0)] = true
-	grid_manager.target_shape.append(Vector3i(0, 0, 0))
-	grid_manager.voxel_states[Vector3i(0, 0, 0)] = {"is_target": true, "is_chiseled": false, "is_marked": false}
+func test_cooldown_recharge() -> void:
 	hint_mechanic.cooldown_duration = 0.5
-	hint_mechanic.use_hint()
-
-	assert_false(hint_mechanic.is_ready, "Should be on cooldown")
-
-	# Simulate time passing
+	assert_true(hint_mechanic.use_hint())
+	assert_false(hint_mechanic.is_ready)
 	hint_mechanic._process(0.6)
-
-	assert_true(hint_mechanic.is_ready, "Should be ready again after cooldown duration passes")
+	assert_true(hint_mechanic.is_ready)

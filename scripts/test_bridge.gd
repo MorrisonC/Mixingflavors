@@ -68,8 +68,7 @@ func _on_js_call(args):
                 if FileAccess.file_exists(file_path):
                     var file = FileAccess.open(file_path, FileAccess.READ)
                     var puzzle_dict = JSON.parse_string(file.get_as_text())
-                    gm.mode_payload = {"custom_puzzle": puzzle_dict}
-                    gm.switch_mode(gm.GameMode.ESCAPE_GAUNTLET)
+                    gm.switch_mode(gm.GameMode.VOXEL_LOGIC, {"custom_puzzle": puzzle_dict})
                     result = true
 
     elif action == "get_puzzle_state":
@@ -221,24 +220,13 @@ func _on_js_call(args):
                 else:
                     result = false
 
-    if result != null:
+    if ClassDB.class_exists("JavaScriptBridge"):
         var window = JavaScriptBridge.get_interface("window")
         if window:
-            var js_code = ""
-            if typeof(result) == TYPE_STRING:
-                js_code = "window.__godot_resolve('" + str(result) + "');"
-            elif typeof(result) == TYPE_INT or typeof(result) == TYPE_FLOAT:
-                js_code = "window.__godot_resolve(" + str(result) + ");"
-            elif typeof(result) == TYPE_BOOL:
-                js_code = "window.__godot_resolve(" + ("true" if result else "false") + ");"
-
+            var serialized_result: String = JSON.stringify(result)
+            var js_code := "window.__godot_resolve(" + serialized_result + ");"
             JavaScriptBridge.eval(js_code, true)
-            print("[TestBridge] Resolved via eval: ", js_code)
-    else:
-        var window = JavaScriptBridge.get_interface("window")
-        if window:
-            JavaScriptBridge.eval("window.__godot_resolve(null);", true)
-            print("[TestBridge] Resolved via eval: null")
+            print("[TestBridge] Resolved callback with a JSON-encoded result")
 
 func _find_grid_manager(node: Node) -> Node:
     if node.name == "GridManager" or node.name == "VoxelLogic" or node.has_method("_check_win_condition") or node.get_script() != null and node.get_script().resource_path.ends_with("GridManager.gd"):

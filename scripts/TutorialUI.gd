@@ -101,6 +101,8 @@ func _get_grid_manager() -> Node:
 
 
 func _apply_safe_area_and_position() -> void:
+	if not is_inside_tree():
+		return
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return

@@ -58,6 +58,14 @@ function configuredPort() {
     return port;
 }
 
+function isFile(candidate) {
+    try {
+        return fs.statSync(candidate).isFile();
+    } catch (_error) {
+        return false;
+    }
+}
+
 function isInsideWebRoot(candidate) {
     const relative = path.relative(WEB_ROOT, candidate);
     return relative === ''
@@ -133,29 +141,32 @@ function requestPath(requestUrl) {
 async function sendFile(request, response, filePath, fileStat) {
     const contentType = mimeTypeFor(filePath);
     const contentEncoding = chooseEncoding(request, filePath, fileStat.size);
+    const precompressedPath = contentEncoding === 'br' ? `${filePath}.br` : '';
+    const hasPrecompressed = precompressedPath && isFile(precompressedPath);
+    const servedPath = hasPrecompressed ? precompressedPath : filePath;
+    const servedStat = hasPrecompressed ? fs.statSync(precompressedPath) : fileStat;
+
     response.status(200);
     response.setHeader('Content-Type', contentType);
     response.setHeader('Vary', 'Accept-Encoding');
-
     if (contentEncoding) {
         response.setHeader('Content-Encoding', contentEncoding);
-    } else {
-        response.setHeader('Content-Length', String(fileStat.size));
     }
-
+    if (!contentEncoding || hasPrecompressed) {
+        response.setHeader('Content-Length', String(servedStat.size));
+    }
     if (request.method === 'HEAD') {
         response.end();
         return;
     }
 
-    const source = fs.createReadStream(filePath);
+    const source = fs.createReadStream(servedPath);
     let destination = null;
-    if (contentEncoding === 'br') {
+    if (!hasPrecompressed && contentEncoding === 'br') {
         destination = zlib.createBrotliCompress();
-    } else if (contentEncoding === 'gzip') {
+    } else if (!hasPrecompressed && contentEncoding === 'gzip') {
         destination = zlib.createGzip();
     }
-
     if (destination) {
         await pipeline(source, destination, response);
     } else {
@@ -205,6 +216,11 @@ function createApp() {
             }
 
             sendFile(request, response, filePath, fileStat).catch((streamError) => {
+                const errorCode = streamError && typeof streamError.code === 'string' ? streamError.code : '';
+                if (errorCode === 'ERR_STREAM_PREMATURE_CLOSE' || errorCode === 'ECONNRESET' || response.destroyed) {
+                    response.destroy();
+                    return;
+                }
                 if (!response.headersSent) {
                     next(streamError);
                 } else {

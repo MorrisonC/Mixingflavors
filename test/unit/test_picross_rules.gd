@@ -5,21 +5,25 @@ const BlockClass = preload("res://scripts/Block.gd")
 const GameManagerClass = preload("res://scripts/GameManager.gd")
 
 var grid: GridManagerClass
+var _created_game_manager: bool = false
 
-func before_each():
-	var gm = Node.new()
-	gm.name = "GameManager"
-	gm.set_script(GameManagerClass)
-	get_tree().root.add_child(gm)
-
+func before_each() -> void:
+	_created_game_manager = false
+	if not get_tree().root.has_node("GameManager"):
+		var game_manager := Node.new()
+		game_manager.name = "GameManager"
+		game_manager.set_script(GameManagerClass)
+		get_tree().root.add_child(game_manager)
+		_created_game_manager = true
 	grid = GridManagerClass.new()
 	grid.base_grid_size = 3
 	add_child_autoqfree(grid)
 
-func after_each():
-	var gm = get_tree().root.get_node_or_null("GameManager")
-	if gm:
-		gm.queue_free()
+func after_each() -> void:
+	if _created_game_manager:
+		var game_manager := get_tree().root.get_node_or_null("GameManager")
+		if game_manager:
+			game_manager.queue_free()
 
 func test_calculate_clues_simple_group():
 	# Single contiguous group of 3 target blocks -> "3"
@@ -60,16 +64,14 @@ func test_calculate_clues_square_group():
 	var formatted = grid._format_hint_text(clue)
 	assert_eq(formatted, "[3]", "Formatted text for 3+ groups total count 3 should be '[3]'")
 
-func test_clues_disappear_on_marked_blocks():
+func test_marked_blocks_remain_valid_clue_hosts():
 	grid.start_level()
-	var test_pos = Vector3i(0, 0, 0)
-	grid.voxel_states[test_pos]["is_marked"] = true
-	if grid.blocks.has(test_pos):
-		grid.blocks[test_pos].set_state(BlockClass.BlockState.MARKED)
+	var test_pos := Vector3i(0, 0, 0)
+	assert_true(grid.mark_cell(test_pos))
 	grid._update_clues()
-
-	# The marked block should not have clue hints
-	var block = grid.blocks[test_pos]
-	for dir in block.face_labels.keys():
-		var label = block.face_labels[dir] as Label3D
-		pass # Marked blocks DO show clues on the outside in classic Picross 3D
+	var block := grid.blocks[test_pos] as VoxelBlock
+	var visible_hint_count: int = 0
+	for direction: Vector3i in block.face_labels.keys():
+		if (block.face_labels[direction] as Label3D).visible:
+			visible_hint_count += 1
+	assert_gt(visible_hint_count, 0, "Marked visible cells must continue hosting line clues")

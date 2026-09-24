@@ -10,6 +10,7 @@ const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const zlib = require('node:zlib');
 
 const REQUIRED_GODOT_VERSION = '4.7.1';
 const PROJECT_ROOT = path.resolve(__dirname, '..');
@@ -20,6 +21,7 @@ const PROJECT_FILE = path.join(PROJECT_ROOT, 'project.godot');
 const EXPORT_PRESET_FILE = path.join(PROJECT_ROOT, 'export_presets.cfg');
 const EXPORT_PRESET_NAME = 'Web';
 const REQUIRED_WEB_FILES = ['index.html', 'index.js', 'index.wasm', 'index.pck'];
+const COMPRESSIBLE_WEB_FILES = [...REQUIRED_WEB_FILES, 'index.audio.worklet.js'];
 const FILE_TIME_TOLERANCE_MS = 2000;
 const GODOT_STEP_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -322,6 +324,11 @@ function validateExportPreset() {
         'level_select_menu.png*',
         'main_menu.png*',
         'rotated_view.png*',
+        'assets/textures/valentine/**',
+        'assets/textures/beautiful_skybox.jpg',
+        'assets/textures/abstract_bg.png',
+        'assets/textures/stylized_cube.png',
+        'assets/models/heart.obj',
     ]) {
         if (!preset.includes(requiredExclusion)) {
             fail(`export_presets.cfg must exclude ${requiredExclusion} from the Web release.`);
@@ -340,6 +347,28 @@ function cleanWebOutput() {
 
     if (fs.readdirSync(WEB_OUTPUT_DIR).length !== 0) {
         fail(`Generated Web directory was not empty after cleaning: ${WEB_OUTPUT_DIR}`);
+    }
+}
+
+function createBrotliAssets() {
+    for (const fileName of COMPRESSIBLE_WEB_FILES) {
+        const sourcePath = path.join(WEB_OUTPUT_DIR, fileName);
+        if (!isFile(sourcePath)) {
+            continue;
+        }
+        const source = fs.readFileSync(sourcePath);
+        const compressed = zlib.brotliCompressSync(source, {
+            params: {
+                [zlib.constants.BROTLI_PARAM_QUALITY]: 5,
+                [zlib.constants.BROTLI_PARAM_SIZE_HINT]: source.length,
+            },
+        });
+        const outputPath = `${sourcePath}.br`;
+        fs.writeFileSync(outputPath, compressed);
+        const sourceSize = fs.statSync(sourcePath).size;
+        const compressedSize = compressed.length;
+        const reduction = sourceSize > 0 ? (100 * (1 - compressedSize / sourceSize)).toFixed(1) : '0.0';
+        console.log(`[web-build] Brotli ${fileName}: ${sourceSize} -> ${compressedSize} bytes (${reduction}% smaller)`);
     }
 }
 
@@ -407,6 +436,7 @@ function buildWeb() {
         WEB_OUTPUT_HTML,
     ]);
     verifyWebOutput(buildStartedAt);
+    createBrotliAssets();
 }
 
 if (require.main === module) {

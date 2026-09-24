@@ -28,10 +28,9 @@ func save_game() -> void:
 		file.close()
 
 	if OS.has_feature("web"):
-		# Synchronize with Web LocalStorage using JavaScriptBridge
-		var script = "window.localStorage.setItem('godot_save_data', '" + json_string.replace("'", "\\'") + "');"
-		if JavaScriptBridge:
-			JavaScriptBridge.eval(script)
+		var encoded_json := JSON.stringify(json_string)
+		var script := "window.localStorage.setItem('godot_save_data', " + encoded_json + ");"
+		JavaScriptBridge.eval(script, true)
 
 func load_game() -> void:
 	var web_data_found = false

@@ -5,21 +5,25 @@ const BlockClass = preload("res://scripts/Block.gd")
 const GameManagerClass = preload("res://scripts/GameManager.gd")
 
 var grid: GridManagerClass
+var _created_game_manager: bool = false
 
-func before_each():
-	var gm = Node.new()
-	gm.name = "GameManager"
-	gm.set_script(GameManagerClass)
-	get_tree().root.add_child(gm)
-
+func before_each() -> void:
+	_created_game_manager = false
+	if not get_tree().root.has_node("GameManager"):
+		var game_manager := Node.new()
+		game_manager.name = "GameManager"
+		game_manager.set_script(GameManagerClass)
+		get_tree().root.add_child(game_manager)
+		_created_game_manager = true
 	grid = GridManagerClass.new()
 	grid.base_grid_size = 2
 	add_child_autoqfree(grid)
 
-func after_each():
-	var gm = get_tree().root.get_node_or_null("GameManager")
-	if gm:
-		gm.queue_free()
+func after_each() -> void:
+	if _created_game_manager:
+		var game_manager := get_tree().root.get_node_or_null("GameManager")
+		if game_manager:
+			game_manager.queue_free()
 
 func test_chisel_non_target_destroys_block():
 	grid.start_level()

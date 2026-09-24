@@ -152,6 +152,8 @@ func _format_number_with_commas(number: int) -> String:
 
 
 func _apply_responsive_layout() -> void:
+	if not is_inside_tree():
+		return
 	var viewport_size: Vector2 = get_viewport_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return

@@ -87,17 +87,13 @@ func load_theme(theme_name: String) -> Array:
 func get_puzzles_for_gauntlet(tier: String) -> Array:
 	var matching: Array = []
 	var themes: Array = manifest_data.keys()
-	if themes.is_empty():
-		return matching
-	var random_theme: String = str(themes[randi() % themes.size()])
-	for puzzle: Dictionary in load_theme(random_theme):
-		if str(puzzle.get("difficulty_tier", "")) == tier:
-			matching.append(puzzle)
-	if matching.is_empty():
-		for theme: Variant in loaded_theme_puzzles.keys():
-			for puzzle: Dictionary in loaded_theme_puzzles[theme]:
-				if str(puzzle.get("difficulty_tier", "")) == tier:
-					matching.append(puzzle)
+	themes.shuffle()
+	for theme: Variant in themes:
+		for puzzle: Dictionary in load_theme(str(theme)):
+			if str(puzzle.get("difficulty_tier", "")) == tier:
+				matching.append(puzzle)
+		if not matching.is_empty():
+			return matching
 	return matching
 
 func get_all_puzzles() -> Array:

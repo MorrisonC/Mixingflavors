@@ -15,7 +15,6 @@ func before_each():
 
 	chain_mechanic = ExplosiveChainMechanicClass.new()
 	grid_manager.add_child(chain_mechanic)
-	add_child_autoqfree(chain_mechanic)
 
 func test_mechanic_disabled_by_default():
 	assert_false(chain_mechanic.is_enabled, "Mechanic should be disabled by default")

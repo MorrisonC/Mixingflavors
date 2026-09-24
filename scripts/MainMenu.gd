@@ -63,6 +63,7 @@ func _ready() -> void:
 	resized.connect(_apply_responsive_layout)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	call_deferred("_apply_responsive_layout")
+	play_button.call_deferred("grab_focus")
 
 	if title:
 		var title_tween: Tween = create_tween().set_loops()
@@ -201,6 +202,8 @@ func _get_game_manager() -> Node:
 
 
 func _apply_responsive_layout() -> void:
+	if not is_inside_tree():
+		return
 	var viewport_size: Vector2 = get_viewport_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return

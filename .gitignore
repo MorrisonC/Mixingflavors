@@ -27,7 +27,10 @@ Thumbs.db
 .vscode/
 .idea/
 godot
-Godot_v4.3-stable_linux.x86_64.zip
+Godot_v4.7.1-stable_linux.x86_64.zip
 *.log
-godot_v4.3-stable_linux.x86_64.zip
-node_modules/
+godot_v4.7.1-stable_linux.x86_64.zip
+node_modules/*
+!node_modules/.gdignore
+test-results/
+playwright-report/
