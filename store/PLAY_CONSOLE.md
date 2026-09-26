@@ -6,6 +6,23 @@ internal-testing release. Follow top to bottom on the first submission.
 Read `docs/android_release.md` for how the build is configured and what the
 verification gate actually proves.
 
+## Where this currently stands
+
+Everything that can be automated from here is done and verified. The upload is
+**blocked on steps 2, 3 and 5**, which are browser-console actions bound to the
+Play account and cannot be done through the API or by an agent without a signed-in
+browser session:
+
+- [x] Signed, verified App Bundle (51.7 MB, `verify:android` 29/29).
+- [x] Upload keystore, certificate and key in `C:\secure`.
+- [x] Store icon, feature graphic, listing copy, adaptive/themed icons.
+- [x] Service account key at `C:\secure\play-service-account.json`; it
+      authenticates against the Play Developer API.
+- [ ] **Create the app** (step 2).
+- [ ] **Enrol the upload key** (step 3).
+- [ ] **Complete the store listing and declarations** (steps 4 and 5).
+- [ ] **Upload** (step 7) — one command once the three items above are done.
+
 ## What is already in place
 
 | Item | Location | Notes |
@@ -99,7 +116,12 @@ From `store\play\listing_copy.txt`:
 ## 6. Create a service account for the upload
 
 Only needed if you want `npm run publish:play` to do the upload instead of the
-browser. If you would rather upload by hand, skip to step 9.
+browser. If you would rather upload by hand, skip to step 7.
+
+**Already done on this machine:** the key is at
+`C:\secure\play-service-account.json` (ACL locked to the current user), and
+`npm run publish:play -- --dry-run` authenticates against the Play Developer API
+successfully with it. Steps 1–5 below only have to be redone on a new machine.
 
 1. **Play Console → Users and permissions → Invite new users**.
 2. Invite a Google account, or create a service account under
