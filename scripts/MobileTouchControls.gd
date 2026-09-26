@@ -15,11 +15,26 @@ signal camera_rotated(delta_angle: float)
 enum TouchMode { CHISEL, MARK, PAINT, ROTATE }
 
 const INVALID_GRID_POSITION: Vector3i = Vector3i(-1, -1, -1)
+## Base drag slop in canvas units, before density scaling. Android's guidance is
+## roughly 16dp of slop; a fixed 12 units is only about 4dp on a 2460x1080
+## high-density panel, so a shaky tap became a camera orbit and the chisel was
+## silently lost.
 const DRAG_THRESHOLD: float = 12.0
+const MIN_DRAG_THRESHOLD_DP: float = 16.0
 const DOUBLE_TAP_THRESHOLD: float = 300.0 ## Milliseconds.
 const DOUBLE_TAP_THRESHOLD_MS: float = DOUBLE_TAP_THRESHOLD
 const LONG_PRESS_THRESHOLD: float = 500.0 ## Milliseconds.
 const EMULATED_EVENT_GRACE_MS: float = 180.0
+
+## Density-scaled drag slop, refreshed whenever the UI scale is applied.
+var _drag_threshold: float = DRAG_THRESHOLD
+## Voxel pressed when a long press fired without any drag, so the release can
+## still be honoured instead of being swallowed.
+var _long_press_candidate: Vector3i = INVALID_GRID_POSITION
+var _long_press_recoverable: bool = false
+## Memoised GridManager capability probe, keyed by the node it was taken from.
+var _capability_cached_for: Node = null
+var _grid_manager_capable: bool = false
 
 var current_mode: TouchMode = TouchMode.CHISEL
 
@@ -91,6 +106,20 @@ var _manual_time_msec: float = -1.0
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	_refresh_drag_threshold()
+
+
+## Scales the drag slop with the real screen density. Touch positions arrive in
+## Control-local units, so a fixed 12-unit slop is only a few dp on a dense
+## Android panel and turns shaky taps into camera orbits.
+func _refresh_drag_threshold() -> void:
+	var density_scale: float = 1.0
+	if DisplayServer.get_name() != "headless":
+		var dpi: int = int(DisplayServer.screen_get_dpi())
+		if dpi > 0:
+			# 160dpi is the density-1 baseline Godot's canvas scaling assumes.
+			density_scale = clampf(float(dpi) / 160.0, 1.0, 4.0)
+	_drag_threshold = maxf(DRAG_THRESHOLD, MIN_DRAG_THRESHOLD_DP * density_scale)
 
 
 func _notification(what: int) -> void:
@@ -161,20 +190,16 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 		if motion.is_zero_approx():
 			motion = event.position - _mouse_last_pos
 		_mouse_last_pos = event.position
-		if _mouse_start_pos.distance_to(event.position) >= DRAG_THRESHOLD:
+		if _mouse_start_pos.distance_to(event.position) >= _drag_threshold:
 			_mouse_dragged = true
 			touch_dragged = true
 			dragging_block = false
 			affected_blocks.clear()
 			_invalidate_tap_sequence()
-		if not motion.is_zero_approx():
-			# Once a held mouse actually moves, its camera orbit must not be
-			# reinterpreted as a tool tap even if the movement is below the
-			# visual drag threshold.
-			_mouse_dragged = true
-			touch_dragged = true
-			_invalidate_tap_sequence()
-		# No voxel-drag path is reachable from a held mouse button.
+		# No voxel-drag path is reachable from a held mouse button. The slop test
+		# above is the only escalation: treating any non-zero motion as a drag
+		# made a 1px jitter during a deliberate click cancel the tool action
+		# while still orbiting the camera.
 		_handle_camera_orbit(motion)
 		_consume_input_event()
 		return
@@ -229,7 +254,7 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 
 	if _touch_contacts.size() >= 2:
 		_update_pinch_gesture()
-	elif event.position.distance_to(contact.get("start_position", event.position)) >= DRAG_THRESHOLD:
+	elif event.position.distance_to(contact.get("start_position", event.position)) >= _drag_threshold:
 		contact["dragged"] = true
 		_touch_contacts[event.index] = contact
 		_touch_dragged = true
@@ -271,6 +296,9 @@ func _end_mouse_press(event: InputEventMouseButton) -> void:
 		_reset_gesture_state(true)
 		return
 	if not _mouse_down:
+		# A long press cleared the held state; honour the release if it never
+		# turned into a drag.
+		_recover_long_press_tap()
 		_consume_input_event()
 		return
 	var should_tap: bool = not _mouse_dragged and not touch_dragged and not has_triggered_long_press and not _gesture_cancelled
@@ -331,6 +359,10 @@ func _end_touch_release(event: InputEventScreenTouch) -> void:
 		_reset_gesture_state(true)
 		return
 	if not _touch_contacts.has(event.index):
+		# A long press already cleared the contacts. If it never became a drag,
+		# the release is still the player's tap.
+		_recover_long_press_tap()
+		_consume_input_event()
 		return
 	var contact: Dictionary = _touch_contacts[event.index]
 	var was_multi_touch: bool = _touch_contacts.size() >= 2
@@ -506,26 +538,24 @@ func _invalidate_tap_sequence() -> void:
 
 
 func _handle_double_tap() -> void:
-	if input_locked:
-		return
-	var new_mode: TouchMode = current_mode
-	if current_mode == TouchMode.CHISEL:
-		new_mode = TouchMode.MARK
-	elif current_mode == TouchMode.MARK:
-		new_mode = TouchMode.CHISEL
-	else:
-		return
-	current_mode = new_mode
-	_trigger_ui_mode_switch(new_mode)
-	if OS.has_feature("mobile"):
-		Input.vibrate_handheld(20)
+	# Tool changes are explicit toolbar selections. A double tap is reserved
+	# for camera/UI gesture recognition and must never silently switch the tool
+	# after the first tap has already edited a voxel.
+	_invalidate_tap_sequence()
 
 
 func _handle_long_press() -> void:
 	if input_locked:
 		_reset_gesture_state(true)
 		return
-	# Deliberate safe no-op/reset.  It must not call double-tap or a tool.
+	# A long press with no movement is not an intent to orbit, so remember the
+	# pressed voxel: the release must still be honoured. Previously the gesture
+	# was cancelled outright, so pressing a voxel for 501 ms and letting go did
+	# nothing at all - no chisel, no mark, no sound.
+	_long_press_candidate = _single_pointer_candidate()
+	_long_press_recoverable = not (touch_dragged or _touch_dragged) and _long_press_candidate != INVALID_GRID_POSITION
+	# Deliberate safe no-op for the tool/mode itself. It must not switch tools
+	# or fire a double-tap.
 	has_triggered_long_press = true
 	long_press_was_noop = true
 	touch_dragged = true
@@ -535,6 +565,32 @@ func _handle_long_press() -> void:
 	has_triggered_long_press = true
 	long_press_was_noop = true
 	touch_dragged = true
+
+
+func _single_pointer_candidate() -> Vector3i:
+	if _touch_contacts.size() == 1:
+		var only: Dictionary = _touch_contacts.values()[0] as Dictionary
+		return only.get("candidate", INVALID_GRID_POSITION)
+	return _mouse_tap_candidate
+
+
+## Consumes a still-pressable long press on release. Returns true when the
+## action was applied.
+func _recover_long_press_tap() -> bool:
+	if not _long_press_recoverable:
+		_long_press_candidate = INVALID_GRID_POSITION
+		_long_press_recoverable = false
+		return false
+	var candidate: Vector3i = _long_press_candidate
+	_long_press_candidate = INVALID_GRID_POSITION
+	_long_press_recoverable = false
+	if input_locked or candidate == INVALID_GRID_POSITION:
+		return false
+	var grid: Node = _find_grid_manager()
+	if not is_instance_valid(grid) or not _is_visible_unbroken(candidate):
+		return false
+	_apply_tool_action(candidate)
+	return true
 
 
 func _trigger_ui_mode_switch(mode: TouchMode) -> void:
@@ -618,6 +674,11 @@ func _cancel_gesture() -> void:
 
 func reset_gesture_state() -> void:
 	_reset_gesture_state(true)
+
+
+func _haptics_enabled() -> bool:
+	var audio_manager: Node = get_node_or_null("/root/AudioManager")
+	return audio_manager == null or bool(audio_manager.get("is_haptics_enabled"))
 
 
 func _reset_gesture_state(clear_tap_history: bool = false) -> void:
@@ -929,11 +990,20 @@ func _has_node_property(node: Node, property_name: StringName) -> bool:
 func _is_grid_capable(candidate: Node) -> bool:
 	if not is_instance_valid(candidate):
 		return false
+	# Cache the capability probe. It walks node.get_property_list(), which
+	# materialises a fresh Array[Dictionary] every call, and the raycast calls
+	# this once per grid per cell - hundreds of property-list builds per pointer
+	# event on a 5x5x5 grid, which is exactly the allocation-in-frame-loop cost
+	# the project rules forbid.
+	if candidate == _capability_cached_for:
+		return _grid_manager_capable
 	var has_size: bool = _has_node_property(candidate, &"grid_size")
 	var has_states: bool = _has_node_property(candidate, &"voxel_states")
 	var has_blocks: bool = _has_node_property(candidate, &"blocks")
 	var has_api: bool = candidate.has_method("is_cell_chiseled") or candidate.has_method("is_cell_visible") or candidate.has_method("is_cell_unbroken")
-	return has_size and (has_states or has_blocks or has_api)
+	_capability_cached_for = candidate
+	_grid_manager_capable = has_size and (has_states or has_blocks or has_api)
+	return _grid_manager_capable
 
 
 ## Capability-based lookup; no level-specific scene path is embedded here.

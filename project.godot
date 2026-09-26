@@ -3,7 +3,9 @@ config_version=5
 [application]
 
 run/main_scene="res://scenes/Main.tscn"
-config/name="HybridTacticalPuzzleRPG"
+config/name="Mixing Flavors: Voxel Gauntlet"
+config/version="0.1.0"
+config/quit_on_go_back=false
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -15,6 +17,8 @@ environment/defaults/default_clear_color=Color(0.97, 0.91, 0.59, 1)
 anti_aliasing/quality/msaa_2d=0
 anti_aliasing/quality/msaa_3d=2
 anti_aliasing/quality/screen_space_aa=0
+; Godot refuses an Android export unless ETC2/ASTC texture import is enabled.
+textures/vram_compression/import_etc2_astc=true
 
 [input_devices]
 
@@ -23,14 +27,17 @@ pointing/emulate_mouse_from_touch=true
 
 [display]
 
+window/size/viewport_width=2460
+window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=0
 
 [autoload]
 
 GameManager="*res://scripts/GameManager.gd"
-SaveSystem="*res://scripts/SaveSystem.gd"
+SaveManager="*res://scripts/SaveManager.gd"
+AchievementPlatform="*res://scripts/AchievementPlatform.gd"
 AudioManager="*res://scripts/AudioManager.gd"
-TestBridge="*res://scripts/test_bridge.gd"
-PuzzleRegistry="*res://scripts/PuzzleRegistry.gd"
-RunHistoryManager="*res://scripts/RunHistoryManager.gd"
+PuzzleManager="*res://scripts/PuzzleManager.gd"
+GauntletManager="*res://scripts/GauntletManager.gd"

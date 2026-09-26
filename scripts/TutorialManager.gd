@@ -56,8 +56,7 @@ func on_camera_rotated(delta_angle: float) -> void:
 	if current_step == Step.CAMERA_ORBIT:
 		orbit_accumulated_angle += abs(delta_angle)
 		if orbit_accumulated_angle >= deg_to_rad(45.0):
-			if OS.has_feature("mobile"):
-				Input.vibrate_handheld(40)
+			_play_tutorial_haptic()
 			_start_step(Step.CLUE_ZERO_CHISEL)
 
 func on_voxel_chiseled(grid_pos: Vector3i, is_correct: bool) -> void:
@@ -68,8 +67,7 @@ func on_voxel_chiseled(grid_pos: Vector3i, is_correct: bool) -> void:
 
 	if current_step == Step.CLUE_ZERO_CHISEL:
 		if _is_zero_row_cleared():
-			if OS.has_feature("mobile"):
-				Input.vibrate_handheld(40)
+			_play_tutorial_haptic()
 			_start_step(Step.MARKING_FULL_ROW)
 	elif current_step == Step.DEDUCTION_SOLVE:
 		_check_puzzle_completion()
@@ -77,22 +75,19 @@ func on_voxel_chiseled(grid_pos: Vector3i, is_correct: bool) -> void:
 func on_voxel_marked(grid_pos: Vector3i) -> void:
 	if current_step == Step.MARKING_FULL_ROW:
 		if _is_full_row_marked():
-			if OS.has_feature("mobile"):
-				Input.vibrate_handheld(40)
+			_play_tutorial_haptic()
 			_start_step(Step.LAYER_SLICING)
 	elif current_step == Step.DEDUCTION_SOLVE:
 		_check_puzzle_completion()
 
 func on_layer_slider_changed(axis: String, value: int) -> void:
 	if current_step == Step.LAYER_SLICING:
-		if OS.has_feature("mobile"):
-			Input.vibrate_handheld(40)
+		_play_tutorial_haptic()
 		_start_step(Step.DEDUCTION_SOLVE)
 
 func on_puzzle_solved() -> void:
 	if current_step != Step.VICTORY:
-		if OS.has_feature("mobile"):
-			Input.vibrate_handheld(40)
+		_play_tutorial_haptic()
 		_start_step(Step.VICTORY)
 		tutorial_completed.emit()
 
@@ -102,6 +97,12 @@ func on_puzzle_solved() -> void:
 			game_manager.tutorial_completed = true
 			if game_manager.has_method("save_settings"):
 				game_manager.save_settings()
+
+func _play_tutorial_haptic() -> void:
+	var audio_manager: Node = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("trigger_haptic_light"):
+		audio_manager.call("trigger_haptic_light")
+
 
 func _trigger_contextual_hint() -> void:
 	match current_step:
@@ -119,54 +120,68 @@ func _trigger_contextual_hint() -> void:
 				hud_banner_label.text = "HINT: Check intersecting clues to find blocks that must be empty!"
 
 func _is_zero_row_cleared() -> bool:
-	if not grid_manager: return false
-
-	# '0' rows based on clues are at z=0 and z=2 for y=0
-	var pos1 = Vector3i(0, 0, 0)
-	var pos2 = Vector3i(1, 0, 0)
-	var pos3 = Vector3i(2, 0, 0)
-
-	var all_cleared = true
-	for pos in [pos1, pos2, pos3]:
-		if grid_manager.blocks.has(pos):
-			var block = grid_manager.blocks[pos]
-			if block.current_state != block.BlockState.DESTROYED:
-				all_cleared = false
-				break
-
-	if all_cleared: return true
-
-	var pos4 = Vector3i(0, 0, 2)
-	var pos5 = Vector3i(1, 0, 2)
-	var pos6 = Vector3i(2, 0, 2)
-
-	all_cleared = true
-	for pos in [pos4, pos5, pos6]:
-		if grid_manager.blocks.has(pos):
-			var block = grid_manager.blocks[pos]
-			if block.current_state != block.BlockState.DESTROYED:
-				all_cleared = false
-				break
-
-	return all_cleared
+	if not grid_manager:
+		return false
+	var line: Array[Vector3i] = _find_semantic_line(0)
+	if line.is_empty():
+		return false
+	for pos in line:
+		if grid_manager.blocks.has(pos) and not grid_manager.is_cell_chiseled(pos):
+			return false
+	return true
 
 func _is_full_row_marked() -> bool:
-	if not grid_manager: return false
+	if not grid_manager:
+		return false
+	var line: Array[Vector3i] = _find_semantic_line(grid_manager.grid_size.x)
+	if line.is_empty():
+		return false
+	for pos in line:
+		if not grid_manager.is_cell_marked(pos):
+			return false
+	return true
 
-	# Middle row has 3
-	var pos1 = Vector3i(0, 1, 1)
-	var pos2 = Vector3i(1, 1, 1)
-	var pos3 = Vector3i(2, 1, 1)
 
-	var all_marked = true
-	for pos in [pos1, pos2, pos3]:
-		if grid_manager.blocks.has(pos):
-			var block = grid_manager.blocks[pos]
-			if block.current_state != block.BlockState.MARKED:
-				all_marked = false
-				break
-
-	return all_marked
+func _find_semantic_line(target_count: int) -> Array[Vector3i]:
+	if not grid_manager:
+		return []
+	var size: Vector3i = grid_manager.grid_size
+	# Search the three Picross axes. This keeps the tutorial tied to the
+	# displayed clue structure instead of fixture coordinates.
+	for z in size.z:
+		for y in size.y:
+			var line: Array[Vector3i] = []
+			var count: int = 0
+			for x in size.x:
+				var pos := Vector3i(x, y, z)
+				line.append(pos)
+				if grid_manager.is_target_cell(pos):
+					count += 1
+			if count == target_count:
+				return line
+	for z in size.z:
+		for x in size.x:
+			var line: Array[Vector3i] = []
+			var count: int = 0
+			for y in size.y:
+				var pos := Vector3i(x, y, z)
+				line.append(pos)
+				if grid_manager.is_target_cell(pos):
+					count += 1
+			if count == target_count:
+				return line
+	for y in size.y:
+		for x in size.x:
+			var line: Array[Vector3i] = []
+			var count: int = 0
+			for z in size.z:
+				var pos := Vector3i(x, y, z)
+				line.append(pos)
+				if grid_manager.is_target_cell(pos):
+					count += 1
+			if count == target_count:
+				return line
+	return []
 
 func _check_puzzle_completion() -> void:
 	if not grid_manager: return

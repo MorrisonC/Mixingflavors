@@ -18,6 +18,8 @@ test.describe('Mobile touch smoke test', () => {
     });
 
     test('renders and accepts touch-capable mobile navigation', async ({ page }) => {
+        const viewport = page.viewportSize();
+        expect(viewport.width).toBeGreaterThan(viewport.height);
         expect(await page.evaluate(() => navigator.maxTouchPoints > 0 || 'ontouchstart' in window)).toBe(true);
 
         await waitForEngine(page);

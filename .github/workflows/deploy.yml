@@ -78,9 +78,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/android
-          rm -f build/android/HybridTacticalPuzzleRPG.apk
-          godot --headless --rendering-driver opengl3 --path "$GITHUB_WORKSPACE" --export-release Android build/android/HybridTacticalPuzzleRPG.apk
-          test -s build/android/HybridTacticalPuzzleRPG.apk
+          rm -f build/android/MixingFlavorsVoxelGauntlet.apk
+          godot --headless --rendering-driver opengl3 --path "$GITHUB_WORKSPACE" --export-release Android build/android/MixingFlavorsVoxelGauntlet.apk
+          test -s build/android/MixingFlavorsVoxelGauntlet.apk
 
       - name: Upload Web Release Artifact
         uses: actions/upload-artifact@v4
@@ -92,4 +92,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Android-APK
-          path: build/android/HybridTacticalPuzzleRPG.apk
+          path: build/android/MixingFlavorsVoxelGauntlet.apk

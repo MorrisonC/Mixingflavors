@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <title>Mixing Flavors: Voxel Gauntlet - Play Store feature graphic</title>
+  <!--
+    Google Play feature graphic, 1024x500. Godot's SVG rasteriser ignores
+    <text>, so the wordmark is authored as stroked paths on an explicit grid:
+    cap height 56 for the wordmark, 30 for the tagline, 8 units of tracking.
+    Google may crop the outer edges on some placements, so nothing essential
+    sits within 40px of a border.
+  -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f1538"/>
+      <stop offset="0.45" stop-color="#4a2a63"/>
+      <stop offset="0.78" stop-color="#a94a74"/>
+      <stop offset="1" stop-color="#e87992"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="24%" cy="46%" r="58%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="faceLeft" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfe4f5"/>
+    </linearGradient>
+    <linearGradient id="faceRight" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#7cc2ee"/>
+      <stop offset="1" stop-color="#3f86c6"/>
+    </linearGradient>
+    <pattern id="hex" width="84" height="84" patternUnits="userSpaceOnUse">
+      <path d="M42 7 74 25 74 61 42 79 10 61 10 25Z" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="2"/>
+    </pattern>
+  </defs>
+
+  <rect width="1024" height="500" fill="url(#sky)"/>
+  <rect width="1024" height="500" fill="url(#hex)"/>
+  <rect width="1024" height="500" fill="url(#glow)"/>
+
+  <!-- Sculpture cube, anchored left as the focal point. -->
+  <g transform="translate(214 272)">
+    <path d="M0-122 101-61 0 0-101-61Z" fill="#ffffff"/>
+    <path d="M-101-61 0 0v122l-101-61Z" fill="url(#faceLeft)"/>
+    <path d="M101-61 0 0v122l101-61Z" fill="url(#faceRight)"/>
+    <path d="M-101 66 0 127l101-61v8L0 135l-101-61Z" fill="#0b1030" fill-opacity="0.30"/>
+    <path d="M0-122 101-61 0 0-101-61Z" fill="none" stroke="#ffffff" stroke-opacity="0.9" stroke-width="2.5"/>
+  </g>
+  <g transform="translate(292 176) rotate(45)">
+    <rect x="-27" y="-27" width="54" height="54" rx="10" fill="#ffb340"/>
+    <rect x="-9" y="-42" width="18" height="14" rx="5" fill="#ffd166"/>
+  </g>
+
+  <!--
+    Wordmark: MIXING FLAVORS. Cap height 56, 14 units of tracking, each glyph
+    authored at x=0 and placed with an explicit translate so the widths cannot
+    drift into each other. Total width 571 before the 0.88 scale.
+  -->
+  <g transform="translate(436 168) scale(0.88)" fill="none" stroke="#ffffff" stroke-width="9"
+     stroke-linecap="square" stroke-linejoin="miter">
+    <path transform="translate(0 0)"   d="M0 56V0l18 26L36 0v56"/>                <!-- M -->
+    <path transform="translate(50 0)"  d="M0 0v56"/>                                <!-- I -->
+    <path transform="translate(64 0)"  d="M0 0l34 56M34 0 0 56"/>                  <!-- X -->
+    <path transform="translate(112 0)" d="M0 0v56"/>                                <!-- I -->
+    <path transform="translate(126 0)" d="M0 56V0l30 56V0"/>                        <!-- N -->
+    <path transform="translate(170 0)" d="M32.4 14.6A19 19 0 1 0 38 28M38 28h-12"/> <!-- G -->
+    <path transform="translate(254 0)" d="M0 56V0h30M0 27h22"/>                     <!-- F -->
+    <path transform="translate(298 0)" d="M0 0v56h28"/>                            <!-- L -->
+    <path transform="translate(340 0)" d="M0 56 18 0 36 56M7 38h22"/>              <!-- A -->
+    <path transform="translate(390 0)" d="M0 0 17 56 34 0"/>                       <!-- V -->
+    <path transform="translate(438 0)"
+          d="M18 0C6 0 0 12 0 28s6 28 18 28 18-12 18-28S30 0 18 0Z"/>            <!-- O -->
+    <path transform="translate(488 0)"
+          d="M0 56V0h20a17 17 0 0 1 0 34H0M20 34l18 22"/>                          <!-- R -->
+    <path transform="translate(540 0)"
+          d="M30 13C25 4 8 4 5 15c-3 11 25 11 25 25 0 12-20 15-27 4"/>          <!-- S -->
+  </g>
+
+  <!-- Tagline: DEDUCE · CARVE · REVEAL. Cap height 30, origin at (436, 300). -->
+  <g transform="translate(436 302) scale(0.83)" fill="none" stroke="#ffc98a" stroke-width="6"
+     stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M0 0h10a11 15 0 0 1 0 30H0Z"/>        <!-- D -->
+    <path d="M30 30V0h18M30 14h14M30 30h18"/>      <!-- E -->
+    <path d="M56 0h10a11 15 0 0 1 0 30H56Z"/>      <!-- D -->
+    <path d="M86 0v15a11 15 0 0 0 22 0V0"/>        <!-- U -->
+    <path d="M138 6.6A11 11 0 1 0 138 23.4"/>      <!-- C -->
+    <path d="M146 30V0h18M146 14h14M146 30h18"/>  <!-- E -->
+    <circle cx="198" cy="15" r="4" fill="#ffc98a" stroke="none"/>
+    <path d="M256 6.6A11 11 0 1 0 256 23.4"/>      <!-- C -->
+    <path d="M264 30l11-30 11 30M268 20h14"/>     <!-- A -->
+    <path d="M294 30V0h11a9 9 0 0 1 0 18h-11M305 18l10 12"/> <!-- R -->
+    <path d="M323 0l11 30 11-30"/>                <!-- V -->
+    <path d="M353 30V0h18M353 14h14M353 30h18"/>  <!-- E -->
+    <circle cx="405" cy="15" r="4" fill="#ffc98a" stroke="none"/>
+    <path d="M441 30V0h11a9 9 0 0 1 0 18h-11M452 18l10 12"/> <!-- R -->
+    <path d="M470 30V0h18M470 14h14M470 30h18"/>  <!-- E -->
+    <path d="M496 0l11 30 11-30"/>                <!-- V -->
+    <path d="M526 30V0h18M526 14h14M526 30h18"/>  <!-- E -->
+    <path d="M552 30l11-30 11 30M556 20h14"/>     <!-- A -->
+    <path d="M582 0v30h18"/>                      <!-- L -->
+  </g>
+</svg>

@@ -12,14 +12,16 @@ const baseURL = `http://127.0.0.1:${port}`;
 
 module.exports = defineConfig({
     testDir: './tests/playwright',
-    timeout: 120000,
+    // Must exceed ENGINE_READY_TIMEOUT in tests/playwright/test-utils.js so a
+    // slow-but-correct wasm boot is not reported as a test failure.
+    timeout: 180000,
     expect: {
         timeout: 15000,
     },
-    fullyParallel: true,
+    fullyParallel: false,
     forbidOnly: Boolean(process.env.CI),
     retries: 0,
-    workers: process.env.CI ? 1 : undefined,
+    workers: 1,
     reporter: [
         ['list'],
         ['html', { open: 'never' }],
@@ -42,10 +44,12 @@ module.exports = defineConfig({
         },
         {
             name: 'mobile-chromium',
-            testMatch: /mobile\.spec\.js$/,
+            testMatch: /mobile(_touch)?\.spec\.js$/,
             use: {
                 ...devices['Pixel 5'],
                 browserName: 'chromium',
+                viewport: { width: 851, height: 393 },
+                screen: { width: 851, height: 393 },
             },
         },
     ],
@@ -60,6 +64,7 @@ module.exports = defineConfig({
         env: {
             ...process.env,
             PORT: String(port),
+            WEB_TEST_BUILD: '1',
         },
     },
 });

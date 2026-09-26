@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "platform": "google_play_games_v2",
+  "status": "prepared_pending_play_console_ids",
+  "local_authority": "AchievementService",
+  "notes": "Console IDs and icons are intentionally empty until the signed Android app is registered. Do not ship placeholder values. The local AchievementService definitions stay authoritative; this file only maps local ids onto Play Console resources.",
+  "achievements": [
+    {"local_id":"first_round_cleared","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"ten_rounds_cleared","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"hundred_rounds_cleared","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"depth_five","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"depth_ten","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"depth_twenty_five","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"streak_five","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"streak_ten","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"flawless_round","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"flawless_run","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"boss_hunter","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"compendium_explorer","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"compendium_scholar","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"compendium_complete","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"archive_curator","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"archive_disclosure","play_games_id":"","icon":"","revealed":true},
+    {"local_id":"gacha_disclosure","play_games_id":"","icon":"","revealed":true}
+  ]
+}

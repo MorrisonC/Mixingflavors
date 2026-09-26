@@ -6,13 +6,20 @@
   },
   "scripts": {
     "build:web": "node tools/build-web.js",
+    "verify:web": "node tools/verify-web-release.js",
+    "build:android": "node tools/build-android.js",
+    "verify:android": "node tools/verify-android-bundle.js",
+    "build:puzzles": "node tools/build-puzzle-catalog.js",
+    "verify:catalog": "node tools/verify-catalog.js",
+    "verify:achievements": "node tools/verify-achievements.js",
+    "build:manifest": "node tools/build-manifest.js",
     "serve:web": "node server.js",
     "run:web": "npm run build:web && npm run serve:web",
     "test": "playwright test",
     "test:web": "playwright test"
   },
   "dependencies": {
-    "express": "^5.2.1",
+    "express": "^5.2.0",
     "playwright": "^1.62.0"
   },
   "devDependencies": {

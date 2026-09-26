@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Mixing Flavors: Voxel Gauntlet - themed (monochrome) icon</title>
+  <!--
+    Android 13+ themed icon. The launcher recolours this layer from its alpha
+    channel, so it must be a flat single-colour silhouette: no gradients, no
+    colour that encodes meaning, and no detail that disappears at small sizes.
+  -->
+  <!-- Same 1.4 scale as the colour foreground so the themed icon does not
+       resize when a device switches to it. -->
+  <g transform="translate(512 512) scale(1.4) translate(-512 -512)">
+    <g transform="translate(512 512)">
+      <path d="M0-208 181-104 0 0-181-104Z" fill="#ffffff"/>
+      <path d="M-181-104 0 0v208l-181-104Z" fill="#ffffff"/>
+      <path d="M181-104 0 0v208l181-104Z" fill="#ffffff"/>
+    </g>
+    <g transform="translate(676 336) rotate(45)">
+      <rect x="-48" y="-48" width="96" height="96" rx="18" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

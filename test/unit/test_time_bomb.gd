@@ -76,3 +76,36 @@ func test_mechanic_disabled_when_flag_false() -> void:
 	bomb_mechanic.is_enabled = false
 	bomb_mechanic._process(5.0)
 	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1))
+
+# Clue hosts are lightweight VoxelBlock nodes with no per-block material, so the
+# bomb pulse must be drawn by the mechanic's own overlay. This asserts the
+# visual actually exists, which it did not before the overlay was added.
+func test_bomb_pulse_uses_the_mechanic_overlay_not_a_block_material() -> void:
+	bomb_mechanic._process(1.5)
+	var bomb_pos: Vector3i = bomb_mechanic.active_bomb_pos
+	assert_ne(bomb_pos, Vector3i(-1, -1, -1), "Bomb should have spawned")
+	assert_null((grid.blocks[bomb_pos] as VoxelBlock).base_material, "clue hosts must stay material-less")
+	var overlay := bomb_mechanic._ensure_bomb_visual()
+	assert_not_null(overlay, "bomb overlay should be created on demand")
+	assert_true(overlay.visible, "overlay should be visible while a bomb is active")
+	assert_eq(overlay.position, (grid.blocks[bomb_pos] as VoxelBlock).position)
+	var material := overlay.mesh.surface_get_material(0) as StandardMaterial3D
+	assert_not_null(material)
+	assert_true(material.emission_enabled, "bomb overlay should emit so it reads over the glass blocks")
+	assert_gt(material.albedo_color.a, 0.0, "bomb overlay must not be fully transparent")
+
+func test_bomb_overlay_is_hidden_after_reset() -> void:
+	bomb_mechanic._process(1.5)
+	var bomb_pos: Vector3i = bomb_mechanic.active_bomb_pos
+	assert_ne(bomb_pos, Vector3i(-1, -1, -1), "Bomb should have spawned")
+	grid.destroy_block(grid.blocks[bomb_pos] as VoxelBlock)
+	assert_false(bomb_mechanic._ensure_bomb_visual().visible, "overlay must hide once the bomb is gone")
+
+func test_bomb_overlay_hides_when_the_mechanic_is_disabled_mid_bomb() -> void:
+	bomb_mechanic._process(1.5)
+	assert_ne(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1), "Bomb should have spawned")
+	assert_true(bomb_mechanic._ensure_bomb_visual().visible)
+	bomb_mechanic.is_enabled = false
+	bomb_mechanic._process(0.1)
+	assert_eq(bomb_mechanic.active_bomb_pos, Vector3i(-1, -1, -1))
+	assert_false(bomb_mechanic._ensure_bomb_visual().visible, "disabling must clear the bomb overlay")

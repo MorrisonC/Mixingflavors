@@ -1,30 +1,219 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/MainMenu.gd" id="1_mainmenu"]
 [ext_resource type="Script" path="res://scripts/SettingsPanel.gd" id="2_settings"]
+[ext_resource type="Texture2D" path="res://assets/textures/generated/abstract_panorama.svg" id="3_panorama"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.98, 0.92, 0.93, 1)
+[sub_resource type="Gradient" id="Gradient_scrim"]
+offsets = PackedFloat32Array(0, 0.42, 1)
+colors = PackedColorArray(0.035, 0.043, 0.11, 0.93, 0.071, 0.055, 0.145, 0.55, 0.027, 0.024, 0.071, 0.96)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_scrim"]
+gradient = SubResource("Gradient_scrim")
+width = 8
+height = 512
+fill_from = Vector2(0, 0)
+fill_to = Vector2(0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menu_card"]
+bg_color = Color(0.043, 0.047, 0.11, 0.66)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.882, 0.784, 0.16)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 18
+shadow_offset = Vector2(0, 8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_title_rule"]
+bg_color = Color(0.98, 0.631, 0.282, 0.85)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary"]
+bg_color = Color(0.976, 0.627, 0.278, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.882, 0.71, 0.9)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.353, 0.118, 0.278, 0.5)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary_hover"]
+bg_color = Color(1, 0.729, 0.384, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.965, 0.882, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.353, 0.118, 0.278, 0.6)
+shadow_size = 10
+shadow_offset = Vector2(0, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
-bg_color = Color(0.95, 0.45, 0.55, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_color = Color(0.8, 0.2, 0.3, 0.5)
-shadow_size = 4
-shadow_offset = Vector2(0, 4)
+bg_color = Color(0.129, 0.145, 0.278, 0.86)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.16)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
-bg_color = Color(1.0, 0.55, 0.65, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_color = Color(0.8, 0.2, 0.3, 0.5)
-shadow_size = 2
-shadow_offset = Vector2(0, 2)
+bg_color = Color(0.278, 0.224, 0.478, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.804, 0.549, 0.65)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
+bg_color = Color(0.42, 0.208, 0.435, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.882, 0.71, 0.85)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.043, 0.047, 0.11, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.16)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 22
+shadow_offset = Vector2(0, 10)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_goal_card"]
+bg_color = Color(0.298, 0.478, 0.902, 0.16)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.588, 0.788, 1, 0.38)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_step_card"]
+bg_color = Color(1, 1, 1, 0.05)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_step_badge"]
+bg_color = Color(0.976, 0.627, 0.278, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_btn"]
+bg_color = Color(0.176, 0.192, 0.353, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.18)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_btn_hover"]
+bg_color = Color(0.318, 0.259, 0.549, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.804, 0.549, 0.7)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_btn_primary"]
+bg_color = Color(0.976, 0.627, 0.278, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.882, 0.71, 0.9)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.353, 0.118, 0.278, 0.5)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_btn_primary_hover"]
+bg_color = Color(1, 0.729, 0.384, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.965, 0.882, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.353, 0.118, 0.278, 0.6)
+shadow_size = 10
+shadow_offset = Vector2(0, 5)
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -35,7 +224,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mainmenu")
 
-[node name="Background" type="Panel" parent="."]
+[node name="Panorama" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -43,22 +232,110 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+texture = ExtResource("3_panorama")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_scrim")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="MenuCard" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -250.0
+offset_right = 200.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_menu_card")
 
 [node name="Title" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -180.0
+offset_left = -280.0
 offset_top = 24.0
-offset_right = 180.0
+offset_right = 280.0
 offset_bottom = 88.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.85, 0.15, 0.3, 1)
-theme_override_font_sizes/font_size = 56
-text = "Voxel Logic"
+theme_override_colors/font_color = Color(1, 0.976, 0.949, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.55)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 48
+text = "MIXING FLAVORS"
+horizontal_alignment = 1
+
+[node name="TitleRule" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -110.0
+offset_top = -2.0
+offset_right = 110.0
+offset_bottom = 2.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_title_rule")
+
+[node name="Tagline" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 92.0
+offset_right = -24.0
+offset_bottom = 122.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.749, 0.714, 0.98, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.45)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "DEDUCE  •  CARVE  •  REVEAL"
+horizontal_alignment = 1
+
+[node name="ProfileLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 124.0
+offset_right = -24.0
+offset_bottom = 150.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.722, 0.765, 0.878, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.45)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 15
+text = "New profile  •  Best depth: 0"
 horizontal_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -80,45 +357,89 @@ theme_override_constants/separation = 14
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.129, 0.063, 0.157, 1)
+theme_override_colors/font_hover_color = Color(0.098, 0.047, 0.125, 1)
+theme_override_colors/font_focus_color = Color(0.098, 0.047, 0.125, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_primary")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_primary_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_primary_hover")
+text = "Play Gauntlet"
+
+[node name="DailyButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
-text = "Play"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Daily Challenge"
+
+[node name="TutorialButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "How to Play"
 
 [node name="SelectButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
-text = "Level Select"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Compendium"
 
-[node name="EditorButton" type="Button" parent="VBoxContainer"]
+[node name="ArchiveButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
-text = "Editor"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Voxel Archive"
 
 [node name="SettingsButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "Settings"
+
+[node name="TutorialHint" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 152.0
+offset_right = -24.0
+offset_bottom = 178.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.976, 0.788, 0.502, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 14
+text = "New here? Read How to Play before your first run."
+horizontal_alignment = 1
 
 [node name="SettingsScrim" type="ColorRect" parent="."]
 visible = false
@@ -129,7 +450,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-color = Color(0.08, 0.02, 0.06, 0.62)
+color = Color(0.02, 0.024, 0.063, 0.72)
 
 [node name="SettingsPanel" type="Panel" parent="."]
 visible = false
@@ -147,7 +468,7 @@ offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
 script = ExtResource("2_settings")
 
 [node name="Title" type="Label" parent="SettingsPanel"]
@@ -161,7 +482,7 @@ offset_right = 100.0
 offset_bottom = 60.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.85, 0.15, 0.3, 1)
+theme_override_colors/font_color = Color(1, 0.976, 0.949, 1)
 theme_override_font_sizes/font_size = 32
 text = "Settings"
 horizontal_alignment = 1
@@ -183,14 +504,28 @@ theme_override_constants/separation = 20
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.1, 0.2, 1)
-theme_override_colors/font_pressed_color = Color(0.8, 0.2, 0.3, 1)
-theme_override_colors/font_hover_color = Color(1, 0.4, 0.5, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
+theme_override_colors/font_pressed_color = Color(0.976, 0.788, 0.502, 1)
+theme_override_colors/font_hover_color = Color(1, 0.882, 0.71, 1)
 text = "Fullscreen"
+
+[node name="HapticsCheck" type="CheckBox" parent="SettingsPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
+text = "Haptics"
+
+[node name="ReducedMotionCheck" type="CheckBox" parent="SettingsPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
+text = "Reduced motion"
 
 [node name="VolumeLabel" type="Label" parent="SettingsPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.1, 0.2, 1)
+theme_override_colors/font_color = Color(0.976, 0.788, 0.502, 1)
 text = "Master Volume"
 
 [node name="VolumeSlider" type="HSlider" parent="SettingsPanel/VBoxContainer"]
@@ -216,11 +551,123 @@ offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_modal_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_modal_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_modal_btn_hover")
 text = "Close"
+
+[node name="HowToPlayModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="HowToPlayScrim" type="ColorRect" parent="HowToPlayModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.016, 0.02, 0.055, 0.78)
+
+[node name="Panel" type="PanelContainer" parent="HowToPlayModal"]
+z_index = 1
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -280.0
+offset_right = 420.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="Margin" type="MarginContainer" parent="HowToPlayModal/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 26
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HowToPlayModal/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="HowToPlayModal/Panel/Margin/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.976, 0.949, 1)
+theme_override_font_sizes/font_size = 32
+text = "HOW TO PLAY"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="HowToPlayModal/Panel/Margin/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.749, 0.714, 0.98, 1)
+theme_override_font_sizes/font_size = 15
+text = "Every cube hides one sculpture. Carve away everything that does not belong."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="HowToPlayModal/Panel/Margin/VBoxContainer"]
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Steps" type="VBoxContainer" parent="HowToPlayModal/Panel/Margin/VBoxContainer/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Footnote" type="Label" parent="HowToPlayModal/Panel/Margin/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.765, 0.878, 1)
+theme_override_font_sizes/font_size = 13
+text = "The Gauntlet gives you 120 seconds per floor. Clear it with time to spare and the clock is banked for a rescue run; chisel a block that belongs to the sculpture and you lose HP instead."
+autowrap_mode = 2
+
+[node name="ActionRow" type="HBoxContainer" parent="HowToPlayModal/Panel/Margin/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BackButton" type="Button" parent="HowToPlayModal/Panel/Margin/VBoxContainer/ActionRow"]
+custom_minimum_size = Vector2(140, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_modal_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_modal_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_modal_btn_hover")
+text = "Back"
+
+[node name="StartPracticeButton" type="Button" parent="HowToPlayModal/Panel/Margin/VBoxContainer/ActionRow"]
+custom_minimum_size = Vector2(240, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+theme_override_colors/font_color = Color(0.129, 0.063, 0.157, 1)
+theme_override_colors/font_hover_color = Color(0.098, 0.047, 0.125, 1)
+theme_override_colors/font_focus_color = Color(0.098, 0.047, 0.125, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_modal_btn_primary")
+theme_override_styles/hover = SubResource("StyleBoxFlat_modal_btn_primary_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_modal_btn_primary_hover")
+text = "Start guided practice"
 
 [node name="DifficultyModal" type="Control" parent="."]
 visible = false
@@ -240,7 +687,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-color = Color(0.08, 0.02, 0.06, 0.62)
+color = Color(0.016, 0.02, 0.055, 0.72)
 
 [node name="Panel" type="Panel" parent="DifficultyModal"]
 z_index = 1
@@ -256,7 +703,7 @@ offset_right = 180.0
 offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="DifficultyModal/Panel"]
 layout_mode = 1
@@ -273,62 +720,70 @@ theme_override_constants/separation = 16
 
 [node name="Label" type="Label" parent="DifficultyModal/Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.15, 0.3, 1)
+theme_override_colors/font_color = Color(1, 0.976, 0.949, 1)
 theme_override_font_sizes/font_size = 32
 text = "Select Difficulty"
 horizontal_alignment = 1
+
+[node name="DifficultyDescriptionLabel" type="Label" parent="DifficultyModal/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.765, 0.878, 1)
+theme_override_font_sizes/font_size = 15
+text = "Choose a readable starting point. Every round keeps a fair 120-second clock."
+horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="EasyButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_modal_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_modal_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_modal_btn_hover")
 text = "Easy"
 
 [node name="MediumButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_modal_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_modal_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_modal_btn_hover")
 text = "Medium"
 
 [node name="HardButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_modal_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_modal_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_modal_btn_hover")
 text = "Hard"
 
 [node name="EndlessButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_modal_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_modal_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_modal_btn_hover")
 text = "Endless"
 
 [node name="CloseDifficultyButton" type="Button" parent="DifficultyModal/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 focus_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.937, 0.937, 0.98, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_modal_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_modal_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_modal_btn_hover")
 text = "Cancel"

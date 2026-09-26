@@ -1,5 +1,7 @@
 extends GutTest
 
+const VoxelBlockClass = preload("res://scripts/Block.gd")
+
 const GridManagerClass = preload("res://scripts/GridManager.gd")
 const GameManagerClass = preload("res://scripts/GameManager.gd")
 
@@ -40,9 +42,15 @@ func test_solid_cube_fixture_win_and_near_miss():
 	# All target cells intact -> Win
 	assert_true(grid.check_puzzle_complete(), "Solid 2x2x2 cube intact should return complete = true")
 
-	# Near miss: Hammer 1 target cell -> False
-	grid.hammer_cell(Vector3i(0, 0, 0))
-	assert_false(grid.check_puzzle_complete(), "Solid cube with 1 hammered target cell should return complete = false")
+	# A kept voxel must not be destroyable through the state primitive at all.
+	# That is now the stronger guarantee, so assert it directly.
+	assert_false(grid.hammer_cell(Vector3i(0, 0, 0)), "the primitive must refuse to destroy a kept voxel")
+	assert_true(grid.check_puzzle_complete(), "A refused chisel must leave a solved cube solved")
+
+	# And the win condition must still reject a destroyed target if state is ever
+	# corrupted from outside (a migration, a bad save, a future mechanic).
+	grid.voxel_states[Vector3i(0, 0, 0)]["cell_state"] = GridManagerClass.CellState.DESTROYED
+	assert_false(grid.check_puzzle_complete(), "Solid cube with 1 destroyed target cell should return complete = false")
 
 func test_l_shape_fixture_win_and_near_miss():
 	grid.grid_size = Vector3i(3, 3, 3)
@@ -123,6 +131,46 @@ func test_plus_sign_fixture_win_and_near_miss():
 
 	assert_true(grid.check_puzzle_complete(), "Plus-sign puzzle with all non-targets chiseled and optional marks should return complete = true")
 
-	# Near miss: Accidentally hammer 1 of the target arm voxels -> False
-	grid.hammer_cell(Vector3i(0, 1, 1))
-	assert_false(grid.check_puzzle_complete(), "Plus-sign puzzle with 1 accidentally hammered target cell should return complete = false")
+	# Near miss: a kept voxel cannot be chiselled at all, so the round stays won.
+	assert_false(grid.hammer_cell(Vector3i(0, 1, 1)), "the primitive must refuse to destroy a kept voxel")
+	assert_true(grid.check_puzzle_complete(), "A refused chisel must leave a solved puzzle solved")
+	# If state is ever corrupted from outside, the win condition must still reject it.
+	grid.voxel_states[Vector3i(0, 1, 1)]["cell_state"] = GridManagerClass.CellState.DESTROYED
+	assert_false(grid.check_puzzle_complete(), "Plus-sign puzzle with 1 destroyed target cell should return complete = false")
+
+# Grouped clues are joined with the "·" display separator, e.g. "1·2". A plain
+# to_int() on that string yields 0, which rendered the clue as the red "unknown"
+# marker and hid the kind sprite. The groups must be summed instead.
+func test_grouped_clue_totals_are_summed_not_parsed_as_zero() -> void:
+	var block: VoxelBlock = VoxelBlockClass.new()
+	block.lightweight_mode = true
+	add_child_autoqfree(block)
+	var direction := Vector3i(0, 1, 0)
+	block.set_face_hint(direction, "(1·2)")
+	var label: Label3D = block.face_labels[direction] as Label3D
+	assert_not_null(label, "clue host should lazily create its face label")
+	assert_eq(label.text, "1·2", "grouped clue text should stay grouped for readability")
+	assert_ne(label.modulate, Color("#ff6b7a"), "a valid grouped clue must not render as the red unknown marker")
+	assert_true(block.face_sprites[direction].visible, "parenthesised group should show its circle marker")
+
+func test_grouped_clue_of_three_groups_sums_correctly() -> void:
+	var block: VoxelBlock = VoxelBlockClass.new()
+	block.lightweight_mode = true
+	add_child_autoqfree(block)
+	var direction := Vector3i(1, 0, 0)
+	block.set_face_hint(direction, "[2·3·1]")
+	var label: Label3D = block.face_labels[direction] as Label3D
+	assert_eq(label.text, "2·3·1")
+	assert_ne(label.modulate, Color("#ff6b7a"), "three-group clue must not render as unknown")
+	assert_true(block.face_sprites[direction].visible, "bracketed group should show its square marker")
+
+func test_single_group_clue_still_behaves() -> void:
+	var block: VoxelBlock = VoxelBlockClass.new()
+	block.lightweight_mode = true
+	add_child_autoqfree(block)
+	var direction := Vector3i(0, 0, 1)
+	block.set_face_hint(direction, "(3)")
+	var label: Label3D = block.face_labels[direction] as Label3D
+	assert_eq(label.text, "3")
+	assert_ne(label.modulate, Color("#ff6b7a"))
+	assert_true(block.face_sprites[direction].visible)

@@ -5,13 +5,12 @@ signal opened
 
 @onready var close_button: Button = $CloseButton
 @onready var fullscreen_check: CheckBox = $VBoxContainer/FullscreenCheck
+@onready var haptics_check: CheckBox = $VBoxContainer/HapticsCheck
+@onready var reduced_motion_check: CheckBox = $VBoxContainer/ReducedMotionCheck
 @onready var volume_slider: HSlider = $VBoxContainer/VolumeSlider
 
-var config: ConfigFile = ConfigFile.new()
 var _modal_owner: Control = null
 var _ready_complete: bool = false
-
-const SETTINGS_FILE_PATH: String = "user://settings.cfg"
 
 
 func _ready() -> void:
@@ -19,6 +18,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	close_button.pressed.connect(_on_close_pressed)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
+	haptics_check.toggled.connect(_on_haptics_toggled)
+	reduced_motion_check.toggled.connect(_on_accessibility_toggled)
 	volume_slider.value_changed.connect(_on_volume_changed)
 	visibility_changed.connect(_on_visibility_changed)
 	_load_settings()
@@ -78,21 +79,39 @@ func _on_fullscreen_toggled(button_pressed: bool) -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 
 
+func _on_haptics_toggled(enabled: bool) -> void:
+	var audio_manager: Node = get_node_or_null("/root/AudioManager")
+	if audio_manager:
+		audio_manager.set("is_haptics_enabled", enabled)
+
+
+func _on_accessibility_toggled(_enabled: bool) -> void:
+	# Keep the setting authoritative in SaveManager. Consumers (reveal,
+	# victory, and camera feedback) read the snapshot at the moment they act,
+	# so toggling the option takes effect without restarting the scene.
+	_save_settings()
+
+
 func _on_volume_changed(value: float) -> void:
 	var bus_index: int = AudioServer.get_bus_index("Master")
 	if bus_index < 0:
 		return
-	var safe_value: float = clampf(value, 0.0001, 1.0)
-	AudioServer.set_bus_volume_db(bus_index, linear_to_db(safe_value))
+	var safe_value: float = clampf(value, 0.0, 1.0)
+	AudioServer.set_bus_volume_db(bus_index, linear_to_db(maxf(safe_value, 0.0001)))
 
 
 func _load_settings() -> void:
-	var loaded: bool = config.load(SETTINGS_FILE_PATH) == OK
 	var is_fullscreen: bool = false
 	var volume: float = 1.0
-	if loaded:
-		is_fullscreen = bool(config.get_value("display", "fullscreen", false))
-		volume = float(config.get_value("audio", "master_volume", 1.0))
+	var haptics_enabled: bool = true
+	var reduced_motion: bool = false
+	var save_manager: Node = get_node_or_null("/root/SaveManager")
+	if save_manager and save_manager.has_method("get_settings"):
+		var settings: Dictionary = save_manager.call("get_settings")
+		is_fullscreen = bool(settings.get("fullscreen", false))
+		volume = float(settings.get("sfx_vol", 1.0))
+		haptics_enabled = bool(settings.get("haptics", true))
+		reduced_motion = bool(settings.get("reduced_motion", false))
 
 	if _fullscreen_supported():
 		fullscreen_check.disabled = false
@@ -106,6 +125,9 @@ func _load_settings() -> void:
 		fullscreen_check.button_pressed = false
 		fullscreen_check.tooltip_text = "Fullscreen is unavailable in this environment"
 
+	haptics_check.button_pressed = haptics_enabled
+	_on_haptics_toggled(haptics_enabled)
+	reduced_motion_check.button_pressed = reduced_motion
 	volume_slider.value = clampf(volume, 0.0, 1.0)
 	_on_volume_changed(volume_slider.value)
 
@@ -113,9 +135,26 @@ func _load_settings() -> void:
 func _save_settings() -> void:
 	if not _ready_complete:
 		return
-	config.set_value("display", "fullscreen", fullscreen_check.button_pressed and _fullscreen_supported())
-	config.set_value("audio", "master_volume", clampf(volume_slider.value, 0.0, 1.0))
-	config.save(SETTINGS_FILE_PATH)
+	var fullscreen_enabled: bool = fullscreen_check.button_pressed and _fullscreen_supported()
+	var safe_volume: float = clampf(volume_slider.value, 0.0, 1.0)
+	var save_manager: Node = get_node_or_null("/root/SaveManager")
+	if save_manager == null:
+		return
+	# One batched write instead of one durable save per control: the old path
+	# serialized, validated, rotated and mirrored the profile four times, and
+	# the panel also saved again from _exit_tree.
+	if save_manager.has_method("set_settings"):
+		save_manager.call("set_settings", {
+			"fullscreen": fullscreen_enabled,
+			"haptics": haptics_check.button_pressed,
+			"reduced_motion": reduced_motion_check.button_pressed,
+			"sfx_vol": safe_volume,
+		})
+	elif save_manager.has_method("set_setting"):
+		save_manager.call("set_setting", "fullscreen", fullscreen_enabled)
+		save_manager.call("set_setting", "haptics", haptics_check.button_pressed)
+		save_manager.call("set_setting", "reduced_motion", reduced_motion_check.button_pressed)
+		save_manager.call("set_setting", "sfx_vol", safe_volume)
 
 
 func _fullscreen_supported() -> bool:

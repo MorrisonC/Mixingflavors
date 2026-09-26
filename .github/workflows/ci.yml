@@ -74,11 +74,24 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Run headless GUT suite
+        run: godot --headless --rendering-driver opengl3 -s addons/gut/gut_cmdln.gd -gdir=res://test/unit/ -gexit
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
+
+      - name: Verify content data before export
+        run: |
+          npm run verify:catalog
+          npm run verify:achievements
 
       - name: Build fresh Web export
         run: npm run build:web
 
       - name: Run Playwright E2E tests against a fresh build
         run: npm run test:web
+
+      - name: Build and verify production Web artifact
+        run: |
+          npm run build:web
+          npm run verify:web

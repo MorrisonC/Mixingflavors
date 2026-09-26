@@ -53,3 +53,45 @@ func test_fit_aliases_delegate_to_safe_fit() -> void:
 	assert_true(is_finite(first_distance))
 	assert_true(is_finite(second_distance))
 	assert_almost_eq(first_distance, second_distance, 0.0001)
+
+
+# The camera could be pinched in until it sat INSIDE a puzzle. Every ray then
+# resolved to the single cell containing the origin, so the whole screen became
+# one un-chiselable target. The fit now raises the distance floor to the
+# puzzle's own bounding radius.
+func test_camera_cannot_be_pulled_inside_the_puzzle() -> void:
+	controller.min_distance = 0.5
+	controller.minimum_safe_distance = 0.5
+	var large: Vector3i = Vector3i(16, 12, 10)
+	controller.fit_to_grid(large)
+	var radius: float = (Vector3(large) * controller.voxel_size * 0.5).length()
+	controller.target_distance = 0.1
+	controller.add_zoom_input(-100.0)
+	assert_gt(controller.target_distance, radius, "The camera must never be closer than the puzzle radius")
+	# And the floor must follow the puzzle, not stick at the largest one seen.
+	controller.fit_to_grid(Vector3i(3, 3, 3))
+	controller.target_distance = 0.1
+	controller.add_zoom_input(-100.0)
+	var small_radius: float = (Vector3(3, 3, 3) * controller.voxel_size * 0.5).length()
+	assert_lt(controller.target_distance, radius, "A small puzzle must not keep the large puzzle's floor")
+	assert_gt(controller.target_distance, small_radius)
+
+
+# Reset View is the advertised recovery action, but it only restored orientation
+# and left the distance wherever the player had pinched to.
+func test_reset_view_restores_the_fitted_distance_not_just_orientation() -> void:
+	controller.fit_to_grid(Vector3i(5, 5, 5))
+	var fitted: float = controller.target_distance
+	controller.target_distance = fitted * 0.3
+	controller.current_distance = controller.target_distance
+	controller.reset_view(0.0)
+	assert_almost_eq(controller.target_distance, fitted, 0.0001, "Reset must re-fit the distance")
+	assert_almost_eq(controller.current_distance, fitted, 0.0001, "The live distance must be restored too")
+
+
+func test_reset_view_is_safe_before_any_fit() -> void:
+	controller.target_distance = 12.0
+	controller.current_distance = 12.0
+	controller.reset_view(0.0)
+	assert_true(is_finite(controller.target_distance), "Reset must not produce a non-finite distance")
+	assert_gt(controller.target_distance, 0.0)

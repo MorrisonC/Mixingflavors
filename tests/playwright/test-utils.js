@@ -2,7 +2,11 @@
 
 const { expect } = require('@playwright/test');
 
-const ENGINE_READY_TIMEOUT = 60000;
+// The web build streams and compiles a ~39 MB index.wasm before gameAPI is
+// injected. On an idle machine that takes 10-35s, but on a loaded CI or dev
+// machine it can legitimately exceed a minute. This is a harness budget, not a
+// product assertion: a genuine boot failure still fails fast and loudly.
+const ENGINE_READY_TIMEOUT = 120000;
 const API_RESULT_TIMEOUT = 15000;
 
 function attachBrowserDiagnostics(page) {

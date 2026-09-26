@@ -34,14 +34,23 @@ func test_slicing_preserves_canonical_mark_state() -> void:
 func test_zero_and_grouped_clues_are_renderable() -> void:
 	assert_eq(grid_manager._format_hint_text([]), "0")
 	assert_eq(grid_manager._format_hint_text([3]), "3")
-	assert_eq(grid_manager._format_hint_text([1, 2]), "(3)")
-	assert_eq(grid_manager._format_hint_text([1, 1, 1]), "[3]")
+	assert_eq(grid_manager._format_hint_text([1, 2]), "1·2")
+	assert_eq(grid_manager._format_hint_text([1, 1, 1]), "1·1·1")
 	var block := BlockScene.instantiate() as VoxelBlock
 	add_child_autoqfree(block)
 	await get_tree().process_frame
 	block.set_face_hint(Vector3i(1, 0, 0), "0")
 	assert_true((block.face_labels[Vector3i(1, 0, 0)] as Label3D).visible)
 	assert_eq((block.face_labels[Vector3i(1, 0, 0)] as Label3D).text, "0")
+
+func test_lightweight_clue_hosts_do_not_create_heavy_cell_bodies() -> void:
+	for block_value: Variant in grid_manager.blocks.values():
+		var block: VoxelBlock = block_value as VoxelBlock
+		assert_true(block.lightweight_mode)
+		assert_null(block.get_node_or_null("MeshInstance3D"))
+		assert_null(block.get_node_or_null("CollisionShape3D"))
+		assert_null(block.get_node_or_null("BreakParticles"))
+
 
 func test_is_cell_correct_logic() -> void:
 	var target_pos := Vector3i(0, 0, 0)
@@ -54,7 +63,12 @@ func test_is_cell_correct_logic() -> void:
 	assert_false(grid_manager.is_cell_correct(non_target_pos))
 	assert_true(grid_manager.hammer_cell(non_target_pos))
 	assert_true(grid_manager.is_cell_correct(non_target_pos))
-	assert_true(grid_manager.hammer_cell(target_pos))
+	# A kept voxel cannot be chiselled through the primitive, so it stays correct.
+	assert_false(grid_manager.hammer_cell(target_pos), "the primitive must refuse to destroy a kept voxel")
+	assert_true(grid_manager.is_cell_correct(target_pos))
+	# is_cell_correct must still report a destroyed target as incorrect if the
+	# state is ever corrupted from outside the guarded write path.
+	grid_manager.voxel_states[target_pos]["cell_state"] = GridManager.CellState.DESTROYED
 	assert_false(grid_manager.is_cell_correct(target_pos))
 
 func test_preassigned_custom_puzzle_is_loaded_once() -> void:
@@ -63,6 +77,11 @@ func test_preassigned_custom_puzzle_is_loaded_once() -> void:
 		"id": "unit_custom",
 		"dims": [2, 1, 1],
 		"target_voxels": [[1, 0, 0]],
+		"clues": {
+			"x_axis": {"0,0": {"total": 1, "blocks": [1]}},
+			"y_axis": {"0,0": {"total": 0, "blocks": []}, "1,0": {"total": 1, "blocks": [1]}},
+			"z_axis": {"0,0": {"total": 0, "blocks": []}, "1,0": {"total": 1, "blocks": [1]}}
+		},
 		"name": "Unit Custom"
 	}
 	add_child_autoqfree(custom_grid)

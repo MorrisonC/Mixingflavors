@@ -18,12 +18,20 @@ Only assets with a verified, compatible license are approved for release.
 
 ## Original Project Artwork
 
-- **Assets:** `assets/textures/generated/abstract_panorama.svg` and `icon.svg`
-- **Creator:** Hybrid Tactical Puzzle RPG project
+- **Assets:** `assets/textures/generated/abstract_panorama.svg`, `icon.svg`, and
+  the branding masters in `assets/branding/` (`icon_master.svg`,
+  `icon_foreground.svg`, `icon_monochrome.svg`, `feature_graphic.svg`)
+- **Creator:** Mixing Flavors project
 - **License:** CC0 1.0 Universal
-- **Use:** The panorama replaces uncleared photographic runtime backgrounds; the icon is
-  the application and Web icon.
-- **License copy:** `assets/textures/generated/LICENSE.txt`
+- **Use:** The panorama is the title-screen backdrop; the branding masters are
+  the source for the Android launcher icons, the Play Console listing icon and
+  feature graphic, the splash logo, and the Web/PWA icons.
+- **Generated outputs:** `assets/branding/launcher/*.png` and `store/play/*.png`
+  are rasterized from the SVG masters by
+  `godot --headless --path . -s tools/branding/generate_store_assets.gd`. Do not
+  hand-edit the PNGs.
+- **License copy:** `assets/textures/generated/LICENSE.txt`,
+  `assets/branding/LICENSE.txt`
 
 ## Runtime-Generated Geometry
 
@@ -39,16 +47,8 @@ UI-pack files are required at runtime.
 - **License copy:** `addons/gut/LICENSE.md`
 - GUT is used for automated tests and is excluded from release exports.
 
-## Unverified Legacy Files
+## Content curation
 
-The following files do not have sufficient provenance in the repository and are not
-approved for public distribution:
-
-- `assets/textures/valentine/bg1.jpg` through `bg8.jpg`
-- `assets/textures/beautiful_skybox.jpg`
-- `assets/textures/abstract_bg.png`
-- `assets/textures/stylized_cube.png`
-- `assets/models/heart.obj`
-
-Runtime scenes no longer depend on these files, and the Web release preset excludes them.
-They may be removed after any historical visual references are no longer needed.
+The runtime uses the verified generated panorama, audio pack, and puzzle catalog.
+Legacy photographic backgrounds and the one-off OBJ conversion utility were removed
+because they were not referenced by the shipping scenes.

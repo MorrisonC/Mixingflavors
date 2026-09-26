@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Mixing Flavors: Voxel Gauntlet - adaptive icon foreground</title>
+  <!--
+    Android adaptive foreground. The system masks this layer down to roughly the
+    central 66% of the canvas and can crop it further on some launchers, so all
+    meaningful content stays inside a 660px safe circle and nothing important
+    touches an edge.
+  -->
+  <defs>
+    <linearGradient id="faceLeft" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfe4f5"/>
+    </linearGradient>
+    <linearGradient id="faceRight" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#7cc2ee"/>
+      <stop offset="1" stop-color="#3f86c6"/>
+    </linearGradient>
+    <filter id="lift" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0a0e28" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!--
+    Scaled so the mark fills roughly 85% of the 72dp visible mask. The themed
+    (monochrome) layer uses the identical scale, because the launcher masks
+    both layers with the same shape and a mismatch would make the icon jump
+    when the device switches to a themed icon.
+  -->
+  <g transform="translate(512 512) scale(1.4) translate(-512 -512)">
+    <g transform="translate(512 512)" filter="url(#lift)">
+      <path d="M0-208 181-104 0 0-181-104Z" fill="#ffffff"/>
+      <path d="M-181-104 0 0v208l-181-104Z" fill="url(#faceLeft)"/>
+      <path d="M181-104 0 0v208l181-104Z" fill="url(#faceRight)"/>
+      <path d="M-181 112 0 216l181-104v14L0 230l-181-104Z" fill="#0b1030" fill-opacity="0.32"/>
+      <path d="M0-208 181-104 0 0-181-104Z" fill="none" stroke="#ffffff" stroke-opacity="0.9" stroke-width="3"/>
+    </g>
+
+    <g transform="translate(676 336) rotate(45)" filter="url(#lift)">
+      <rect x="-48" y="-48" width="96" height="96" rx="18" fill="#ffb340"/>
+      <rect x="-17" y="-75" width="34" height="24" rx="8" fill="#ffd166"/>
+    </g>
+  </g>
+</svg>

@@ -10,6 +10,7 @@ func before_each():
 
 func after_each():
 	grid_manager.queue_free()
+	await get_tree().process_frame
 
 func test_boss_loop_hp_and_damage():
 	assert_eq(grid_manager.player_hp, 3, "Player should start with 3 HP")

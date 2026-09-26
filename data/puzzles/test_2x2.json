@@ -1,0 +1,30 @@
+{
+  "id": "test_2x2",
+  "name": "Test Fixture 2x2",
+  "theme": "tutorial",
+  "difficulty_tier": "easy",
+  "par_time_seconds": 30,
+  "dims": [2, 2, 2],
+  "target_voxels": [[0, 0, 0], [1, 1, 1]],
+  "clues": {
+    "x_axis": {
+      "0,0": {"total": 1, "blocks": [1]},
+      "0,1": {"total": 0, "blocks": []},
+      "1,0": {"total": 0, "blocks": []},
+      "1,1": {"total": 1, "blocks": [1]}
+    },
+    "y_axis": {
+      "0,0": {"total": 1, "blocks": [1]},
+      "0,1": {"total": 0, "blocks": []},
+      "1,0": {"total": 0, "blocks": []},
+      "1,1": {"total": 1, "blocks": [1]}
+    },
+    "z_axis": {
+      "0,0": {"total": 1, "blocks": [1]},
+      "0,1": {"total": 0, "blocks": []},
+      "1,0": {"total": 0, "blocks": []},
+      "1,1": {"total": 1, "blocks": [1]}
+    }
+  },
+  "solvable": true
+}

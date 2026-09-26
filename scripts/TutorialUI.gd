@@ -3,12 +3,14 @@ class_name TutorialUI
 
 const GameManagerClass = preload("res://scripts/GameManager.gd")
 
-@onready var banner_label: Label = $MarginContainer/VBoxContainer/BannerPanel/MarginContainer/BannerLabel
+@onready var banner_label: Label = $MarginContainer/VBoxContainer/BannerPanel/MarginContainer/Row/BannerLabel
+@onready var step_label: Label = $MarginContainer/VBoxContainer/BannerPanel/MarginContainer/Row/StepChip/MarginContainer/StepLabel
 @onready var skip_button: Button = $MarginContainer/VBoxContainer/TopRow/SkipButton
 @onready var tool_highlight: ColorRect = $ToolHighlight
 @onready var slicer_highlight: ColorRect = $SlicerHighlight
 @onready var banner_panel: PanelContainer = $MarginContainer/VBoxContainer/BannerPanel
 @onready var safe_margin: MarginContainer = $MarginContainer
+@onready var content_column: VBoxContainer = $MarginContainer/VBoxContainer
 
 var tutorial_manager: TutorialManager
 var _tool_target: Control
@@ -109,18 +111,57 @@ func _apply_safe_area_and_position() -> void:
 	var insets: Vector4 = _get_safe_area_insets(viewport_size)
 	if safe_margin:
 		safe_margin.add_theme_constant_override("margin_left", int(insets.x + 12.0))
-		safe_margin.add_theme_constant_override("margin_top", int(insets.y + 12.0))
 		safe_margin.add_theme_constant_override("margin_right", int(insets.z + 12.0))
 		safe_margin.add_theme_constant_override("margin_bottom", int(insets.w + 12.0))
+		# The instruction banner used to sit at the very top of the screen, which
+		# is exactly where the puzzle HUD's own top bar renders. Both panels were
+		# near-black, so the text was painted underneath the HUD and read as "no
+		# instructions at all". Start below the HUD instead.
+		safe_margin.add_theme_constant_override("margin_top", int(_banner_top_inset(insets, viewport_size)))
+	if content_column:
+		content_column.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	if banner_panel:
-		banner_panel.custom_minimum_size = Vector2(0.0, 56.0 if viewport_size.x < 520.0 else 64.0)
+		banner_panel.custom_minimum_size = Vector2(0.0, 64.0 if viewport_size.x < 520.0 else 72.0)
 		banner_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		banner_panel.clip_contents = true
+		banner_panel.clip_contents = false
 	if banner_label:
 		banner_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		banner_label.max_lines_visible = 0
+		# max_lines_visible is 0-based, not "unlimited": 0 clipped the label after
+		# zero lines, so the guided instruction was never painted at all even
+		# though the text was correctly assigned. -1 is the unlimited sentinel.
+		banner_label.max_lines_visible = -1
 		banner_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		banner_label.add_theme_font_size_override("font_size", 16 if viewport_size.x < 520.0 else 20)
+	if step_label:
+		step_label.add_theme_font_size_override("font_size", 13 if viewport_size.x < 520.0 else 15)
 	_position_highlights()
+
+
+## Returns the top margin that clears both the safe area and the puzzle HUD.
+func _banner_top_inset(insets: Vector4, viewport_size: Vector2) -> float:
+	var top: float = insets.y + 12.0
+	var hud_rect: Rect2 = _get_hud_top_rect()
+	if hud_rect.size.y <= 0.0:
+		return top
+	# Only push down for a HUD that is actually near the top; a HUD placed lower
+	# on the screen must not drag the banner down into the middle of the board.
+	if hud_rect.position.y < top + 220.0:
+		top = maxf(top, hud_rect.end.y + 12.0)
+	# Never let the banner be pushed off the bottom of a very short screen.
+	var max_top: float = maxf(top, viewport_size.y * 0.5)
+	return minf(top, max_top)
+
+
+func _get_hud_top_rect() -> Rect2:
+	var grid_manager: Node = _get_grid_manager()
+	if grid_manager == null:
+		return Rect2()
+	# The gauntlet hides the child puzzle's top row and drives its own HUD, so
+	# an empty rect there simply means "nothing to clear".
+	var top_row: Node = grid_manager.find_child("TopRowContainer", true, false)
+	if top_row is Control and (top_row as Control).is_visible_in_tree():
+		return (top_row as Control).get_global_rect()
+	return Rect2()
 
 
 func _position_highlights() -> void:
@@ -150,8 +191,18 @@ func _on_step_advanced(step_index: int, instruction: String) -> void:
 	if banner_label:
 		banner_label.text = instruction
 		call_deferred("_animate_banner")
-		if step_index > 0:
-			_show_floating_text("Great job!")
+	if step_label:
+		step_label.text = "STEP %d/%d" % [step_index + 1, _total_steps()]
+	if step_index > 0:
+		_show_floating_text("Great job!")
+
+
+func _total_steps() -> int:
+	if tutorial_manager == null:
+		return 1
+	var instructions: Dictionary = tutorial_manager.step_instructions
+	# The victory card is a result, not an instruction the player is waiting on.
+	return maxi(1, instructions.size() - 1)
 
 
 func _animate_banner() -> void:

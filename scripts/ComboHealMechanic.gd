@@ -24,4 +24,7 @@ func _on_combo_updated(current_combo: int) -> void:
 		max_hp = int(round_owner.get("max_mistakes"))
 	if grid_manager.player_hp < max_hp:
 		grid_manager.player_hp = mini(grid_manager.player_hp + heal_amount, max_hp)
+		var heal_owner: Node = grid_manager.get_parent()
+		if heal_owner != null and heal_owner.has_method("heal_round_mistake"):
+			heal_owner.call("heal_round_mistake")
 		grid_manager._update_ui_state()

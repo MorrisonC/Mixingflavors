@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Mixing Flavors: Voxel Gauntlet - master app icon (full bleed)</title>
+  <!--
+    Full-bleed square master. Google Play applies its own corner rounding to the
+    512x512 listing icon, and Android's adaptive background layer must reach the
+    edges, so this file deliberately has no corner radius and no transparency.
+    The foreground layers live in icon_foreground.svg.
+  -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#131a44"/>
+      <stop offset="0.5" stop-color="#5d2f6d"/>
+      <stop offset="0.78" stop-color="#b5527a"/>
+      <stop offset="1" stop-color="#e87992"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/>
+      <stop offset="0.55" stop-color="#ffd9e6" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="faceLeft" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfe4f5"/>
+    </linearGradient>
+    <linearGradient id="faceRight" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#7cc2ee"/>
+      <stop offset="1" stop-color="#3f86c6"/>
+    </linearGradient>
+    <pattern id="hex" width="96" height="96" patternUnits="userSpaceOnUse">
+      <path d="M48 8 84 29 84 67 48 88 12 67 12 29Z" fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="2"/>
+    </pattern>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <rect width="1024" height="1024" fill="url(#hex)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <!-- Isometric sculpture cube. -->
+  <g transform="translate(512 540)">
+    <path d="M0-276 240-138 0 0-240-138Z" fill="#ffffff"/>
+    <path d="M-240-138 0 0v276l-240-138Z" fill="url(#faceLeft)"/>
+    <path d="M240-138 0 0v276l240-138Z" fill="url(#faceRight)"/>
+    <path d="M-240 150 0 288l240-138v18L0 306l-240-138Z" fill="#0b1030" fill-opacity="0.30"/>
+    <path d="M0-276 240-138 0 0-240-138Z" fill="none" stroke="#ffffff" stroke-opacity="0.85" stroke-width="3"/>
+  </g>
+
+  <!-- The single amber block being carved away: the game's one verb, reduced to a shape. -->
+  <g transform="translate(742 268) rotate(45)">
+    <rect x="-62" y="-62" width="124" height="124" rx="22" fill="#ffb340"/>
+    <rect x="-22" y="-96" width="44" height="30" rx="9" fill="#ffd166"/>
+  </g>
+</svg>

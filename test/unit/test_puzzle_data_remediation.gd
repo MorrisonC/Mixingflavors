@@ -2,7 +2,7 @@ extends GutTest
 
 const PuzzleDataValidatorClass = preload("res://scripts/PuzzleDataValidator.gd")
 const SolvabilityValidatorClass = preload("res://scripts/SolvabilityValidator.gd")
-const PuzzleRegistryClass = preload("res://scripts/PuzzleRegistry.gd")
+const PuzzleManagerClass = preload("res://scripts/PuzzleManager.gd")
 
 
 func test_contradiction_is_checked_on_an_already_known_line() -> void:
@@ -140,13 +140,12 @@ func test_target_authoritative_puzzles_repair_bad_stored_clues() -> void:
 	assert_false(SolvabilityValidatorClass.is_puzzle_solvable(puzzle))
 
 
-func test_registry_returns_canonical_production_schema_and_caches_themes() -> void:
-	var registry: PuzzleRegistryClass = PuzzleRegistryClass.new()
-	add_child_autoqfree(registry)
-	registry.load_manifest()
-	var first_load: Array = registry.load_theme("mythical")
-	assert_gt(first_load.size(), 0)
-	for puzzle: Dictionary in first_load:
+func test_runtime_catalog_returns_canonical_production_schema() -> void:
+	var manager: Node = PuzzleManagerClass.new()
+	add_child_autoqfree(manager)
+	var catalog: Array = manager.call("load_catalog")
+	assert_gt(catalog.size(), 0)
+	for puzzle: Dictionary in catalog:
 		assert_true(puzzle.has("dims"))
 		assert_true(puzzle.has("grid_size"))
 		assert_true(puzzle.has("target_voxels"))
@@ -157,6 +156,4 @@ func test_registry_returns_canonical_production_schema_and_caches_themes() -> vo
 		assert_true(int(dims[0]) <= PuzzleDataValidatorClass.MAX_DIMENSION)
 		assert_true(int(dims[1]) <= PuzzleDataValidatorClass.MAX_DIMENSION)
 		assert_true(int(dims[2]) <= PuzzleDataValidatorClass.MAX_DIMENSION)
-	var second_load: Array = registry.load_theme("mythical")
-	assert_eq(second_load.size(), first_load.size())
-	assert_eq(int(registry.get_aggregate_load_stats().get("themes_loaded", 0)), 1)
+	assert_eq(manager.call("get_catalog_size"), catalog.size())

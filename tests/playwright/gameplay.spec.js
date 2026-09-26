@@ -6,7 +6,7 @@ const {
     waitForEngine,
 } = require('./test-utils');
 
-test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
+test.describe('Mixing Flavors: Voxel Gauntlet - Extended E2E', () => {
 
   let diagnostics;
 
@@ -70,7 +70,7 @@ test.describe('Hybrid Tactical Puzzle RPG - Extended E2E', () => {
     await page.waitForTimeout(2000);
 
     // Test Mark Feature
-    // We can directly call GameManager -> mode 2 -> active_puzzle (VoxelLogic)
+    // The gauntlet owns the active VoxelLogic puzzle.
     await callGameAPI(page, ['press_button', '/root/Main/SubViewportContainer/SubViewport/EscapeGauntlet/VoxelLogic/CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer/MarkButton']);
     await page.waitForTimeout(1000);
 

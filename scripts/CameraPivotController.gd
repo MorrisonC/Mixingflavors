@@ -18,15 +18,18 @@ enum SnapFace { FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM }
 @export var damping_inertia: float = 12.0
 @export var reference_viewport_size: Vector2 = Vector2(1280.0, 720.0)
 @export var resolution_independent_orbit: bool = true
+@export var auto_frame_on_ready: bool = true
+@export var initial_yaw_degrees: float = -34.0
+@export var initial_pitch_degrees: float = 24.0
 
 @export_category("Zoom Settings")
 ## A grid only a few units from the near plane is difficult to interact with.
-@export var min_distance: float = 4.0
+@export var min_distance: float = 5.0
 @export var max_distance: float = 40.0
-@export var minimum_safe_distance: float = 4.0
+@export var minimum_safe_distance: float = 5.0
 @export var zoom_sensitivity: float = 1.0
 @export var voxel_size: float = 0.9
-@export var fit_padding: float = 1.2
+@export var fit_padding: float = 1.5
 
 @export_category("Node References")
 @export var pitch_node: Node3D
@@ -42,6 +45,15 @@ var current_distance: float = 10.0
 var is_rotating: bool = false
 var is_tweening: bool = false
 var active_tween: Tween
+var _last_fit_dimensions: Vector3 = Vector3.ZERO
+var _last_fit_viewport_size: Vector2 = Vector2.ZERO
+## Distance floor derived from the fitted puzzle's own bounding radius. Kept
+## separate from min_distance so fitting a large puzzle does not permanently
+## ratchet the floor and push the camera too far from a later small one.
+var _fit_min_distance: float = 0.0
+## The distance the last fit chose, before any player zoom. Used to keep a
+## viewport resize from discarding the player's chosen framing.
+var _last_fitted_distance: float = 0.0
 
 
 func _ready() -> void:
@@ -55,6 +67,10 @@ func _ready() -> void:
 			spring_arm = pitch_node.get_node("SpringArm3D") as SpringArm3D
 	if not is_instance_valid(spring_arm) and is_instance_valid(pitch_node) and pitch_node.has_node("SpringArm3D"):
 		spring_arm = pitch_node.get_node("SpringArm3D") as SpringArm3D
+	if auto_frame_on_ready:
+		rotation.y = deg_to_rad(initial_yaw_degrees)
+		if is_instance_valid(pitch_node):
+			pitch_node.rotation.x = deg_to_rad(initial_pitch_degrees)
 	current_yaw = rotation.y
 	target_yaw = current_yaw
 	if is_instance_valid(pitch_node):
@@ -87,6 +103,7 @@ func _process(delta: float) -> void:
 		spring_arm.spring_length = current_distance
 	elif is_instance_valid(camera):
 		camera.position.z = current_distance
+	_refit_if_viewport_changed()
 
 
 func add_orbit_input(relative_motion: Vector2, viewport_size: Vector2 = Vector2.ZERO) -> void:
@@ -160,6 +177,13 @@ func fit_to_grid(grid_size: Variant, grid_transform: Variant = Transform3D.IDENT
 	if not is_finite(limiting_fov) or limiting_fov <= 0.0:
 		return _current_or_target_distance()
 	var required_distance: float = radius / sin(limiting_fov * 0.5) * maxf(fit_padding, 1.0)
+	_last_fit_dimensions = dimensions
+	_last_fit_viewport_size = viewport_size
+	# Keep the camera outside the puzzle. Without this floor the player could
+	# pinch in until the camera sat inside a large sculpture, where every ray
+	# resolves to the one cell containing the origin and the whole screen
+	# becomes a single un-chiselable target.
+	_fit_min_distance = radius + maxf(voxel_size, 0.01)
 	if not is_finite(required_distance):
 		return _current_or_target_distance()
 	required_distance = maxf(required_distance, _effective_min_distance())
@@ -168,6 +192,7 @@ func fit_to_grid(grid_size: Variant, grid_transform: Variant = Transform3D.IDENT
 	_clamp_distance_settings()
 	target_distance = _clamp_distance(required_distance)
 	current_distance = target_distance
+	_last_fitted_distance = target_distance
 	if is_instance_valid(spring_arm):
 		spring_arm.spring_length = current_distance
 	elif is_instance_valid(camera):
@@ -259,7 +284,7 @@ func _viewport_size() -> Vector2:
 
 
 func _effective_min_distance() -> float:
-	return maxf(maxf(min_distance, 0.01), maxf(minimum_safe_distance, 0.01))
+	return maxf(maxf(maxf(min_distance, 0.01), maxf(minimum_safe_distance, 0.01)), maxf(_fit_min_distance, 0.0))
 
 
 func _effective_max_distance() -> float:
@@ -267,13 +292,17 @@ func _effective_max_distance() -> float:
 
 
 func _clamp_distance_settings() -> void:
-	min_distance = _effective_min_distance()
-	max_distance = _effective_max_distance()
+	# Fold only the static floors into the exported values. The per-puzzle fit
+	# floor is deliberately not written back: doing so would make fitting one
+	# large sculpture permanently push the camera away from every later small one.
+	min_distance = maxf(min_distance, minimum_safe_distance)
+	max_distance = maxf(max_distance, min_distance + 0.01)
 
 
 func _clamp_distance(value: float) -> float:
-	_clamp_distance_settings()
-	return min_distance if not is_finite(value) else clampf(value, min_distance, max_distance)
+	var low: float = _effective_min_distance()
+	var high: float = maxf(max_distance, low + 0.01)
+	return low if not is_finite(value) else clampf(value, low, high)
 
 
 func _current_or_target_distance() -> float:
@@ -285,6 +314,49 @@ func _update_camera_aspect() -> void:
 		return
 	var size: Vector2 = _viewport_size()
 	camera.keep_aspect = Camera3D.KEEP_WIDTH if size.y > size.x else Camera3D.KEEP_HEIGHT
+
+
+func _refit_if_viewport_changed() -> void:
+	if not is_inside_tree() or _last_fit_dimensions.x <= 0.0 or _last_fit_dimensions.y <= 0.0 or _last_fit_dimensions.z <= 0.0:
+		return
+	var current_size: Vector2 = _viewport_size()
+	if current_size.distance_squared_to(_last_fit_viewport_size) <= 1.0:
+		return
+	_last_fit_viewport_size = current_size
+	# Preserve the player's relative zoom across a resize. A browser URL bar
+	# collapsing or a soft keyboard opening must not visibly jump the camera and
+	# discard the framing the player chose.
+	var previous_ratio: float = target_distance / maxf(_last_fitted_distance, 0.001)
+	fit_to_grid(_last_fit_dimensions)
+	if previous_ratio > 0.0 and is_finite(previous_ratio):
+		target_distance = _clamp_distance(_last_fitted_distance * clampf(previous_ratio, 0.25, 4.0))
+
+
+func reset_view(duration: float = 0.25) -> void:
+	var new_yaw: float = deg_to_rad(initial_yaw_degrees)
+	var new_pitch: float = deg_to_rad(initial_pitch_degrees)
+	if is_instance_valid(active_tween) and active_tween.is_running():
+		active_tween.kill()
+	is_tweening = true
+	target_yaw = new_yaw
+	target_pitch = new_pitch
+	# Reset has to restore the distance too. Restoring only the orientation left
+	# the player wherever they had pinched to, including inside the puzzle, so
+	# the advertised recovery action did not actually recover anything.
+	var fitted_distance: float = -1.0
+	if _last_fit_dimensions.x > 0.0 and _last_fit_dimensions.y > 0.0 and _last_fit_dimensions.z > 0.0:
+		fitted_distance = fit_to_grid(_last_fit_dimensions)
+	active_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	active_tween.tween_property(self, "rotation:y", new_yaw, maxf(duration, 0.0))
+	if is_instance_valid(pitch_node):
+		active_tween.tween_property(pitch_node, "rotation:x", new_pitch, maxf(duration, 0.0))
+	if fitted_distance >= 0.0:
+		active_tween.tween_property(self, "current_distance", fitted_distance, maxf(duration, 0.0))
+		if is_instance_valid(spring_arm):
+			active_tween.parallel().tween_property(spring_arm, "spring_length", fitted_distance, maxf(duration, 0.0))
+		elif is_instance_valid(camera):
+			active_tween.parallel().tween_property(camera, "position:z", fitted_distance, maxf(duration, 0.0))
+	active_tween.chain().tween_callback(_finish_snap.bind(new_yaw, new_pitch, "Three-quarter"))
 
 
 func snap_to_face(face: SnapFace, duration: float = 0.3) -> void:

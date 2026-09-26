@@ -11,7 +11,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+; The container owns the child SubViewport's size. Godot rejects a manual
+; SubViewport.size write while stretch is on, so do not resize it in script.
 stretch = true
+stretch_shrink = 2
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
 own_world_3d = true

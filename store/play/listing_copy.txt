@@ -1,0 +1,50 @@
+MIXING FLAVORS: VOXEL GAUNTLET - Google Play listing copy
+=========================================================
+Paste-ready. Plain text, no markdown.
+
+APP TITLE (max 30 chars)
+----------------------
+Mixing Flavors: Voxel Gauntlet
+
+SHORT DESCRIPTION (max 80 chars)
+---------------------------------
+Carve the hidden sculpture out of every voxel cube before the clock runs out.
+
+FULL DESCRIPTION (max 4000 chars)
+----------------------------------
+Mixing Flavors: Voxel Gauntlet is a 3D Picross time-attack game.
+
+Every cube hides one sculpture. The numbers on each face tell you exactly how
+many blocks must stay in that line, so the puzzle is a deduction, never a guess.
+
+DEDUCE - Read the clues on every face. A 0 means the whole line is empty. A red
+? means a line you cannot read yet.
+CARVE - Hammer away the blocks the clues prove are empty. Chiselling a block
+that belongs to the sculpture costs you HP.
+REVEAL - Mark what must stay, slice the cube open to reach the blocks buried in
+the middle, and the sculpture is revealed.
+
+HOW A RUN WORKS
+- One floor at a time against a 120-second clock.
+- Clear with time to spare and the clock is banked for a rescue run.
+- Mark blocks you have already deduced so slicing never costs you a surprise.
+- Undo reverses your last move, mistakes included.
+- Hint lights one provably safe cell whenever its cooldown is ready.
+
+DESIGNED FOR SHORT SESSIONS
+Landscape-first on phone and on the web, fully offline, no energy timers, no
+ads, no forced purchases. Play one floor in a queue, or chase a deeper personal
+best.
+
+Content is deterministic: the same seed always produces the same puzzle
+sequence, so a run can be retried, shared, or replayed exactly.
+
+CHARACTER COUNTS
+----------------
+title            : 30 / 30
+short description: 77 / 80
+full description : 1248 / 4000
+package id       : com.morrisonc.mixingflavors.voxelgauntlet
+content rating   : Everyone (no ads, no IAP, no data collection)
+category         : Game
+contact email    : (set this in Play Console; it is not stored here)

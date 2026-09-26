@@ -16,6 +16,7 @@ func before_each():
 
 func after_each():
 	grid_manager.queue_free()
+	await get_tree().process_frame
 
 func test_mechanic_initialization():
 	assert_not_null(combo_heal_mechanic, "ComboHealMechanic node should be instantiated")

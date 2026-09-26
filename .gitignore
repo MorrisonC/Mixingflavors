@@ -1,4 +1,7 @@
 # Godot 4+ specific ignores
+# .godot/ holds the import cache, the uid cache and the exported resource
+# remaps. All of it is regenerated, and committing it caused Godot to report
+# duplicate UIDs between a generated report and a vendored dependency.
 .godot/
 !/.godot/extension_list.cfg
 !/.godot/global_script_class_cache.cfg
@@ -10,6 +13,24 @@
 *.apk
 *.ipa
 *.aab
+*.apks
+*.idsig
+
+# Godot's Android Gradle build directory. Generated from the export templates on
+# every Android build (see tools/build-android.js) and never edited by hand.
+android/
+local.properties
+.gradle/
+
+# Signing material. The upload keystore lives outside the repository
+# (C:\secure on the developer machine) and the release keystore fields in
+# export_presets.cfg stay empty; see docs/android_release.md.
+*.jks
+*.p12
+*.pfx
+# The Godot debug keystore is the one exception: it is a fixed, well-known
+# development credential and the Android preset references it by res:// path.
+!debug.keystore
 
 # Mono-specific ignores
 .mono/
@@ -18,8 +39,19 @@ mono_crash.*.json
 *.csproj.user
 
 # Build artifacts
+build/
+build_manifest.json
 bin/
 obj/
+
+# Test and report output
+test-results/
+playwright-report/
+
+# Dependencies. The contents are reproducible from package-lock.json; the single
+# .gdignore is kept tracked so Godot does not walk a dependency tree on import.
+node_modules/*
+!node_modules/.gdignore
 
 # OS/Editor specific
 .DS_Store
@@ -27,10 +59,8 @@ Thumbs.db
 .vscode/
 .idea/
 godot
+godot_v4.7.1-stable_linux.x86_64.zip
 Godot_v4.7.1-stable_linux.x86_64.zip
 *.log
-godot_v4.7.1-stable_linux.x86_64.zip
-node_modules/*
-!node_modules/.gdignore
-test-results/
-playwright-report/
+*.diff
+*.orig

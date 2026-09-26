@@ -39,7 +39,7 @@ func test_calculate_clues_simple_group():
 	assert_eq(formatted, "3", "Formatted text for single group should be '3'")
 
 func test_calculate_clues_circle_group():
-	# Two groups of target blocks -> "(3)"
+	# Two ordered groups of target blocks -> "1·2"
 	grid.grid_size = Vector3i(5, 1, 1)
 	grid.target_solution = {
 		Vector3i(0, 0, 0): true,
@@ -49,10 +49,10 @@ func test_calculate_clues_circle_group():
 	var clue = grid._calculate_clue(Vector3i(0, 0, 0), Vector3i(1, 0, 0), 5)
 	assert_eq(clue, [1, 2], "Two groups (len 1 and len 2) should return [1, 2]")
 	var formatted = grid._format_hint_text(clue)
-	assert_eq(formatted, "(3)", "Formatted text for 2 groups total count 3 should be '(3)'")
+	assert_eq(formatted, "1·2", "Formatted text must preserve the order of two groups")
 
 func test_calculate_clues_square_group():
-	# Three groups of target blocks -> "[3]"
+	# Three ordered groups of target blocks -> "1·1·1"
 	grid.grid_size = Vector3i(5, 1, 1)
 	grid.target_solution = {
 		Vector3i(0, 0, 0): true,
@@ -62,7 +62,7 @@ func test_calculate_clues_square_group():
 	var clue = grid._calculate_clue(Vector3i(0, 0, 0), Vector3i(1, 0, 0), 5)
 	assert_eq(clue, [1, 1, 1], "Three groups should return [1, 1, 1]")
 	var formatted = grid._format_hint_text(clue)
-	assert_eq(formatted, "[3]", "Formatted text for 3+ groups total count 3 should be '[3]'")
+	assert_eq(formatted, "1·1·1", "Formatted text must preserve the order of three groups")
 
 func test_marked_blocks_remain_valid_clue_hosts():
 	grid.start_level()

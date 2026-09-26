@@ -49,7 +49,11 @@ func _on_block_destroyed(pos: Vector3i, is_player_action: bool) -> void:
 			var move := {
 				"pos": cell_pos,
 				"state": GridManager.CellState.UNBROKEN,
-				"target": grid_manager.is_target_cell(cell_pos)
+				"target": grid_manager.is_target_cell(cell_pos),
+				# Chained cells are part of the same player action, so the batch
+				# stays internally consistent with combo: undoing the batch
+				# restores the value recorded on its first move.
+				"combo": int(grid_manager.combo) + batch.size(),
 			}
 			batch.append(move)
 			grid_manager.hammer_cell(cell_pos)
@@ -60,3 +64,9 @@ func _on_block_destroyed(pos: Vector3i, is_player_action: bool) -> void:
 		grid_manager.history_updated.emit(true)
 		grid_manager._update_clues()
 		grid_manager._update_ui_state()
+	elif batch.size() == 1:
+		# Nothing chained, so this was an ordinary chisel after all. The player's
+		# undo entry was popped before the chain was known; give it back, or the
+		# move silently becomes permanent and un-undoable.
+		grid_manager.move_history.append(batch[0])
+		grid_manager.history_updated.emit(true)

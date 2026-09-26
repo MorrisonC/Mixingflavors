@@ -238,7 +238,7 @@ func test_focus_reset_does_not_apply_pending_tap() -> void:
 	assert_true(controls._touch_contacts.is_empty())
 
 
-func test_double_tap_uses_timestamp_policy_and_toggles_modes() -> void:
+func test_double_tap_uses_timestamp_policy_without_hidden_tool_switch() -> void:
 	var position: Vector2 = _center()
 	controls.last_tap_time = 1000.0
 	controls.last_tap_pos = position
@@ -250,8 +250,8 @@ func test_double_tap_uses_timestamp_policy_and_toggles_modes() -> void:
 	_touch_release(0, position, 2020.0)
 	_touch_press(0, position, 2100.0)
 	_touch_release(0, position, 2120.0)
-	assert_eq(controls.current_mode, controls.TouchMode.MARK, "A normal double tap should switch chisel to mark")
-	assert_eq(chisel_count, 1, "The second tap should toggle the mode, not replay the tool")
+	assert_eq(controls.current_mode, controls.TouchMode.CHISEL, "Tool changes must remain explicit toolbar selections")
+	assert_eq(chisel_count, 1, "A double tap must not replay the tool action")
 
 
 func test_emulated_mouse_pair_does_not_replay_touch_tap() -> void:
@@ -312,7 +312,11 @@ func test_input_lock_blocks_tap_drag_and_zoom() -> void:
 	assert_true(fake_pivot.zoom_amounts.is_empty(), "Input lock must block zoom")
 
 
-func test_long_press_is_a_safe_noop() -> void:
+# Contract change: a long press with no movement used to be a total no-op, so a
+# 501ms press on a voxel produced no chisel, no mark and no sound - the action
+# was silently dropped. It must still not switch tools or fire a double tap,
+# but the release is now honoured.
+func test_long_press_does_not_switch_tools_but_still_honours_the_tap() -> void:
 	var position: Vector2 = _center()
 	controls.current_mode = controls.TouchMode.CHISEL
 	_touch_press(0, position, 1000.0)
@@ -321,8 +325,21 @@ func test_long_press_is_a_safe_noop() -> void:
 	_touch_release(0, position, 1650.0)
 
 	assert_eq(controls.current_mode, controls.TouchMode.CHISEL, "Long press must not change tools")
-	assert_eq(chisel_count, 0, "Long press must not apply a tool")
-	assert_true(controls.long_press_was_noop)
+	assert_true(controls.long_press_was_noop, "The long press itself is still a no-op for tools")
+	assert_eq(chisel_count, 1, "A still long press must not swallow the player's tap")
+
+
+func test_long_press_that_became_a_drag_still_applies_nothing() -> void:
+	var position: Vector2 = _center()
+	controls.current_mode = controls.TouchMode.CHISEL
+	_touch_press(0, position, 1000.0)
+	# Drag well past the slop so this is an orbit, not a tap.
+	_touch_drag(0, position + Vector2(200.0, 0.0), Vector2(200.0, 0.0))
+	controls.set_manual_time_msec(1600.0)
+	controls._process(0.0)
+	_touch_release(0, position + Vector2(200.0, 0.0), 1650.0)
+
+	assert_eq(chisel_count, 0, "A long press that turned into a drag must not apply a tool")
 
 
 func test_raycast_respects_grid_transform() -> void:

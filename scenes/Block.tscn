@@ -1,7 +1,6 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/Block.gd" id="1_block"]
-[ext_resource type="PackedScene" path="res://scenes/BlockParticle.tscn" id="3_particles"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1"]
 size = Vector3(0.9, 0.9, 0.9)
@@ -17,5 +16,3 @@ shape = SubResource("BoxShape3D_1")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("BoxMesh_1")
-
-[node name="BreakParticles" parent="." instance=ExtResource("3_particles")]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/GridManager.gd" id="1_grid"]
 [ext_resource type="Script" path="res://scripts/TimeBombMechanic.gd" id="2_bomb"]
@@ -7,25 +7,33 @@
 [ext_resource type="PackedScene" path="res://scenes/Block.tscn" id="2_1kbjf"]
 [ext_resource type="Script" path="res://scripts/CameraPivotController.gd" id="2_camera"]
 [ext_resource type="Script" path="res://scripts/MobileTouchControls.gd" id="3_touch"]
-[ext_resource type="Texture2D" path="res://assets/textures/generated/abstract_panorama.svg" id="4_twcvd"]
 [ext_resource type="Script" path="res://scripts/CooldownHintMechanic.gd" id="1_hint"]
 
-[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_bcnql"]
-panorama = ExtResource("4_twcvd")
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bcnql"]
+sky_top_color = Color(0.106, 0.129, 0.286, 1)
+sky_horizon_color = Color(0.729, 0.451, 0.514, 1)
+sky_curve = 0.13
+sky_energy_multiplier = 0.9
+ground_bottom_color = Color(0.063, 0.055, 0.118, 1)
+ground_horizon_color = Color(0.322, 0.227, 0.404, 1)
+ground_curve = 0.08
+sun_angle_max = 35.0
+sun_curve = 0.2
 
 [sub_resource type="Sky" id="Sky_m43ds"]
-sky_material = SubResource("PanoramaSkyMaterial_bcnql")
+sky_material = SubResource("ProceduralSkyMaterial_bcnql")
 
 [sub_resource type="Environment" id="Environment_6b0qt"]
 background_mode = 2
 sky = SubResource("Sky_m43ds")
-background_color = Color(0.97, 0.91, 0.59, 1)
+background_color = Color(0.106, 0.129, 0.286, 1)
 ambient_light_source = 3
 ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_sky_contribution = 0.75
 tonemap_mode = 2
-tonemap_exposure = 1.1
+tonemap_exposure = 1.05
 glow_enabled = true
-glow_bloom = 0.15
+glow_bloom = 0.2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_GlassPanel"]
 bg_color = Color(0.08, 0.03, 0.08, 0.78)
@@ -296,6 +304,7 @@ custom_minimum_size = Vector2(64, 52)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 2
+toggle_mode = true
 clip_text = true
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
@@ -309,6 +318,7 @@ custom_minimum_size = Vector2(64, 52)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 2
+toggle_mode = true
 clip_text = true
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 17
@@ -356,6 +366,20 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
 text = "Hint"
+
+[node name="ResetViewButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+clip_text = true
+tooltip_text = "Return to the readable three-quarter camera"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_GlassBtnNormal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_GlassBtnHover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_GlassBtnPressed")
+text = "Reset View"
 
 [node name="ConfirmDialog" type="Panel" parent="CanvasLayer/Control"]
 visible = false

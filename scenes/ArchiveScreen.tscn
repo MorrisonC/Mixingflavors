@@ -1,0 +1,134 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ArchiveScreen.gd" id="1_archive"]
+
+[node name="ArchiveScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_archive")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.94, 0.96, 0.99, 1)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.08, 0.15, 0.25, 1)
+theme_override_font_sizes/font_size = 42
+text = "VOXEL ARCHIVE"
+horizontal_alignment = 1
+
+[node name="ShardsLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.38, 0.72, 1)
+theme_override_font_sizes/font_size = 22
+text = "Voxel Shards: 0"
+horizontal_alignment = 1
+
+[node name="CollectionLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.3, 0.38, 1)
+theme_override_font_sizes/font_size = 18
+text = "Collected sculptures"
+horizontal_alignment = 1
+
+[node name="CompletionLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.3, 0.38, 1)
+theme_override_font_sizes/font_size = 16
+text = "Compendium completion: 0"
+horizontal_alignment = 1
+
+[node name="AchievementLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.3, 0.38, 1)
+theme_override_font_sizes/font_size = 16
+text = "Achievements: 0/17 unlocked"
+horizontal_alignment = 1
+
+[node name="RecordsLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.3, 0.38, 1)
+theme_override_font_sizes/font_size = 16
+text = "Best score: 0  •  Depth: 0  •  Streak: 0"
+horizontal_alignment = 1
+
+[node name="RatesLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.3, 0.38, 1)
+theme_override_font_sizes/font_size = 15
+text = "Common 60%  •  Rare 25%  •  Epic 12%  •  Legendary 3%"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="PityLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.3, 0.38, 1)
+theme_override_font_sizes/font_size = 15
+text = "Epic pity 0/10  •  Legendary pity 0/30"
+horizontal_alignment = 1
+
+[node name="MintButton" type="Button" parent="Margin/VBox"]
+custom_minimum_size = Vector2(220, 52)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+text = "Mint Voxel (100 Shards)"
+
+[node name="MintResultLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.38, 0.72, 1)
+theme_override_font_sizes/font_size = 18
+text = "Complete runs to earn shards."
+horizontal_alignment = 1
+
+[node name="ShareButton" type="Button" parent="Margin/VBox"]
+custom_minimum_size = Vector2(220, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+text = "Copy Latest Run Code"
+
+[node name="Scroll" type="ScrollContainer" parent="Margin/VBox"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="InventoryList" type="VBoxContainer" parent="Margin/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="BackButton" type="Button" parent="Margin/VBox"]
+custom_minimum_size = Vector2(180, 52)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+text = "Back to Menu"

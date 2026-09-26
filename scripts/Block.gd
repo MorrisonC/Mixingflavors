@@ -12,10 +12,13 @@ enum BlockState {
 
 var current_state: BlockState = BlockState.UNBROKEN
 var grid_position: Vector3i
+## GridManager owns rendering through MultiMesh. Lightweight blocks create
+## face clue nodes only when a clue is actually assigned to that face.
+var lightweight_mode: bool = false
 
-@onready var mesh_instance: MeshInstance3D = $MeshInstance3D
-@onready var collision_shape: CollisionShape3D = $CollisionShape3D
-@onready var break_particles: GPUParticles3D = get_node_or_null("BreakParticles")
+@onready var mesh_instance: MeshInstance3D = get_node_or_null("MeshInstance3D") as MeshInstance3D
+@onready var collision_shape: CollisionShape3D = get_node_or_null("CollisionShape3D") as CollisionShape3D
+@onready var break_particles: GPUParticles3D = get_node_or_null("BreakParticles") as GPUParticles3D
 
 # Visual properties
 var base_material: StandardMaterial3D
@@ -64,6 +67,8 @@ static func _init_textures() -> void:
 
 func _ready() -> void:
 	_init_textures()
+	if lightweight_mode:
+		return
 
 	base_material = StandardMaterial3D.new()
 	base_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -80,7 +85,8 @@ func _ready() -> void:
 	
 	base_material.next_pass = outline_material
 	mesh_instance.material_override = base_material
-	_create_face_labels()
+	if not lightweight_mode:
+		_create_face_labels()
 
 func _create_face_labels() -> void:
 	var directions = [
@@ -126,16 +132,76 @@ func _create_face_labels() -> void:
 		face_labels[d["dir"]] = label
 
 func set_face_hint(direction: Vector3i, hint_text: String) -> void:
-	var normalized_text := hint_text.replace("(", "").replace(")", "").replace("[", "").replace("]", "")
-	var num: int = normalized_text.to_int()
+	var normalized_text: String = hint_text.strip_edges().replace("(", "").replace(")", "").replace("[", "").replace("]", "")
+	# Grouped clues are joined with the display separator (for example "1·2" or
+	# "2·3·1"). String.to_int() would read that as 0 and render the clue as an
+	# unknown red marker, so sum the groups instead.
+	var num: int = 0
+	for part: String in normalized_text.split("·", false):
+		num += part.strip_edges().to_int()
 	var hint_kind: int = 0
 	if hint_text.begins_with("("):
 		hint_kind = 1
 	elif hint_text.begins_with("["):
 		hint_kind = 2
-	set_face_hint_data(direction, {"num": num, "type": hint_kind})
+	set_face_hint_data(direction, {"num": num, "type": hint_kind, "text": normalized_text})
+
+func _ensure_face_nodes(direction: Vector3i) -> void:
+	if face_labels.has(direction) and face_sprites.has(direction):
+		return
+	var position := Vector3.ZERO
+	var rotation_degrees := Vector3.ZERO
+	match direction:
+		Vector3i(1, 0, 0):
+			position = Vector3(0.492, 0, 0)
+			rotation_degrees = Vector3(0, 90, 0)
+		Vector3i(-1, 0, 0):
+			position = Vector3(-0.492, 0, 0)
+			rotation_degrees = Vector3(0, -90, 0)
+		Vector3i(0, 1, 0):
+			position = Vector3(0, 0.492, 0)
+			rotation_degrees = Vector3(-90, 0, 0)
+		Vector3i(0, -1, 0):
+			position = Vector3(0, -0.492, 0)
+			rotation_degrees = Vector3(90, 0, 0)
+		Vector3i(0, 0, 1):
+			position = Vector3(0, 0, 0.492)
+		Vector3i(0, 0, -1):
+			position = Vector3(0, 0, -0.492)
+			rotation_degrees = Vector3(0, 180, 0)
+		_:
+			return
+	var sprite := Sprite3D.new()
+	sprite.position = position
+	sprite.rotation = Vector3(deg_to_rad(rotation_degrees.x), deg_to_rad(rotation_degrees.y), deg_to_rad(rotation_degrees.z))
+	sprite.pixel_size = 0.0075
+	sprite.render_priority = 1
+	sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	sprite.double_sided = false
+	sprite.visible = false
+	add_child(sprite)
+	face_sprites[direction] = sprite
+	var label := Label3D.new()
+	label.position = position + Vector3(direction) * 0.004
+	label.rotation = sprite.rotation
+	label.pixel_size = 0.008
+	label.font_size = 90
+	label.shaded = false
+	label.render_priority = 2
+	label.outline_render_priority = 1
+	label.outline_size = 6
+	label.outline_modulate = Color(1.0, 1.0, 1.0, 0.8)
+	label.modulate = Color("#2DB2ED")
+	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	label.double_sided = false
+	label.visible = false
+	add_child(label)
+	face_labels[direction] = label
+
 
 func set_face_hint_data(direction: Vector3i, hint_data: Dictionary) -> void:
+	if lightweight_mode:
+		_ensure_face_nodes(direction)
 	if not face_labels.has(direction) or not face_sprites.has(direction):
 		return
 	var label := face_labels[direction] as Label3D
@@ -148,7 +214,7 @@ func set_face_hint_data(direction: Vector3i, hint_data: Dictionary) -> void:
 	var clue_total: int = int(hint_data.get("num", 0))
 	var hint_kind: int = int(hint_data.get("type", 0))
 	var is_visible: bool = current_state != BlockState.DESTROYED and current_state != BlockState.HIDDEN_BY_SLICE
-	label.text = str(clue_total)
+	label.text = str(hint_data.get("text", str(clue_total)))
 	label.visible = is_visible
 	sprite.visible = false
 	if clue_total == 0:
@@ -194,6 +260,8 @@ func _play_juice_tween() -> void:
 		tween.tween_property(mesh_instance, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
 
 func _update_visuals() -> void:
+	if lightweight_mode:
+		return
 	match current_state:
 		BlockState.UNBROKEN:
 			show()

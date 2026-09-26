@@ -13,13 +13,15 @@ const path = require('node:path');
 const zlib = require('node:zlib');
 
 const REQUIRED_GODOT_VERSION = '4.7.1';
+const SUPPORTED_GODOT_VERSIONS = ['4.7.1', '4.7.2'];
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const BUILD_ROOT = path.join(PROJECT_ROOT, 'build');
 const WEB_OUTPUT_DIR = path.join(BUILD_ROOT, 'web');
 const WEB_OUTPUT_HTML = path.join(WEB_OUTPUT_DIR, 'index.html');
 const PROJECT_FILE = path.join(PROJECT_ROOT, 'project.godot');
 const EXPORT_PRESET_FILE = path.join(PROJECT_ROOT, 'export_presets.cfg');
-const EXPORT_PRESET_NAME = 'Web';
+const WEB_TEST_BUILD = process.env.WEB_TEST_BUILD === '1';
+const EXPORT_PRESET_NAME = WEB_TEST_BUILD ? 'WebTest' : 'Web';
 const REQUIRED_WEB_FILES = ['index.html', 'index.js', 'index.wasm', 'index.pck'];
 const COMPRESSIBLE_WEB_FILES = [...REQUIRED_WEB_FILES, 'index.audio.worklet.js'];
 const FILE_TIME_TOLERANCE_MS = 2000;
@@ -106,6 +108,8 @@ function commonGodotCandidates() {
         ? [
             'Godot_v4.7.1-stable_win64_console.exe',
             'Godot_v4.7.1-stable_win64.exe',
+            'Godot_v4.7.2-stable_win64_console.exe',
+            'Godot_v4.7.2-stable_win64.exe',
             'godot.exe',
             'godot4.exe',
         ]
@@ -114,6 +118,7 @@ function commonGodotCandidates() {
             'godot4',
             'Godot',
             'Godot_v4.7.1-stable_linux.x86_64',
+            'Godot_v4.7.2-stable_linux.x86_64',
         ];
     const directories = [
         process.env.GODOT_HOME,
@@ -123,7 +128,9 @@ function commonGodotCandidates() {
         process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Downloads', 'Godot') : '',
         process.env.HOME ? path.join(process.env.HOME, '.local', 'bin') : '',
         path.join(os.tmpdir(), 'godot-4.7.1'),
+        path.join(os.tmpdir(), 'godot-4.7.2'),
         path.join(os.tmpdir(), 'opencode', 'godot-4.7.1'),
+        path.join(os.tmpdir(), 'opencode', 'godot-4.7.2'),
     ];
     if (process.platform !== 'win32') {
         directories.push('/usr/local/bin', '/usr/bin', '/opt/godot');
@@ -151,7 +158,7 @@ function versionFromOutput(result) {
 }
 
 function isRequiredVersion(version) {
-    return version === REQUIRED_GODOT_VERSION;
+    return SUPPORTED_GODOT_VERSIONS.includes(version);
 }
 
 function probeGodot(candidate) {
@@ -209,8 +216,8 @@ function findGodot() {
     const source = configured
         ? `GODOT_BIN=${configured}`
         : 'PATH and common Godot installation locations';
-    fail(`Godot ${REQUIRED_GODOT_VERSION} was not found via ${source}. `
-        + `Set GODOT_BIN to the Godot ${REQUIRED_GODOT_VERSION} executable. `
+    fail(`Godot ${SUPPORTED_GODOT_VERSIONS.join(' or ')} was not found via ${source}. `
+        + `Set GODOT_BIN to a supported Godot ${SUPPORTED_GODOT_VERSIONS.join('/')} executable. `
         + `Candidates checked: ${failures.join(', ') || 'none'}`);
     return '';
 }
@@ -223,31 +230,41 @@ function formatCommand(executable, args) {
 
 function runGodot(executable, label, args) {
     console.log(`[web-build] ${label}: ${formatCommand(executable, args)}`);
-    const result = childProcess.spawnSync(executable, args, {
-        cwd: PROJECT_ROOT,
-        env: process.env,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-        timeout: GODOT_STEP_TIMEOUT_MS,
-        stdio: ['ignore', 'pipe', 'pipe'],
-        windowsHide: true,
-    });
+    const maxAttempts = label === 'Importing project resources' ? 2 : 1;
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        const result = childProcess.spawnSync(executable, args, {
+            cwd: PROJECT_ROOT,
+            env: process.env,
+            encoding: 'utf8',
+            maxBuffer: 16 * 1024 * 1024,
+            timeout: GODOT_STEP_TIMEOUT_MS,
+            stdio: ['ignore', 'pipe', 'pipe'],
+            windowsHide: true,
+        });
 
-    if (result.stdout) {
-        process.stdout.write(result.stdout);
+        if (result.stdout) {
+            process.stdout.write(result.stdout);
+        }
+        if (result.stderr) {
+            process.stderr.write(result.stderr);
+        }
+        if (result.error) {
+            if (attempt < maxAttempts) {
+                console.warn(`[web-build] ${label} could not start (${result.error.message}); retrying once.`);
+                continue;
+            }
+            fail(`${label} could not start: ${result.error.message}`);
+        }
+        if (result.status !== 0) {
+            if (attempt < maxAttempts) {
+                console.warn(`[web-build] ${label} exited with ${result.status}; retrying once.`);
+                continue;
+            }
+            const signal = result.signal ? ` (signal ${result.signal})` : '';
+            fail(`${label} failed with exit status ${result.status}${signal}`);
+        }
+        return;
     }
-    if (result.stderr) {
-        process.stderr.write(result.stderr);
-    }
-    if (result.error) {
-        fail(`${label} could not start: ${result.error.message}`);
-    }
-    if (result.status !== 0) {
-        const signal = result.signal ? ` (signal ${result.signal})` : '';
-        fail(`${label} failed with exit status ${result.status}${signal}`);
-    }
-    // Godot can print transient import diagnostics while it builds its cache;
-    // the process exit status remains the authoritative failure signal.
 }
 
 function validateProjectSettings() {
@@ -280,8 +297,15 @@ function validateExportPreset() {
     }
 
     const preset = fs.readFileSync(EXPORT_PRESET_FILE, 'utf8');
+    const presetMarker = `name="${EXPORT_PRESET_NAME}"`;
+    const markerIndex = preset.indexOf(presetMarker);
+    const blockStart = markerIndex >= 0 ? preset.lastIndexOf('[preset.', markerIndex) : -1;
+    const nextBlock = markerIndex >= 0 ? preset.indexOf('\n[preset.', markerIndex + presetMarker.length) : -1;
+    const selectedPreset = blockStart >= 0
+        ? preset.slice(blockStart, nextBlock >= 0 ? nextBlock : preset.length)
+        : '';
     const requiredSettings = [
-        { pattern: /name\s*=\s*"Web"/, description: 'a Web preset named "Web"' },
+        { pattern: new RegExp(`name\\s*=\\s*"${EXPORT_PRESET_NAME}"`), description: `a Web preset named "${EXPORT_PRESET_NAME}"` },
         { pattern: /platform\s*=\s*"Web"/, description: 'the Web platform' },
         { pattern: /variant\/extensions_support\s*=\s*false/, description: 'GDExtension support disabled' },
         { pattern: /variant\/thread_support\s*=\s*false/, description: 'single-threaded Web export' },
@@ -293,6 +317,18 @@ function validateExportPreset() {
         { pattern: /threads\/emscripten_pool_size\s*=\s*8/, description: 'the current Emscripten pool size option' },
         { pattern: /threads\/godot_pool_size\s*=\s*4/, description: 'the current Godot pool size option' },
     ];
+    if (WEB_TEST_BUILD && !/custom_features\s*=\s*"[^"]*\be2e\b[^"]*"/.test(selectedPreset)) {
+        fail('WebTest must enable the e2e custom feature for the browser test bridge.');
+    }
+    if (!WEB_TEST_BUILD && /custom_features\s*=\s*"[^"]*\be2e\b[^"]*"/.test(selectedPreset)) {
+        fail('The production Web preset must not enable the e2e test feature.');
+    }
+    if (!WEB_TEST_BUILD && !selectedPreset.includes('scripts/test_bridge.gd')) {
+        fail('The production Web preset must exclude scripts/test_bridge.gd.');
+    }
+    if (WEB_TEST_BUILD && selectedPreset.includes('scripts/test_bridge.gd')) {
+        fail('The WebTest preset must retain the test bridge for Playwright.');
+    }
     for (const setting of requiredSettings) {
         if (!setting.pattern.test(preset)) {
             fail(`export_presets.cfg must contain ${setting.description}; refusing to build with a different Web configuration.`);
@@ -319,16 +355,10 @@ function validateExportPreset() {
         'node_modules/**',
         'test-results/**',
         'playwright-report/**',
-        'animals_puzzles.png*',
-        'horse_loaded.png*',
-        'level_select_menu.png*',
-        'main_menu.png*',
-        'rotated_view.png*',
-        'assets/textures/valentine/**',
-        'assets/textures/beautiful_skybox.jpg',
-        'assets/textures/abstract_bg.png',
-        'assets/textures/stylized_cube.png',
-        'assets/models/heart.obj',
+        'assets/puzzles/*_puzzles.json',
+        'package.json',
+        'package-lock.json',
+        'build_manifest.json',
     ]) {
         if (!preset.includes(requiredExclusion)) {
             fail(`export_presets.cfg must exclude ${requiredExclusion} from the Web release.`);
@@ -410,10 +440,26 @@ function verifyWebOutput(buildStartedAt) {
         fail('index.wasm does not have a valid WebAssembly header.');
     }
 
-    console.log(`[web-build] Verified fresh ${REQUIRED_GODOT_VERSION} Web release in ${path.relative(PROJECT_ROOT, WEB_OUTPUT_DIR)}.`);
+    console.log(`[web-build] Verified fresh Godot ${SUPPORTED_GODOT_VERSIONS.join('/')} Web release in ${path.relative(PROJECT_ROOT, WEB_OUTPUT_DIR)}.`);
+}
+
+function runDataVerifier(script, label) {
+    const result = childProcess.spawnSync(process.execPath, [path.join(__dirname, script)], {
+        cwd: PROJECT_ROOT,
+        encoding: 'utf8',
+        timeout: 30000,
+        windowsHide: true,
+    });
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    if (result.status !== 0) {
+        fail(`${label} failed: ${result.error ? result.error.message : 'unknown error'}`);
+    }
 }
 
 function buildWeb() {
+    runDataVerifier('verify-catalog.js', 'Runtime catalog verification');
+    runDataVerifier('verify-achievements.js', 'Achievement manifest verification');
     validateProjectSettings();
     validateExportPreset();
     const godot = findGodot();
@@ -450,6 +496,7 @@ if (require.main === module) {
 
 module.exports = {
     REQUIRED_GODOT_VERSION,
+    SUPPORTED_GODOT_VERSIONS,
     WEB_OUTPUT_DIR,
     buildWeb,
     findGodot,

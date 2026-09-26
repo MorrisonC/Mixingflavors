@@ -3,7 +3,12 @@
 [ext_resource type="Script" path="res://scripts/victory_screen.gd" id="1_vscrn"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Card"]
-bg_color = Color(0.96, 0.94, 0.92, 1)
+bg_color = Color(0.96, 0.97, 0.99, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.45, 0.65, 0.35)
 corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
@@ -27,7 +32,7 @@ corner_radius_bottom_right = 15
 corner_radius_bottom_left = 15
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Button"]
-bg_color = Color(0.2, 0.6, 0.4, 1)
+bg_color = Color(0.16, 0.38, 0.72, 1)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -36,7 +41,7 @@ content_margin_left = 12.0
 content_margin_right = 12.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ButtonHover"]
-bg_color = Color(0.25, 0.7, 0.45, 1)
+bg_color = Color(0.24, 0.5, 0.86, 1)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -68,7 +73,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-color = Color(1, 1, 1, 0.75)
+color = Color(0.03, 0.06, 0.12, 0.62)
 
 [node name="PanelContainer" type="PanelContainer" parent="Background"]
 layout_mode = 1
@@ -83,7 +88,7 @@ offset_right = 250.0
 offset_bottom = 350.0
 grow_horizontal = 2
 grow_vertical = 2
-clip_contents = true
+clip_contents = false
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Background/PanelContainer"]
 layout_mode = 2
@@ -94,7 +99,23 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 28
-text = "Level 1-A"
+text = "Puzzle complete"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SubtitleLabel" type="Label" parent="Background/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.35, 0.48, 1)
+theme_override_font_sizes/font_size = 16
+text = "Round 1  •  Fresh result"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ContextLabel" type="Label" parent="Background/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.42, 0.52, 1)
+theme_override_font_sizes/font_size = 15
+text = "Offline-ready"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -141,7 +162,21 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0, 0, 0, 0)
+color = Color(0.9, 0.94, 1, 0.65)
+
+[node name="RevealLabel" type="Label" parent="Background/PanelContainer/VBoxContainer/IllustrationContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.16, 0.38, 0.72, 1)
+theme_override_font_sizes/font_size = 20
+text = "SCULPTURE PREVIEW"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="OverlayBox" type="PanelContainer" parent="Background/PanelContainer/VBoxContainer/IllustrationContainer"]
 layout_mode = 1
@@ -238,7 +273,45 @@ custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-text = "3/3"
+text = "--/3"
+horizontal_alignment = 2
+
+[node name="BestRow" type="HBoxContainer" parent="Background/PanelContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/BestRow"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+text = "Best:"
+
+[node name="Value" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/BestRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+text = "First clear"
+horizontal_alignment = 2
+
+[node name="SeedRow" type="HBoxContainer" parent="Background/PanelContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/SeedRow"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+text = "Seed:"
+
+[node name="Value" type="Label" parent="Background/PanelContainer/VBoxContainer/StatsContainer/SeedRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+text = "Tutorial"
 horizontal_alignment = 2
 
 [node name="ScoreRow" type="HBoxContainer" parent="Background/PanelContainer/VBoxContainer/StatsContainer"]
@@ -259,6 +332,46 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 text = "12,500"
 horizontal_alignment = 2
+
+[node name="ActionRow" type="GridContainer" parent="Background/PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 4
+columns = 3
+
+[node name="ReplayButton" type="Button" parent="Background/PanelContainer/VBoxContainer/ActionRow"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Retry"
+
+[node name="NewRunButton" type="Button" parent="Background/PanelContainer/VBoxContainer/ActionRow"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "New Run"
+
+[node name="ShareButton" type="Button" parent="Background/PanelContainer/VBoxContainer/ActionRow"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Copy Code"
+tooltip_text = "Copy replay code"
+
+[node name="ShareStatusLabel" type="Label" parent="Background/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.45, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="LeaveButton" type="Button" parent="Background/PanelContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 48)
