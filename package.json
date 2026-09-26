@@ -9,6 +9,7 @@
     "verify:web": "node tools/verify-web-release.js",
     "build:android": "node tools/build-android.js",
     "verify:android": "node tools/verify-android-bundle.js",
+    "publish:play": "node tools/publish-play.js",
     "build:puzzles": "node tools/build-puzzle-catalog.js",
     "verify:catalog": "node tools/verify-catalog.js",
     "verify:achievements": "node tools/verify-achievements.js",
